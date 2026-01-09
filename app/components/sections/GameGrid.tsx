@@ -206,12 +206,12 @@ const games: Game[] = [
 
 export default function GameGrid() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const cardsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
-    const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
+    const cards = cardsRef.current.filter(Boolean) as HTMLAnchorElement[];
     const handlers = new Map<
-      HTMLDivElement,
+      HTMLAnchorElement,
       { onEnter: () => void; onLeave: () => void }
     >();
 
