@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const features = [
   {
-    icon: '⚡',
-    title: 'Instant Play',
-    description: 'Jump into games instantly without downloads or installations',
+    icon: "⚡",
+    title: "Instant Play",
+    description: "Jump into games instantly without downloads or installations",
   },
   {
-    icon: '🎮',
-    title: 'Classic Games, Modern UI',
-    description: 'Timeless gameplay meets sleek, contemporary design',
+    icon: "🎮",
+    title: "Classic Games, Modern UI",
+    description: "Timeless gameplay meets sleek, contemporary design",
   },
   {
-    icon: '🧠',
-    title: 'Skill-Based Gameplay',
-    description: 'Master your skills and compete with players worldwide',
+    icon: "🧠",
+    title: "Skill-Based Gameplay",
+    description: "Master your skills and compete with players worldwide",
   },
   {
-    icon: '🌙',
-    title: 'Dark Neon Interface',
-    description: 'Premium dark theme with stunning neon aesthetics',
+    icon: "🌙",
+    title: "Dark Neon Interface",
+    description: "Premium dark theme with stunning neon aesthetics",
   },
 ];
 
@@ -35,70 +35,107 @@ export default function Features() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      cardsRef.current.forEach((card, index) => {
-        if (!card) return;
+      const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
 
-        gsap.from(card, {
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 80%',
-            end: 'top 50%',
-            scrub: 0.5,
-            markers: false,
-          },
-          opacity: 0,
-          y: 50,
-          duration: 1,
-        });
+      gsap.from(cards, {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 70%",
+        },
+        opacity: 0,
+        y: 28,
+        scale: 0.98,
+        duration: 0.7,
+        ease: "power2.out",
+        stagger: 0.09,
+      });
 
-        card.addEventListener('mouseenter', () => {
+      cards.forEach((card) => {
+        const icon = card.querySelector(".feature-icon");
+
+        const onEnter = () => {
           gsap.to(card, {
             y: -10,
-            duration: 0.4,
-            ease: 'power2.out',
+            rotateX: 2,
+            duration: 0.22,
+            ease: "power2.out",
           });
-          gsap.to(card.querySelector('.feature-icon'), {
-            scale: 1.2,
-            duration: 0.4,
-            ease: 'power2.out',
+          gsap.to(card, {
+            boxShadow:
+              "0 0 0 rgba(0,0,0,0), 0 30px 120px rgba(108,133,234,0.22)",
+            duration: 0.22,
+            ease: "power2.out",
           });
-        });
+          if (icon) {
+            gsap.to(icon, {
+              scale: 1.08,
+              duration: 0.22,
+              ease: "power2.out",
+            });
+          }
+        };
 
-        card.addEventListener('mouseleave', () => {
+        const onLeave = () => {
           gsap.to(card, {
             y: 0,
-            duration: 0.4,
-            ease: 'power2.out',
+            rotateX: 0,
+            boxShadow: "0 0 0 rgba(0,0,0,0)",
+            duration: 0.22,
+            ease: "power2.out",
           });
-          gsap.to(card.querySelector('.feature-icon'), {
-            scale: 1,
-            duration: 0.4,
-            ease: 'power2.out',
-          });
-        });
+          if (icon) {
+            gsap.to(icon, {
+              scale: 1,
+              duration: 0.22,
+              ease: "power2.out",
+            });
+          }
+        };
+
+        card.addEventListener("mouseenter", onEnter);
+        card.addEventListener("mouseleave", onLeave);
+        (card as any).__tgzEnter = onEnter;
+        (card as any).__tgzLeave = onLeave;
       });
     }, containerRef);
 
-    return () => ctx.revert();
+    return () => {
+      cardsRef.current.forEach((card) => {
+        if (!card) return;
+        const onEnter = (card as any).__tgzEnter as
+          | ((ev: Event) => void)
+          | undefined;
+        const onLeave = (card as any).__tgzLeave as
+          | ((ev: Event) => void)
+          | undefined;
+        if (onEnter) card.removeEventListener("mouseenter", onEnter);
+        if (onLeave) card.removeEventListener("mouseleave", onLeave);
+        delete (card as any).__tgzEnter;
+        delete (card as any).__tgzLeave;
+      });
+      ctx.revert();
+    };
   }, []);
 
   return (
     <section
       id="features"
       ref={containerRef}
-      className="relative py-24 md:py-32 px-4 md:px-6 bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden"
+      className="relative py-24 md:py-32"
     >
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl pointer-events-none">
-        <div className="absolute inset-0 bg-primary opacity-5 rounded-full filter blur-3xl"></div>
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-16 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute right-0 top-1/3 h-[22rem] w-[22rem] translate-x-1/3 rounded-full bg-secondary/10 blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
-            Why <span className="text-primary">Game Zone</span>?
+          <h2 className="text-4xl md:text-5xl font-black text-white">
+            Why <span className="text-primary">The Game Zone</span>?
           </h2>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            Discover what makes our platform the ultimate gaming destination
+          <p className="mt-4 text-base text-white/70 md:text-lg">
+            Premium polish, subtle motion, and a neon-dark interface built for
+            speed.
           </p>
         </div>
 
@@ -109,23 +146,24 @@ export default function Features() {
               ref={(el) => {
                 cardsRef.current[index] = el;
               }}
-              className="group relative p-6 md:p-8 rounded-xl border border-primary/20 bg-gradient-to-br from-slate-900/50 to-slate-950/50 hover:border-secondary/50 transition-all duration-300 cursor-pointer overflow-hidden"
+              className={[
+                "group relative overflow-hidden rounded-3xl border border-primary/18 bg-black/25 p-7 md:p-8",
+                "shadow-[0_0_0_rgba(0,0,0,0)] transition-transform duration-300 will-change-transform",
+                "hover:border-secondary/40",
+              ].join(" ")}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/14 via-transparent to-secondary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:[animation:neon-border_2s_ease-in-out_infinite]" />
 
-              <div className="relative z-10">
-                <div className="feature-icon text-5xl mb-4 transform transition-transform duration-300">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors duration-300">
+              <div className="relative">
+                <div className="feature-icon text-5xl">{feature.icon}</div>
+                <h3 className="mt-5 text-xl font-black tracking-tight text-white transition-colors duration-300 group-hover:text-secondary">
                   {feature.title}
                 </h3>
-                <p className="text-gray-400 text-sm leading-relaxed">
+                <p className="mt-2 text-sm leading-relaxed text-white/65">
                   {feature.description}
                 </p>
               </div>
-
-              <div className="absolute inset-0 rounded-xl border border-secondary/0 group-hover:border-secondary/50 transition-colors duration-300 pointer-events-none"></div>
             </div>
           ))}
         </div>

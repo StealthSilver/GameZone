@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
 
 export default function Footer() {
   const footerRef = useRef<HTMLDivElement>(null);
@@ -12,27 +12,27 @@ export default function Footer() {
       gsap.from(lineRef.current, {
         scaleX: 0,
         duration: 1.5,
-        ease: 'power2.inOut',
-        transformOrigin: 'left',
+        ease: "power2.inOut",
+        transformOrigin: "left",
       });
 
-      const icons = footerRef.current?.querySelectorAll('.social-icon');
+      const icons = footerRef.current?.querySelectorAll(".social-icon");
       icons?.forEach((icon) => {
-        icon.addEventListener('mouseenter', () => {
+        icon.addEventListener("mouseenter", () => {
           gsap.to(icon, {
             scale: 1.2,
-            color: 'rgba(170, 253, 187, 1)',
+            color: "rgba(170, 253, 187, 1)",
             duration: 0.3,
-            ease: 'back.out',
+            ease: "back.out",
           });
         });
 
-        icon.addEventListener('mouseleave', () => {
+        icon.addEventListener("mouseleave", () => {
           gsap.to(icon, {
             scale: 1,
-            color: 'rgba(108, 133, 234, 1)',
+            color: "rgba(108, 133, 234, 1)",
             duration: 0.3,
-            ease: 'back.out',
+            ease: "back.out",
           });
         });
       });
@@ -50,7 +50,7 @@ export default function Footer() {
         <div
           ref={lineRef}
           className="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent"
-          style={{ scaleX: 0 }}
+          style={{ transform: "scaleX(0)" }}
         ></div>
       </div>
 
@@ -75,22 +75,34 @@ export default function Footer() {
             <h4 className="font-bold text-white mb-4 text-primary">Games</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Browse All
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   New Releases
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Tournaments
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Leaderboards
                 </a>
               </li>
@@ -101,22 +113,34 @@ export default function Footer() {
             <h4 className="font-bold text-white mb-4 text-primary">Company</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   About Us
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Blog
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Careers
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Contact
                 </a>
               </li>
@@ -127,17 +151,26 @@ export default function Footer() {
             <h4 className="font-bold text-white mb-4 text-primary">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-secondary transition-colors duration-300">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-secondary transition-colors duration-300"
+                >
                   Cookie Policy
                 </a>
               </li>
@@ -154,10 +187,10 @@ export default function Footer() {
 
           <div className="flex gap-6">
             {[
-              { name: 'Twitter', symbol: '��' },
-              { name: 'Discord', symbol: '💬' },
-              { name: 'GitHub', symbol: '🐙' },
-              { name: 'LinkedIn', symbol: '💼' },
+              { name: "Twitter", symbol: "��" },
+              { name: "Discord", symbol: "💬" },
+              { name: "GitHub", symbol: "🐙" },
+              { name: "LinkedIn", symbol: "💼" },
             ].map((social) => (
               <a
                 key={social.name}
