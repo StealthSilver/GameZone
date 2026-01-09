@@ -1,17 +1,19 @@
-// app/page.tsx
+"use client";
+
 import Header from "./components/sections/Header";
 import Hero from "./components/sections/Hero";
 import Features from "./components/sections/Features";
-import GamesGrid from "./components/sections/GameGrid";
+import GameGrid from "./components/sections/GameGrid";
+// Testimonials removed: file reported as "not a module"
 import Footer from "./components/sections/Footer";
 
 export default function Home() {
   return (
-    <main>
+    <main className="overflow-hidden">
       <Header />
       <Hero />
       <Features />
-      <GamesGrid />
+      <GameGrid />
       <Footer />
     </main>
   );
