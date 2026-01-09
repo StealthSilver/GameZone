@@ -56,10 +56,17 @@ export default function Header() {
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-    const ctx = gsap.context(() => {
-      linkRefs.current.forEach((el) => {
-        if (!el) return;
 
+    const links = linkRefs.current.filter((v): v is HTMLAnchorElement =>
+      Boolean(v)
+    );
+    const handlers = new Map<
+      HTMLAnchorElement,
+      { onEnter: () => void; onLeave: () => void }
+    >();
+
+    const ctx = gsap.context(() => {
+      links.forEach((el) => {
         const onEnter = () => {
           gsap.to(el, {
             y: -2,
@@ -89,24 +96,16 @@ export default function Header() {
         el.addEventListener("mouseenter", onEnter);
         el.addEventListener("mouseleave", onLeave);
 
-        (el as any).__tgzEnter = onEnter;
-        (el as any).__tgzLeave = onLeave;
+        handlers.set(el, { onEnter, onLeave });
       });
     }, headerRef);
 
     return () => {
-      linkRefs.current.forEach((el) => {
-        if (!el) return;
-        const onEnter = (el as any).__tgzEnter as
-          | ((ev: Event) => void)
-          | undefined;
-        const onLeave = (el as any).__tgzLeave as
-          | ((ev: Event) => void)
-          | undefined;
-        if (onEnter) el.removeEventListener("mouseenter", onEnter);
-        if (onLeave) el.removeEventListener("mouseleave", onLeave);
-        delete (el as any).__tgzEnter;
-        delete (el as any).__tgzLeave;
+      links.forEach((el) => {
+        const h = handlers.get(el);
+        if (!h) return;
+        el.removeEventListener("mouseenter", h.onEnter);
+        el.removeEventListener("mouseleave", h.onLeave);
       });
       ctx.revert();
     };
@@ -154,7 +153,7 @@ export default function Header() {
                 ref={(el) => {
                   linkRefs.current[index] = el;
                 }}
-                className="relative text-sm font-semibold tracking-wide text-white/80 hover:text-white transition-colors"
+                className="group relative text-sm font-semibold tracking-wide text-white/80 hover:text-white transition-colors"
                 onClick={() => setIsMobileOpen(false)}
               >
                 {link.name}

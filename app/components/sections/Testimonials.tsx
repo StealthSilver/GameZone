@@ -1,35 +1,36 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const testimonials = [
   {
     quote: "Feels like childhood, built for the future.",
-    author: 'Alex Chen',
-    role: 'Gaming Enthusiast',
-    avatar: '👨‍💼',
+    author: "Alex Chen",
+    role: "Gaming Enthusiast",
+    avatar: "AC",
   },
   {
-    quote: 'The smoothest gaming experience I\'ve had online. Absolutely addictive!',
-    author: 'Sarah Martinez',
-    role: 'Competitive Player',
-    avatar: '👩‍🎨',
+    quote:
+      "The smoothest gaming experience I've had online. Absolutely addictive!",
+    author: "Sarah Martinez",
+    role: "Competitive Player",
+    avatar: "SM",
   },
   {
-    quote: 'Finally, a platform that respects my time and delivers pure fun.',
-    author: 'James Wilson',
-    role: 'Casual Gamer',
-    avatar: '👨‍🎓',
+    quote: "Finally, a platform that respects my time and delivers pure fun.",
+    author: "James Wilson",
+    role: "Casual Gamer",
+    avatar: "JW",
   },
   {
-    quote: 'The neon aesthetic combined with flawless gameplay is unmatched.',
-    author: 'Emma Rodriguez',
-    role: 'Game Designer',
-    avatar: '👩‍💻',
+    quote: "The neon aesthetic combined with flawless gameplay is unmatched.",
+    author: "Emma Rodriguez",
+    role: "Game Designer",
+    avatar: "ER",
   },
 ];
 
@@ -39,59 +40,79 @@ export default function Testimonials() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      cardsRef.current.forEach((card, index) => {
-        if (!card) return;
+      const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
 
-        gsap.from(card, {
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 80%',
-            end: 'top 50%',
-            scrub: 0.5,
-            markers: false,
-          },
-          opacity: 0,
-          x: index % 2 === 0 ? -50 : 50,
-          duration: 0.8,
-        });
+      gsap.from(cards, {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 70%",
+        },
+        opacity: 0,
+        x: (i) => (i % 2 === 0 ? -36 : 36),
+        y: 16,
+        duration: 0.75,
+        ease: "power2.out",
+        stagger: 0.1,
+      });
 
-        card.addEventListener('mouseenter', () => {
+      cards.forEach((card) => {
+        const onEnter = () => {
           gsap.to(card, {
-            y: -8,
-            duration: 0.3,
-            ease: 'power2.out',
+            y: -10,
+            duration: 0.22,
+            ease: "power2.out",
           });
-          gsap.to(card.querySelector('.testimonial-border'), {
-            borderColor: 'rgba(170, 253, 187, 0.6)',
-            duration: 0.3,
+          gsap.to(card, {
+            boxShadow:
+              "0 0 0 rgba(0,0,0,0), 0 40px 140px rgba(170,253,187,0.14)",
+            duration: 0.22,
+            ease: "power2.out",
           });
-        });
+        };
 
-        card.addEventListener('mouseleave', () => {
+        const onLeave = () => {
           gsap.to(card, {
             y: 0,
-            duration: 0.3,
-            ease: 'power2.out',
+            boxShadow: "0 0 0 rgba(0,0,0,0)",
+            duration: 0.22,
+            ease: "power2.out",
           });
-          gsap.to(card.querySelector('.testimonial-border'), {
-            borderColor: 'rgba(108, 133, 234, 0.3)',
-            duration: 0.3,
-          });
-        });
+        };
+
+        card.addEventListener("mouseenter", onEnter);
+        card.addEventListener("mouseleave", onLeave);
+        (card as any).__tgzEnter = onEnter;
+        (card as any).__tgzLeave = onLeave;
       });
     }, containerRef);
 
-    return () => ctx.revert();
+    return () => {
+      cardsRef.current.forEach((card) => {
+        if (!card) return;
+        const onEnter = (card as any).__tgzEnter as
+          | ((ev: Event) => void)
+          | undefined;
+        const onLeave = (card as any).__tgzLeave as
+          | ((ev: Event) => void)
+          | undefined;
+        if (onEnter) card.removeEventListener("mouseenter", onEnter);
+        if (onLeave) card.removeEventListener("mouseleave", onLeave);
+        delete (card as any).__tgzEnter;
+        delete (card as any).__tgzLeave;
+      });
+      ctx.revert();
+    };
   }, []);
 
   return (
     <section
       id="testimonials"
       ref={containerRef}
-      className="relative py-24 md:py-32 px-4 md:px-6 bg-gradient-to-b from-slate-950 to-slate-900 overflow-hidden"
+      className="relative py-24 md:py-32"
     >
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-5xl pointer-events-none">
-        <div className="absolute inset-0 bg-primary opacity-3 rounded-full filter blur-3xl"></div>
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-10 h-[30rem] w-[30rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute right-0 top-1/2 h-[24rem] w-[24rem] translate-x-1/3 rounded-full bg-accent/10 blur-3xl" />
       </div>
 
       <div
@@ -102,70 +123,63 @@ export default function Testimonials() {
         }}
       ></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="absolute inset-0 -z-10 opacity-[0.08] pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /%3E%3C/filter%3E%3Crect width="400" height="400" filter="url(%23n)" /%3E%3C/svg%3E")',
+          }}
+        />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
+          <h2 className="text-4xl md:text-5xl font-black text-white">
             What Players <span className="text-secondary">Say</span>
           </h2>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            Join thousands of gamers who've already experienced the magic
+          <p className="mt-4 max-w-2xl mx-auto text-base text-white/70 md:text-lg">
+            Nostalgia hits harder when the experience feels next-gen.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           {testimonials.map((testimonial, index) => (
             <div
-              key={index}
+              key={testimonial.author}
               ref={(el) => {
                 cardsRef.current[index] = el;
               }}
-              className="group relative cursor-pointer"
+              className="group relative overflow-hidden rounded-3xl border border-primary/18 bg-black/25 p-8 transition-colors duration-300 hover:border-secondary/40"
             >
-              <div
-                className="testimonial-border relative p-8 rounded-xl border-2 transition-all duration-300 h-full flex flex-col justify-between"
-                style={{ borderColor: 'rgba(108, 133, 234, 0.3)' }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-slate-900/50 to-slate-950/50 rounded-xl group-hover:from-primary/10 transition-all duration-300"></div>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="relative flex h-full flex-col justify-between">
+                <p className="text-lg leading-relaxed text-white/85 italic">
+                  “{testimonial.quote}”
+                </p>
 
-                <div className="relative z-10 space-y-6">
-                  <div>
-                    <p className="text-lg md:text-xl text-gray-200 leading-relaxed italic">
-                      "{testimonial.quote}"
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-secondary">⭐ ⭐ ⭐ ⭐ ⭐</span>
-                  </div>
-
-                  <div className="flex items-center gap-4 pt-4 border-t border-primary/20">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center text-2xl">
+                <div className="mt-8 flex items-center justify-between border-t border-primary/15 pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="grid size-12 place-items-center rounded-2xl bg-gradient-to-r from-primary/35 to-secondary/30 text-sm font-black text-white">
                       {testimonial.avatar}
                     </div>
                     <div>
-                      <h4 className="font-bold text-white text-lg group-hover:text-secondary transition-colors duration-300">
+                      <div className="text-sm font-black text-white">
                         {testimonial.author}
-                      </h4>
-                      <p className="text-accent text-sm font-semibold">
+                      </div>
+                      <div className="mt-1 text-xs font-semibold text-accent/90">
                         {testimonial.role}
-                      </p>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="text-xs font-black tracking-widest text-secondary">
+                    ★★★★★
+                  </div>
                 </div>
-
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/0 to-secondary/0 group-hover:from-primary/5 group-hover:to-secondary/5 pointer-events-none transition-all duration-300"></div>
               </div>
-
-              <div className="absolute top-0 left-0 w-1 h-1 bg-secondary rounded-full group-hover:h-8 transition-all duration-500 ml-6 -mt-3"></div>
             </div>
           ))}
-        </div>
-
-        <div className="mt-16 text-center">
-          <p className="text-gray-300 mb-6">Ready to join the community?</p>
-          <button className="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-slate-950 font-bold text-lg rounded-xl hover:shadow-2xl hover:shadow-primary/50 transition-all duration-300 hover:scale-105 transform">
-            Start Playing Now
-          </button>
         </div>
       </div>
     </section>
