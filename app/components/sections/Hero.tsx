@@ -1,23 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
 function usePrefersReducedMotion() {
-  const reduced = useRef(false);
+  const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const onChange = () => {
-      reduced.current = media.matches;
+      setReduced(media.matches);
     };
     onChange();
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, [usePrefersReducedMotion]);
+  }, []);
 
   return reduced;
 }
@@ -56,7 +56,7 @@ export default function Hero() {
     let cleanupPointer: (() => void) | undefined;
 
     const ctx = gsap.context(() => {
-      const reduce = prefersReducedMotion.current;
+      const reduce = prefersReducedMotion;
 
       if (!reduce) {
         gsap.from([titleRef.current, subtitleRef.current, ctaRef.current], {
@@ -133,7 +133,7 @@ export default function Hero() {
       cleanupPointer?.();
       ctx.revert();
     };
-  }, []);
+  }, [prefersReducedMotion]);
 
   return (
     <section

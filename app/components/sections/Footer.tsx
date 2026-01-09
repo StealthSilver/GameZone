@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { JSX, useEffect, useRef } from "react";
 import gsap from "gsap";
 
 type Social = {
