@@ -17,7 +17,7 @@ function usePrefersReducedMotion() {
     onChange();
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
-  }, []);
+  }, [prefersReducedMotion]);
 
   return reduced;
 }
