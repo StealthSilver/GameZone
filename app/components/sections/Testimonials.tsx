@@ -39,9 +39,13 @@ export default function Testimonials() {
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
+    const cards = cardsRef.current.filter(Boolean) as HTMLDivElement[];
+    const handlers = new Map<
+      HTMLDivElement,
+      { onEnter: () => void; onLeave: () => void }
+    >();
 
+    const ctx = gsap.context(() => {
       gsap.from(cards, {
         scrollTrigger: {
           trigger: containerRef.current,
@@ -81,24 +85,16 @@ export default function Testimonials() {
 
         card.addEventListener("mouseenter", onEnter);
         card.addEventListener("mouseleave", onLeave);
-        (card as any).__tgzEnter = onEnter;
-        (card as any).__tgzLeave = onLeave;
+        handlers.set(card, { onEnter, onLeave });
       });
     }, containerRef);
 
     return () => {
-      cardsRef.current.forEach((card) => {
-        if (!card) return;
-        const onEnter = (card as any).__tgzEnter as
-          | ((ev: Event) => void)
-          | undefined;
-        const onLeave = (card as any).__tgzLeave as
-          | ((ev: Event) => void)
-          | undefined;
-        if (onEnter) card.removeEventListener("mouseenter", onEnter);
-        if (onLeave) card.removeEventListener("mouseleave", onLeave);
-        delete (card as any).__tgzEnter;
-        delete (card as any).__tgzLeave;
+      cards.forEach((card) => {
+        const h = handlers.get(card);
+        if (!h) return;
+        card.removeEventListener("mouseenter", h.onEnter);
+        card.removeEventListener("mouseleave", h.onLeave);
       });
       ctx.revert();
     };
