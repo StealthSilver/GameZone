@@ -109,3 +109,24 @@ main {
   background: rgba(108, 133, 234, 0.3);
   color: #ffffff;
 }
+
+/* Floating Animation */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-25px) rotate(3deg);
+  }
+}
+
+.floating-icon {
+  animation: float 3s ease-in-out infinite;
+}

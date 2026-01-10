@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black overflow-x-hidden">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
       <Features />
@@ -16,6 +16,6 @@ export default function Home() {
       <Community />
       <Testimonials />
       <Footer />
-    </main>
+    </div>
   );
 }

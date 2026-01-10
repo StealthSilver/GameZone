@@ -2,80 +2,65 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { Play, Sparkles } from "lucide-react";
 
 // Fixed positions for particles to avoid hydration mismatch
-const particlePositions = [
-  { left: 15, top: 20 },
-  { left: 75, top: 10 },
-  { left: 25, top: 80 },
-  { left: 85, top: 70 },
-  { left: 45, top: 15 },
-  { left: 65, top: 85 },
-  { left: 10, top: 50 },
-  { left: 90, top: 40 },
-  { left: 35, top: 65 },
-  { left: 55, top: 25 },
-  { left: 20, top: 45 },
-  { left: 80, top: 55 },
-];
+const gameIcons = ["🎮", "🎲", "♟️", "🎯", "🕹️", "🏆"];
 
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
-  const headlineRef = useRef<HTMLHeadingElement>(null);
-  const subheadingRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const particlesRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
+  const floatingIconsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Headline animation
-      gsap.fromTo(
-        headlineRef.current,
-        { y: 100, opacity: 0, scale: 0.8 },
-        {
-          y: 0,
+      // Initial states
+      gsap.set([titleRef.current, subtitleRef.current, buttonsRef.current], {
+        opacity: 0,
+        y: 50,
+      });
+
+      // Title animation
+      gsap.to(titleRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: "power3.out",
+        delay: 0.3,
+      });
+
+      // Subtitle animation
+      gsap.to(subtitleRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: "power3.out",
+        delay: 0.5,
+      });
+
+      // Buttons animation
+      gsap.to(buttonsRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: "power3.out",
+        delay: 0.7,
+      });
+
+      // Floating icons animation
+      if (floatingIconsRef.current) {
+        const icons =
+          floatingIconsRef.current.querySelectorAll(".floating-icon");
+        gsap.set(icons, { opacity: 0, scale: 0 });
+        gsap.to(icons, {
           opacity: 1,
           scale: 1,
-          duration: 1,
-          ease: "power4.out",
-          delay: 0.3,
-        }
-      );
-
-      // Subheading animation
-      gsap.fromTo(
-        subheadingRef.current,
-        { y: 50, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", delay: 0.6 }
-      );
-
-      // CTA buttons animation
-      gsap.fromTo(
-        ctaRef.current?.children || [],
-        { y: 30, opacity: 0, scale: 0.9 },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.15,
+          duration: 0.8,
+          stagger: 0.1,
           ease: "back.out(1.7)",
-          delay: 0.9,
-        }
-      );
-
-      // Floating particles animation
-      if (particlesRef.current) {
-        const particles = particlesRef.current.children;
-        gsap.to(particles, {
-          y: "random(-50, 50)",
-          x: "random(-50, 50)",
-          rotation: "random(-180, 180)",
-          duration: "random(3, 5)",
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          stagger: 0.2,
+          delay: 1,
         });
       }
     }, heroRef);
@@ -85,94 +70,100 @@ export default function Hero() {
 
   return (
     <section
-      id="home"
       ref={heroRef}
-      className="relative h-screen flex items-center justify-center overflow-hidden bg-black pt-16"
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black"
     >
       {/* Animated Grid Background */}
       <div className="absolute inset-0 opacity-20">
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 animate-pulse"
           style={{
             backgroundImage: `
-            linear-gradient(to right, #6C85EA 1px, transparent 1px),
-            linear-gradient(to bottom, #6C85EA 1px, transparent 1px)
-          `,
+              linear-gradient(to right, #6C85EA 1px, transparent 1px),
+              linear-gradient(to bottom, #6C85EA 1px, transparent 1px)
+            `,
             backgroundSize: "50px 50px",
           }}
         ></div>
       </div>
 
       {/* Gradient Orbs */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-[#6C85EA] rounded-full blur-[150px] opacity-20 animate-pulse"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] animate-pulse" />
       <div
-        className="absolute bottom-20 right-10 w-96 h-96 bg-[#AAFDBB] rounded-full blur-[150px] opacity-20 animate-pulse"
+        className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-[128px] animate-pulse"
         style={{ animationDelay: "1s" }}
-      ></div>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#E9FA00] rounded-full blur-[200px] opacity-10"></div>
+      />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/10 rounded-full blur-[100px] animate-pulse"
+        style={{ animationDelay: "0.5s" }}
+      />
 
-      {/* Floating Particles */}
-      <div ref={particlesRef} className="absolute inset-0 pointer-events-none">
-        {particlePositions.map((position, i) => (
+      {/* Floating Game Icons */}
+      <div
+        ref={floatingIconsRef}
+        className="absolute inset-0 pointer-events-none"
+      >
+        {gameIcons.map((icon, index) => (
           <div
-            key={i}
-            className="absolute text-4xl opacity-30"
+            key={index}
+            className="floating-icon absolute text-4xl opacity-30"
             style={{
-              left: `${position.left}%`,
-              top: `${position.top}%`,
-              color: ["#6C85EA", "#AAFDBB", "#E9FA00"][i % 3],
+              left: `${15 + index * 15}%`,
+              top: `${20 + (index % 3) * 25}%`,
+              animation: `float 3s ease-in-out infinite`,
+              animationDelay: `${index * 0.5}s`,
             }}
           >
-            {["🎮", "🎯", "♟️", "🎲", "🕹️", "👾"][i % 6]}
+            {icon}
           </div>
         ))}
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative z-10 container mx-auto px-6 text-center">
         <h1
-          ref={headlineRef}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 sm:mb-8 leading-tight"
+          ref={titleRef}
+          className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6"
         >
-          <span className="block bg-gradient-to-r from-[#6C85EA] via-[#AAFDBB] to-[#E9FA00] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(108,133,234,0.5)]">
-            Classic Games.
-          </span>
-          <span className="block text-white mt-2 sm:mt-3 drop-shadow-[0_0_20px_rgba(170,253,187,0.3)]">
+          <span className="text-foreground">Classic Games.</span>
+          <br />
+          <span className="text-primary drop-shadow-[0_0_30px_rgba(108,133,234,0.8)]">
             Modern Energy.
           </span>
         </h1>
 
         <p
-          ref={subheadingRef}
-          className="text-lg sm:text-xl md:text-2xl text-white/70 mb-10 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4"
+          ref={subtitleRef}
+          className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10"
         >
-          Experience nostalgic gameplay reimagined with cutting-edge design.
-          <br />
-          <span className="text-[#AAFDBB]">
-            Multiplayer-ready. Skill-based. Electrifying.
-          </span>
+          Experience timeless classics reimagined with stunning visuals,
+          multiplayer support, and that satisfying neon glow. Your premium
+          gaming destination awaits.
         </p>
 
         <div
-          ref={ctaRef}
-          className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center"
+          ref={buttonsRef}
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <button className="group relative px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-black bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(108,133,234,0.6)] hover:shadow-[0_0_60px_rgba(108,133,234,0.9)] w-full sm:w-auto max-w-xs">
-            <span className="relative z-10">Play Now</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#AAFDBB] to-[#E9FA00] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <button className="group flex items-center gap-3 px-8 py-4 bg-primary text-white font-bold rounded-xl hover:shadow-[0_0_40px_rgba(108,133,234,0.8)] transition-all duration-300 hover:scale-105">
+            <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            Play Now
           </button>
-
-          <button className="group relative px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-[#6C85EA] bg-transparent border-2 border-[#6C85EA] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 hover:text-black shadow-[0_0_20px_rgba(108,133,234,0.3)] hover:shadow-[0_0_40px_rgba(108,133,234,0.8)] w-full sm:w-auto max-w-xs">
-            <span className="relative z-10">Explore Games</span>
-            <div className="absolute inset-0 bg-[#6C85EA] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <button className="group flex items-center gap-3 px-8 py-4 border-2 border-secondary text-secondary font-bold rounded-xl hover:bg-secondary hover:text-black hover:shadow-[0_0_40px_rgba(170,253,187,0.8)] transition-all duration-300 hover:scale-105">
+            <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            Explore Games
           </button>
         </div>
       </div>
 
+      {/* Bottom Gradient Fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+
       {/* Scroll Indicator */}
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-[#6C85EA] rounded-full flex items-start justify-center p-2 shadow-[0_0_20px_rgba(108,133,234,0.5)]">
-          <div className="w-1.5 h-1.5 bg-[#6C85EA] rounded-full animate-pulse"></div>
+        <div className="w-6 h-10 border-2 border-primary rounded-full flex items-start justify-center p-2 shadow-[0_0_20px_rgba(108,133,234,0.5)]">
+          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
         </div>
       </div>
     </section>

@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Gamepad2 } from "lucide-react";
 import gsap from "gsap";
+
+const navLinks = ["Home", "Games", "Features", "Community", "Testimonials"];
 
 export default function Navbar() {
   const navRef = useRef<HTMLElement>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -36,54 +39,60 @@ export default function Navbar() {
   return (
     <nav
       ref={navRef}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-black/80 backdrop-blur-xl shadow-[0_0_30px_rgba(108,133,234,0.3)]"
-          : "bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? "bg-black/80 backdrop-blur-xl shadow-[0_0_30px_rgba(108,133,234,0.3)] py-4"
+          : "bg-transparent py-6"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 cursor-pointer group">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#6C85EA] to-[#AAFDBB] flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-[0_0_20px_rgba(108,133,234,0.5)]">
-              <span className="text-black font-bold text-xl">🎮</span>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] bg-clip-text text-transparent">
-              The Game Zone
-            </span>
+      <div className="container mx-auto px-6 flex items-center justify-between">
+        {/* Logo */}
+        <a
+          href="#"
+          className="flex items-center gap-3 group cursor-pointer"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToSection("home");
+          }}
+        >
+          <div className="relative">
+            <Gamepad2 className="w-8 h-8 text-primary transition-all duration-300 group-hover:text-secondary relative z-10" />
+            <div className="absolute inset-0 blur-lg bg-primary/50 group-hover:bg-secondary/50 transition-all duration-300" />
           </div>
+          <span className="text-xl font-bold text-foreground tracking-wider">
+            THE GAME ZONE
+          </span>
+        </a>
 
-          <div className="hidden md:flex items-center space-x-8">
-            {["Home", "Games", "Features", "Community", "Testimonials"].map(
-              (item) => (
-                <button
-                  key={item}
-                  onClick={() => scrollToSection(item.toLowerCase())}
-                  className="text-white/80 hover:text-[#6C85EA] transition-all duration-300 relative group font-medium"
-                >
-                  {item}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(108,133,234,0.8)]"></span>
-                </button>
-              )
-            )}
-          </div>
-
-          <button className="md:hidden text-white">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        {/* Nav Links */}
+        <div className="hidden md:flex items-center gap-8">
+          {navLinks.map((link) => (
+            <a
+              key={link}
+              href={`#${link.toLowerCase()}`}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection(link.toLowerCase());
+              }}
+              className="relative text-white/70 hover:text-foreground transition-colors duration-300 font-medium group"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+              {link}
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+            </a>
+          ))}
         </div>
+
+        {/* CTA Button */}
+        <button className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:shadow-[0_0_30px_rgba(108,133,234,0.6)] transition-all duration-300 hover:scale-105">
+          Play Now
+        </button>
+
+        {/* Mobile Menu Button */}
+        <button className="md:hidden flex flex-col gap-1.5 p-2">
+          <span className="w-6 h-0.5 bg-primary" />
+          <span className="w-4 h-0.5 bg-secondary" />
+          <span className="w-6 h-0.5 bg-accent" />
+        </button>
       </div>
     </nav>
   );

@@ -68,7 +68,7 @@ export default function Testimonials() {
     <section
       id="testimonials"
       ref={sectionRef}
-      className="relative py-20 sm:py-24 lg:py-32 bg-black overflow-hidden"
+      className="relative py-24 lg:py-32 bg-black overflow-hidden"
     >
       {/* Noise Texture */}
       <div
@@ -81,9 +81,9 @@ export default function Testimonials() {
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-[#6C85EA]/20 to-transparent rounded-full blur-3xl"></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 sm:mb-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl lg:text-5xl font-black text-white mb-6">
             What Players{" "}
             <span className="bg-gradient-to-r from-[#AAFDBB] to-[#E9FA00] bg-clip-text text-transparent">
               Say
@@ -101,7 +101,7 @@ export default function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="group relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-md rounded-3xl p-6 sm:p-8 border-2 border-transparent hover:border-[#6C85EA] transition-all duration-500 cursor-pointer overflow-hidden"
+              className="group relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-md rounded-3xl p-8 border-2 border-transparent hover:border-[#6C85EA] transition-all duration-500 cursor-pointer overflow-hidden"
               style={{
                 perspective: "1000px",
               }}
