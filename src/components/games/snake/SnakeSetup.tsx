@@ -62,17 +62,19 @@ export const SnakeSetup: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-black">
-      {/* Back to Home Button - Fixed at top left on mobile */}
-      <div className="absolute top-3 left-3 sm:relative sm:top-auto sm:left-auto sm:mb-4 sm:max-w-4xl sm:mx-auto sm:w-full z-10">
-        <Link href="/">
-          <button className="font-[family-name:var(--font-oxanium)] px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-1.5 sm:gap-2">
-            <span>←</span>
-            <span>Back to Home</span>
-          </button>
-        </Link>
+      {/* Back to Home Button - Fixed at top left on mobile, centered on desktop */}
+      <div className="absolute top-3 left-3 sm:relative sm:top-auto sm:left-auto sm:my-2 z-10">
+        <div className="sm:flex sm:justify-center">
+          <Link href="/">
+            <button className="font-[family-name:var(--font-oxanium)] px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-1.5 sm:gap-2">
+              <span>←</span>
+              <span>Back to Home</span>
+            </button>
+          </Link>
+        </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center flex-1 p-3 sm:p-4 md:p-6 pt-16 sm:pt-4">
+      <div className="flex flex-col items-center justify-center flex-1 p-3 sm:p-4 md:p-6 pt-16 sm:pt-0">
         <div className="w-full max-w-4xl">
           {/* Setup Header */}
           <div className="mb-4 sm:mb-6 text-center">
