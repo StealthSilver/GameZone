@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export const Header = () => {
   return (
@@ -20,11 +21,13 @@ export const Header = () => {
         </div>
 
         {/* Play Now Button */}
-        <button className="group relative px-3 py-1.5 sm:px-5 sm:py-2 md:px-6 md:py-2.5 text-black font-bold text-xs sm:text-sm rounded-md sm:rounded-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] hover:from-[#6C85EA] hover:via-[#8CECF7] hover:to-[#AAFDBB] transition-all duration-700 transform hover:-translate-y-1 hover:rotate-1 active:scale-95 active:rotate-0 overflow-hidden before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),transparent)] before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-700 after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white after:to-transparent after:translate-x-[-200%] hover:after:translate-x-[200%] after:transition-transform after:duration-1000">
-          <span className="relative z-10 tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-            PLAY NOW
-          </span>
-        </button>
+        <Link href="/games">
+          <button className="group relative px-3 py-1.5 sm:px-5 sm:py-2 md:px-6 md:py-2.5 text-black font-bold text-xs sm:text-sm rounded-md sm:rounded-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] hover:from-[#6C85EA] hover:via-[#8CECF7] hover:to-[#AAFDBB] transition-all duration-700 transform hover:-translate-y-1 hover:rotate-1 active:scale-95 active:rotate-0 overflow-hidden before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),transparent)] before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-700 after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white after:to-transparent after:translate-x-[-200%] hover:after:translate-x-[200%] after:transition-transform after:duration-1000">
+            <span className="relative z-10 tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+              PLAY NOW
+            </span>
+          </button>
+        </Link>
       </div>
     </header>
   );
