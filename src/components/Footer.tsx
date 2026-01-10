@@ -3,15 +3,15 @@ import Image from "next/image";
 
 export const Footer = () => {
   return (
-    <footer className="w-full h-[8vh] bg-black border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+    <footer className="w-full h-[8vh] min-h-[60px] bg-black border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-center justify-between">
         {/* Copyright Text */}
-        <p className="text-sm text-gray-400">
+        <p className="text-xs sm:text-sm text-gray-400">
           © {new Date().getFullYear()} GameZone. All rights reserved.
         </p>
 
         {/* Social Media Icons */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Twitter/X */}
           <a
             href="https://x.com/silver_srs"
@@ -21,7 +21,7 @@ export const Footer = () => {
             aria-label="Twitter"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 sm:w-5 sm:h-5"
               fill="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +39,7 @@ export const Footer = () => {
             aria-label="GitHub"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 sm:w-5 sm:h-5"
               fill="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
