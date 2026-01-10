@@ -611,11 +611,11 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
         </div>
 
         {/* Control Buttons */}
-        <div className="mt-6 flex justify-center gap-4 font-[family-name:var(--font-oxanium)]">
+        <div className="mt-4 flex justify-center gap-3 font-[family-name:var(--font-oxanium)]">
           {gameState.status === "playing" && (
             <button
               onClick={handlePause}
-              className="px-6 py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-colors"
+              className="px-4 py-2 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-colors"
             >
               Pause
             </button>
@@ -623,7 +623,7 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
           {gameState.status === "paused" && (
             <button
               onClick={handlePause}
-              className="px-6 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform"
+              className="px-4 py-2 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform"
             >
               Resume
             </button>
