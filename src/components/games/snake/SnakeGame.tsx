@@ -2,7 +2,44 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { SnakeGameEngine, GameState } from "./SnakeGameEngine";
+import {
+  SnakeGameEngine,
+  GameState,
+  SnakeSkin,
+  FruitType,
+} from "./SnakeGameEngine";
+
+// Snake skin color schemes
+const snakeSkins = {
+  classic: {
+    name: "Classic",
+    head: ["#AAFDBB", "#8CECF7", "#6C85EA"],
+    body: ["#AAFDBB", "#8CECF7", "#6C85EA"],
+  },
+  ocean: {
+    name: "Ocean",
+    head: ["#00D4FF", "#0099CC", "#006699"],
+    body: ["#00D4FF", "#0099CC", "#006699"],
+  },
+  fire: {
+    name: "Fire",
+    head: ["#FF6B35", "#FF4500", "#CC0000"],
+    body: ["#FF6B35", "#FF4500", "#CC0000"],
+  },
+  forest: {
+    name: "Forest",
+    head: ["#90EE90", "#32CD32", "#228B22"],
+    body: ["#90EE90", "#32CD32", "#228B22"],
+  },
+};
+
+// Fruit types with colors
+const fruitTypes = {
+  apple: { name: "Apple", colors: ["#ff6b6b", "#ff0000"] },
+  cherry: { name: "Cherry", colors: ["#ff1493", "#dc143c"] },
+  orange: { name: "Orange", colors: ["#ffa500", "#ff8c00"] },
+  grape: { name: "Grape", colors: ["#9370db", "#8b008b"] },
+};
 
 export const SnakeGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -183,6 +220,9 @@ export const SnakeGame: React.FC = () => {
     const foodX = food.x * cellSize;
     const foodY = food.y * cellSize;
 
+    // Get fruit colors based on selected type
+    const fruitColors = fruitTypes[gameState.fruitType].colors;
+
     // Food glow
     const gradient = ctx.createRadialGradient(
       foodX + cellSize / 2,
@@ -192,8 +232,8 @@ export const SnakeGame: React.FC = () => {
       foodY + cellSize / 2,
       cellSize / 2
     );
-    gradient.addColorStop(0, "#ff6b6b");
-    gradient.addColorStop(1, "#ff0000");
+    gradient.addColorStop(0, fruitColors[0]);
+    gradient.addColorStop(1, fruitColors[1]);
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
@@ -207,6 +247,7 @@ export const SnakeGame: React.FC = () => {
     ctx.fill();
 
     // Draw snake
+    const skinColors = snakeSkins[gameState.snakeSkin];
     gameState.snake.forEach((segment, index) => {
       const x = segment.x * cellSize;
       const y = segment.y * cellSize;
@@ -219,9 +260,9 @@ export const SnakeGame: React.FC = () => {
           x + cellSize,
           y + cellSize
         );
-        headGradient.addColorStop(0, "#AAFDBB");
-        headGradient.addColorStop(0.5, "#8CECF7");
-        headGradient.addColorStop(1, "#6C85EA");
+        headGradient.addColorStop(0, skinColors.head[0]);
+        headGradient.addColorStop(0.5, skinColors.head[1]);
+        headGradient.addColorStop(1, skinColors.head[2]);
         ctx.fillStyle = headGradient;
         ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
 
@@ -292,9 +333,24 @@ export const SnakeGame: React.FC = () => {
           x + cellSize,
           y + cellSize
         );
-        bodyGradient.addColorStop(0, `rgba(170, 253, 187, ${bodyOpacity})`);
-        bodyGradient.addColorStop(0.5, `rgba(140, 236, 247, ${bodyOpacity})`);
-        bodyGradient.addColorStop(1, `rgba(108, 133, 234, ${bodyOpacity})`);
+        bodyGradient.addColorStop(
+          0,
+          `${skinColors.body[0]}${Math.floor(bodyOpacity * 255)
+            .toString(16)
+            .padStart(2, "0")}`
+        );
+        bodyGradient.addColorStop(
+          0.5,
+          `${skinColors.body[1]}${Math.floor(bodyOpacity * 255)
+            .toString(16)
+            .padStart(2, "0")}`
+        );
+        bodyGradient.addColorStop(
+          1,
+          `${skinColors.body[2]}${Math.floor(bodyOpacity * 255)
+            .toString(16)
+            .padStart(2, "0")}`
+        );
         ctx.fillStyle = bodyGradient;
         ctx.fillRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
       }
@@ -404,6 +460,75 @@ export const SnakeGame: React.FC = () => {
               <p className="text-2xl font-bold text-white">
                 {gameState.highScore}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Skin Selection */}
+        <div className="mb-6 space-y-4">
+          {/* Snake Skin Selection */}
+          <div className="text-center">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-semibold text-white mb-3">
+              Snake Skin
+            </h3>
+            <div className="flex justify-center gap-3 flex-wrap">
+              {(Object.keys(snakeSkins) as SnakeSkin[]).map((skin) => (
+                <button
+                  key={skin}
+                  onClick={() => engineRef.current?.setSnakeSkin(skin)}
+                  disabled={gameState.status === "playing"}
+                  className={`px-4 py-2 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all ${
+                    gameState.snakeSkin === skin
+                      ? "bg-gradient-to-r from-white to-gray-200 text-black scale-105"
+                      : "bg-gray-800 text-white hover:bg-gray-700"
+                  } ${
+                    gameState.status === "playing"
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  style={{
+                    background:
+                      gameState.snakeSkin === skin
+                        ? `linear-gradient(to right, ${snakeSkins[skin].head[0]}, ${snakeSkins[skin].head[2]})`
+                        : undefined,
+                  }}
+                >
+                  {snakeSkins[skin].name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Fruit Type Selection */}
+          <div className="text-center">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-semibold text-white mb-3">
+              Fruit Type
+            </h3>
+            <div className="flex justify-center gap-3 flex-wrap">
+              {(Object.keys(fruitTypes) as FruitType[]).map((fruit) => (
+                <button
+                  key={fruit}
+                  onClick={() => engineRef.current?.setFruitType(fruit)}
+                  disabled={gameState.status === "playing"}
+                  className={`px-4 py-2 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all ${
+                    gameState.fruitType === fruit
+                      ? "text-black scale-105"
+                      : "bg-gray-800 text-white hover:bg-gray-700"
+                  } ${
+                    gameState.status === "playing"
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  style={{
+                    background:
+                      gameState.fruitType === fruit
+                        ? `linear-gradient(to right, ${fruitTypes[fruit].colors[0]}, ${fruitTypes[fruit].colors[1]})`
+                        : undefined,
+                  }}
+                >
+                  {fruitTypes[fruit].name}
+                </button>
+              ))}
             </div>
           </div>
         </div>

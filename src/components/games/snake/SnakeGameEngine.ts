@@ -1,6 +1,16 @@
 export type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
 export type Position = { x: number; y: number };
 export type GameStatus = "idle" | "playing" | "paused" | "gameOver";
+export type SnakeSkin = "classic" | "ocean" | "fire" | "forest";
+export type FruitType = "apple" | "cherry" | "orange" | "grape";
+export type GameMode = "easy" | "medium" | "hard";
+
+// Speed configurations for each difficulty
+export const GAME_MODE_SPEEDS = {
+  easy: { initial: 200, minimum: 100 },
+  medium: { initial: 150, minimum: 70 },
+  hard: { initial: 100, minimum: 40 },
+};
 
 export interface GameState {
   snake: Position[];
@@ -11,6 +21,9 @@ export interface GameState {
   highScore: number;
   status: GameStatus;
   speed: number;
+  snakeSkin: SnakeSkin;
+  fruitType: FruitType;
+  gameMode: GameMode;
 }
 
 export class SnakeGameEngine {
@@ -22,11 +35,24 @@ export class SnakeGameEngine {
     this.gridSize = gridSize;
     this.listeners = new Set();
 
-    // Load high score from localStorage if available
-    const savedHighScore =
+    // Load high scores from localStorage if available
+    const savedHighScores =
       typeof window !== "undefined"
-        ? parseInt(localStorage.getItem("snakeHighScore") || "0", 10)
-        : 0;
+        ? {
+            easy: parseInt(
+              localStorage.getItem("snakeHighScore_easy") || "0",
+              10
+            ),
+            medium: parseInt(
+              localStorage.getItem("snakeHighScore_medium") || "0",
+              10
+            ),
+            hard: parseInt(
+              localStorage.getItem("snakeHighScore_hard") || "0",
+              10
+            ),
+          }
+        : { easy: 0, medium: 0, hard: 0 };
 
     this.state = {
       snake: [{ x: 10, y: 10 }],
@@ -34,9 +60,12 @@ export class SnakeGameEngine {
       direction: "RIGHT",
       nextDirection: "RIGHT",
       score: 0,
-      highScore: savedHighScore,
+      highScore: savedHighScores.medium,
       status: "idle",
-      speed: 150,
+      speed: GAME_MODE_SPEEDS.medium.initial,
+      snakeSkin: "classic",
+      fruitType: "apple",
+      gameMode: "medium",
     };
   }
 
@@ -58,6 +87,7 @@ export class SnakeGameEngine {
 
   // Start or restart the game
   start(): void {
+    const modeSpeed = GAME_MODE_SPEEDS[this.state.gameMode];
     this.state = {
       snake: [{ x: 10, y: 10 }],
       food: this.generateFood([{ x: 10, y: 10 }]),
@@ -66,7 +96,10 @@ export class SnakeGameEngine {
       score: 0,
       highScore: this.state.highScore,
       status: "playing",
-      speed: 150,
+      speed: modeSpeed.initial,
+      snakeSkin: this.state.snakeSkin,
+      fruitType: this.state.fruitType,
+      gameMode: this.state.gameMode,
     };
     this.notify();
   }
@@ -213,5 +246,17 @@ export class SnakeGameEngine {
   // Get grid size
   getGridSize(): number {
     return this.gridSize;
+  }
+
+  // Set snake skin
+  setSnakeSkin(skin: SnakeSkin): void {
+    this.state.snakeSkin = skin;
+    this.notify();
+  }
+
+  // Set fruit type
+  setFruitType(fruit: FruitType): void {
+    this.state.fruitType = fruit;
+    this.notify();
   }
 }
