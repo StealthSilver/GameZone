@@ -7,6 +7,7 @@ import {
   GameState,
   SnakeSkin,
   FruitType,
+  GameMode,
 } from "./SnakeGameEngine";
 
 // Snake skin color schemes
@@ -39,6 +40,13 @@ const fruitTypes = {
   cherry: { name: "Cherry", colors: ["#ff1493", "#dc143c"] },
   orange: { name: "Orange", colors: ["#ffa500", "#ff8c00"] },
   grape: { name: "Grape", colors: ["#9370db", "#8b008b"] },
+};
+
+// Game modes
+const gameModes = {
+  easy: { name: "Easy", description: "Slow speed" },
+  medium: { name: "Medium", description: "Normal speed" },
+  hard: { name: "Hard", description: "Fast speed" },
 };
 
 export const SnakeGame: React.FC = () => {

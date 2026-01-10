@@ -2,7 +2,12 @@ import mongoose, { Schema, Model } from "mongoose";
 
 export interface IUser {
   username: string;
-  highScore: number;
+  highScore: number; // Deprecated but kept for backward compatibility
+  highScores: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +24,20 @@ const UserSchema = new Schema<IUser>(
     highScore: {
       type: Number,
       default: 0,
+    },
+    highScores: {
+      easy: {
+        type: Number,
+        default: 0,
+      },
+      medium: {
+        type: Number,
+        default: 0,
+      },
+      hard: {
+        type: Number,
+        default: 0,
+      },
     },
   },
   {

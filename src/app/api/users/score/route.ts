@@ -5,10 +5,17 @@ import User from "@/models/User";
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    const { score } = await request.json();
+    const { score, gameMode } = await request.json();
 
     if (score === undefined) {
       return NextResponse.json({ error: "Score is required" }, { status: 400 });
+    }
+
+    if (!gameMode || !["easy", "medium", "hard"].includes(gameMode)) {
+      return NextResponse.json(
+        { error: "Valid game mode is required (easy, medium, or hard)" },
+        { status: 400 }
+      );
     }
 
     // Use a default/global username for storing high scores
@@ -21,23 +28,42 @@ export async function POST(request: NextRequest) {
       user = await User.create({
         username: globalUsername,
         highScore: 0,
+        highScores: {
+          easy: 0,
+          medium: 0,
+          hard: 0,
+        },
       });
     }
 
-    if (score > user.highScore) {
-      user.highScore = score;
+    // Ensure highScores object exists (for backward compatibility)
+    if (!user.highScores) {
+      user.highScores = {
+        easy: 0,
+        medium: 0,
+        hard: 0,
+      };
+    }
+
+    const currentHighScore =
+      user.highScores[gameMode as keyof typeof user.highScores];
+
+    if (score > currentHighScore) {
+      user.highScores[gameMode as keyof typeof user.highScores] = score;
       await user.save();
 
       return NextResponse.json({
         message: "New high score!",
-        highScore: user.highScore,
+        highScore: score,
+        gameMode,
         isNewHighScore: true,
       });
     }
 
     return NextResponse.json({
       message: "Score saved",
-      highScore: user.highScore,
+      highScore: currentHighScore,
+      gameMode,
       isNewHighScore: false,
     });
   } catch (error) {

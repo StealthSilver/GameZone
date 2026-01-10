@@ -202,12 +202,16 @@ export class SnakeGameEngine {
     if (this.state.score > this.state.highScore) {
       this.state.highScore = this.state.score;
       if (typeof window !== "undefined") {
-        localStorage.setItem("snakeHighScore", this.state.highScore.toString());
+        localStorage.setItem(
+          `snakeHighScore_${this.state.gameMode}`,
+          this.state.highScore.toString()
+        );
       }
     }
 
-    // Increase speed slightly (cap at 50ms)
-    this.state.speed = Math.max(50, this.state.speed - 2);
+    // Increase speed slightly based on game mode minimum
+    const modeSpeed = GAME_MODE_SPEEDS[this.state.gameMode];
+    this.state.speed = Math.max(modeSpeed.minimum, this.state.speed - 2);
 
     // Generate new food
     this.state.food = this.generateFood(this.state.snake);
@@ -257,6 +261,24 @@ export class SnakeGameEngine {
   // Set fruit type
   setFruitType(fruit: FruitType): void {
     this.state.fruitType = fruit;
+    this.notify();
+  }
+
+  // Set game mode
+  setGameMode(mode: GameMode): void {
+    this.state.gameMode = mode;
+    const modeSpeed = GAME_MODE_SPEEDS[mode];
+    this.state.speed = modeSpeed.initial;
+
+    // Load high score for this mode
+    if (typeof window !== "undefined") {
+      const savedHighScore = parseInt(
+        localStorage.getItem(`snakeHighScore_${mode}`) || "0",
+        10
+      );
+      this.state.highScore = savedHighScore;
+    }
+
     this.notify();
   }
 }
