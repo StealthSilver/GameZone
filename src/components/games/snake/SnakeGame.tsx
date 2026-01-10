@@ -123,18 +123,24 @@ export const SnakeGame: React.FC = () => {
 
   const saveScore = async (score: number) => {
     try {
+      const gameMode = engineRef.current?.getState().gameMode || "medium";
       const response = await fetch("/api/users/score", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ score }),
+        body: JSON.stringify({ score, gameMode }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.isNewHighScore) {
-        console.log("New high score saved!", data.highScore);
+        console.log(
+          "New high score saved!",
+          data.highScore,
+          "Mode:",
+          data.gameMode
+        );
       }
     } catch (error) {
       console.error("Error saving score:", error);
@@ -456,6 +462,12 @@ export const SnakeGame: React.FC = () => {
           <h1 className="font-[family-name:var(--font-oxanium)] text-4xl md:text-5xl font-bold text-white mb-2">
             Snake Game
           </h1>
+          <p className="font-[family-name:var(--font-oxanium)] text-sm text-gray-400 mb-3">
+            Mode:{" "}
+            <span className="text-white font-semibold">
+              {gameModes[gameState.gameMode].name}
+            </span>
+          </p>
           <div className="flex justify-center gap-8 font-[family-name:var(--font-oxanium)]">
             <div className="text-center">
               <p className="text-gray-400 text-sm mb-1">Score</p>
@@ -464,7 +476,9 @@ export const SnakeGame: React.FC = () => {
               </p>
             </div>
             <div className="text-center">
-              <p className="text-gray-400 text-sm mb-1">High Score</p>
+              <p className="text-gray-400 text-sm mb-1">
+                High Score ({gameModes[gameState.gameMode].name})
+              </p>
               <p className="text-2xl font-bold text-white">
                 {gameState.highScore}
               </p>
@@ -474,6 +488,36 @@ export const SnakeGame: React.FC = () => {
 
         {/* Skin Selection */}
         <div className="mb-6 space-y-4">
+          {/* Game Mode Selection */}
+          <div className="text-center">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-semibold text-white mb-3">
+              Difficulty
+            </h3>
+            <div className="flex justify-center gap-3 flex-wrap">
+              {(Object.keys(gameModes) as GameMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => engineRef.current?.setGameMode(mode)}
+                  disabled={gameState.status === "playing"}
+                  className={`px-6 py-2 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all ${
+                    gameState.gameMode === mode
+                      ? "bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black scale-105"
+                      : "bg-gray-800 text-white hover:bg-gray-700"
+                  } ${
+                    gameState.status === "playing"
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  <div>{gameModes[mode].name}</div>
+                  <div className="text-xs opacity-75">
+                    {gameModes[mode].description}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Snake Skin Selection */}
           <div className="text-center">
             <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-semibold text-white mb-3">
