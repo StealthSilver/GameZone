@@ -8,14 +8,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const games = [
-  { name: "Snake", icon: "🐍", color: "#6C85EA" },
-  { name: "Chess", icon: "♟️", color: "#AAFDBB" },
-  { name: "Carrom", icon: "🎯", color: "#E9FA00" },
-  { name: "Go", icon: "⚫", color: "#6C85EA" },
-  { name: "Tetris", icon: "🧱", color: "#AAFDBB" },
-  { name: "Pool", icon: "🎱", color: "#E9FA00" },
-  { name: "Tic Tac Toe", icon: "⭕", color: "#6C85EA" },
-  { name: "Snake and Ladder", icon: "🎲", color: "#AAFDBB" },
+  { name: "Snake", icon: "🐍", color: "secondary" },
+  { name: "Chess", icon: "♟️", color: "primary" },
+  { name: "Carrom", icon: "🎯", color: "accent" },
+  { name: "Go", icon: "⚫", color: "primary" },
+  { name: "Tetris", icon: "🧱", color: "secondary" },
+  { name: "Pool", icon: "🎱", color: "accent" },
+  { name: "Tic Tac Toe", icon: "❌", color: "primary" },
+  { name: "Snake & Ladder", icon: "🎲", color: "secondary" },
 ];
 
 export default function GamesGrid() {
@@ -24,129 +24,103 @@ export default function GamesGrid() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      if (gridRef.current) {
-        gsap.fromTo(
-          gridRef.current.children,
-          {
-            y: 80,
-            opacity: 0,
-            scale: 0.7,
-            rotation: -10,
+      const cards = gridRef.current?.querySelectorAll(".game-card");
+
+      if (cards) {
+        gsap.set(cards, { opacity: 0, y: 80, rotateX: -15 });
+
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: "top 70%",
+          onEnter: () => {
+            gsap.to(cards, {
+              opacity: 1,
+              y: 0,
+              rotateX: 0,
+              duration: 0.8,
+              stagger: 0.1,
+              ease: "power3.out",
+            });
           },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            rotation: 0,
-            duration: 0.8,
-            stagger: {
-              amount: 1.2,
-              from: "start",
-              ease: "power2.out",
-            },
-            ease: "back.out(1.4)",
-            scrollTrigger: {
-              trigger: gridRef.current,
-              start: "top 75%",
-              end: "bottom 25%",
-              toggleActions: "play none none reverse",
-            },
-          }
-        );
+        });
       }
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
+  const getColorClasses = (color: string) => {
+    switch (color) {
+      case "primary":
+        return "hover:border-primary/60 hover:shadow-[0_0_40px_rgba(108,133,234,0.6)]";
+      case "secondary":
+        return "hover:border-secondary/60 hover:shadow-[0_0_40px_rgba(170,253,187,0.6)]";
+      case "accent":
+        return "hover:border-accent/60 hover:shadow-[0_0_40px_rgba(233,250,0,0.6)]";
+      default:
+        return "hover:border-primary/60 hover:shadow-[0_0_40px_rgba(108,133,234,0.6)]";
+    }
+  };
+
   return (
     <section
-      id="games"
       ref={sectionRef}
-      className="relative py-24 lg:py-32 bg-gradient-to-b from-black via-[#0a0a0a] to-black overflow-hidden"
+      id="games"
+      className="relative py-24 md:py-32 overflow-hidden bg-black"
     >
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle, #6C85EA 1px, transparent 1px)`,
-            backgroundSize: "30px 30px",
-          }}
-        ></div>
-      </div>
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-transparent" />
 
-      {/* Floating Orbs */}
-      <div className="absolute top-1/4 left-10 w-72 h-72 bg-[#E9FA00] rounded-full blur-[150px] opacity-15 animate-pulse"></div>
-      <div
-        className="absolute bottom-1/4 right-10 w-72 h-72 bg-[#6C85EA] rounded-full blur-[150px] opacity-15 animate-pulse"
-        style={{ animationDelay: "1.5s" }}
-      ></div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-5xl lg:text-6xl font-black text-white mb-6">
-            <span className="bg-gradient-to-r from-[#E9FA00] via-[#AAFDBB] to-[#6C85EA] bg-clip-text text-transparent">
-              Choose Your Game
-            </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Choose Your <span className="text-secondary drop-shadow-[0_0_20px_rgba(170,253,187,0.8)]">Game</span>
           </h2>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto">
-            Eight timeless classics, reimagined for the modern player
+          <p className="text-white/70 max-w-xl mx-auto">
+            From strategic masterpieces to quick arcade fun — we've got your next obsession covered.
           </p>
         </div>
 
+        {/* Games Grid */}
         <div
           ref={gridRef}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+          style={{ perspective: "1000px" }}
         >
           {games.map((game, index) => (
             <div
               key={index}
-              className="group relative aspect-square rounded-3xl overflow-hidden cursor-pointer"
+              className={`game-card group relative bg-white/5 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/10 cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:rotate-1 ${getColorClasses(game.color)}`}
             >
-              {/* Gradient Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/20 group-hover:border-white/40 transition-all duration-500"></div>
-
-              {/* Glow Effect */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-2xl"
-                style={{ backgroundColor: game.color }}
-              ></div>
-
-              {/* Content */}
-              <div className="relative h-full flex flex-col items-center justify-center p-8 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                {/* Icon */}
-                <div
-                  className="text-8xl mb-6 transform group-hover:scale-125 group-hover:-translate-y-2 transition-all duration-500 filter drop-shadow-[0_0_20px_rgba(108,133,234,0.8)]"
-                  style={{
-                    filter: `drop-shadow(0 0 20px ${game.color})`,
-                  }}
-                >
-                  {game.icon}
-                </div>
-
-                {/* Game Name */}
-                <h3
-                  className="text-2xl font-bold text-white text-center group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r transition-all duration-500"
-                  style={{
-                    ...(games.findIndex((g) => g.name === game.name) === index
-                      ? {}
-                      : {}),
-                  }}
-                >
-                  <span className="group-hover:hidden">{game.name}</span>
-                  <span className="hidden group-hover:inline bg-gradient-to-r from-[#6C85EA] via-[#AAFDBB] to-[#E9FA00] bg-clip-text text-transparent">
-                    {game.name}
-                  </span>
-                </h3>
-
-                {/* Play Button (appears on hover) */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 bg-black/40 backdrop-blur-sm">
-                  <button className="px-8 py-4 text-lg font-bold text-black bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] rounded-full transform scale-0 group-hover:scale-100 transition-all duration-500 shadow-[0_0_30px_rgba(108,133,234,0.8)] hover:shadow-[0_0_50px_rgba(108,133,234,1)]">
-                    Play Now
-                  </button>
-                </div>
+              {/* Icon */}
+              <div className="text-5xl md:text-6xl mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                {game.icon}
               </div>
+
+              {/* Game Name */}
+              <h3 className="text-lg md:text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                {game.name}
+              </h3>
+
+              {/* Play Button Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="text-primary font-bold text-lg tracking-wider">
+                  PLAY →
+                </span>
+              </div>
+
+              {/* Corner Accent */}
+              <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden rounded-tr-2xl">
+                <div className="absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-bl from-primary/20 to-transparent rotate-45" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
               {/* Decorative Corner */}
               <div

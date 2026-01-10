@@ -12,25 +12,29 @@ const features = [
   {
     icon: Zap,
     title: "Instant Play",
-    description: "No downloads, no waiting. Jump straight into the action with our browser-based games.",
+    description:
+      "No downloads, no waiting. Jump straight into the action with our browser-based games.",
     color: "primary",
   },
   {
     icon: Gamepad2,
     title: "Classic Games, Modern UI",
-    description: "Your favorite classics rebuilt with stunning graphics and smooth animations.",
+    description:
+      "Your favorite classics rebuilt with stunning graphics and smooth animations.",
     color: "secondary",
   },
   {
     icon: Brain,
     title: "Skill-Based Gameplay",
-    description: "Challenge yourself with games that reward strategy, reflexes, and quick thinking.",
+    description:
+      "Challenge yourself with games that reward strategy, reflexes, and quick thinking.",
     color: "accent",
   },
   {
     icon: Moon,
     title: "Dark Neon Interface",
-    description: "Easy on the eyes, heavy on style. Game in comfort with our premium dark theme.",
+    description:
+      "Easy on the eyes, heavy on style. Game in comfort with our premium dark theme.",
     color: "primary",
   },
 ];
@@ -42,7 +46,7 @@ export default function Features() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       const cards = cardsRef.current?.querySelectorAll(".feature-card");
-      
+
       if (cards) {
         gsap.set(cards, { opacity: 0, y: 60 });
 
@@ -108,15 +112,23 @@ export default function Features() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Why <span className="text-primary drop-shadow-[0_0_20px_rgba(108,133,234,0.8)]">Game</span> With Us?
+            Why{" "}
+            <span className="text-primary drop-shadow-[0_0_20px_rgba(108,133,234,0.8)]">
+              Game
+            </span>{" "}
+            With Us?
           </h2>
           <p className="text-white/70 max-w-xl mx-auto">
-            Built for gamers who appreciate the classics but demand modern quality.
+            Built for gamers who appreciate the classics but demand modern
+            quality.
           </p>
         </div>
 
         {/* Feature Cards */}
-        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          ref={cardsRef}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           {features.map((feature, index) => {
             const colors = getColorClasses(feature.color);
             const Icon = feature.icon;
@@ -127,8 +139,12 @@ export default function Features() {
                 className={`feature-card group bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all duration-500 hover:-translate-y-2 cursor-pointer ${colors.glow} ${colors.border}`}
               >
                 <div className="relative mb-4">
-                  <Icon className={`w-12 h-12 ${colors.icon} transition-all duration-300 group-hover:scale-110`} />
-                  <div className={`absolute inset-0 blur-xl ${colors.icon} opacity-0 group-hover:opacity-50 transition-opacity duration-300`} />
+                  <Icon
+                    className={`w-12 h-12 ${colors.icon} transition-all duration-300 group-hover:scale-110`}
+                  />
+                  <div
+                    className={`absolute inset-0 blur-xl ${colors.icon} opacity-0 group-hover:opacity-50 transition-opacity duration-300`}
+                  />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {feature.title}
