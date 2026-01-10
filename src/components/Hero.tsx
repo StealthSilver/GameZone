@@ -5,14 +5,14 @@ import FluidSimulation from "./ui/FluidSimulation";
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-screen w-full bg-black overflow-hidden">
+    <section className="relative h-[84vh] w-full bg-black overflow-hidden">
       {/* Fluid Animation Background */}
       <FluidSimulation />
 
       {/* Hero Content */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex min-h-screen items-center">
-          <div className="w-full py-20 md:py-32">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex h-full items-center">
+          <div className="w-full py-8">
             <div className="space-y-8">
               {/* Main Heading */}
               <h1 className="font-[family-name:var(--font-oxanium)] text-5xl font-bold tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">

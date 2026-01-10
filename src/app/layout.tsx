@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   title: "The Game Zone - Classic Games, Modern Energy",
   description:
     "Experience nostalgic gameplay reimagined with cutting-edge design. Play Snake, Chess, Carrom, Go, Tetris, Pool, Tic Tac Toe, and Snake and Ladder with a premium, polished interface.",
+  icons: {
+    icon: "/game.svg",
+  },
 };
 
 export default function RootLayout({

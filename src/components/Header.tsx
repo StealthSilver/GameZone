@@ -3,8 +3,8 @@ import Image from "next/image";
 
 export const Header = () => {
   return (
-    <header className="w-full bg-black border-b border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <header className="w-full h-[8vh] bg-black border-b border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
           <Image
@@ -14,7 +14,9 @@ export const Header = () => {
             height={30}
             className="w-9 h-9"
           />
-          <span className="ml-3 text-white text-2xl font-bold">GameZone</span>
+          <span className="ml-3 text-white text-2xl font-bold font-[family-name:var(--font-oxanium)]">
+            GameZone
+          </span>
         </div>
 
         {/* Play Now Button */}
