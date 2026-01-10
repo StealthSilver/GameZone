@@ -517,105 +517,6 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
           </div>
         </div>
 
-        {/* Skin Selection */}
-        <div className="mb-6 space-y-4">
-          {/* Game Mode Selection */}
-          <div className="text-center">
-            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-semibold text-white mb-3">
-              Difficulty
-            </h3>
-            <div className="flex justify-center gap-3 flex-wrap">
-              {(Object.keys(gameModes) as GameMode[]).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => engineRef.current?.setGameMode(mode)}
-                  disabled={gameState.status === "playing"}
-                  className={`px-6 py-2 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all ${
-                    gameState.gameMode === mode
-                      ? "bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black scale-105"
-                      : "bg-gray-800 text-white hover:bg-gray-700"
-                  } ${
-                    gameState.status === "playing"
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  <div>{gameModes[mode].name}</div>
-                  <div className="text-xs opacity-75">
-                    {gameModes[mode].description}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Snake Skin Selection */}
-          <div className="text-center">
-            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-semibold text-white mb-3">
-              Snake Skin
-            </h3>
-            <div className="flex justify-center gap-3 flex-wrap">
-              {(Object.keys(snakeSkins) as SnakeSkin[]).map((skin) => (
-                <button
-                  key={skin}
-                  onClick={() => engineRef.current?.setSnakeSkin(skin)}
-                  disabled={gameState.status === "playing"}
-                  className={`px-4 py-2 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all ${
-                    gameState.snakeSkin === skin
-                      ? "bg-gradient-to-r from-white to-gray-200 text-black scale-105"
-                      : "bg-gray-800 text-white hover:bg-gray-700"
-                  } ${
-                    gameState.status === "playing"
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                  style={{
-                    background:
-                      gameState.snakeSkin === skin
-                        ? `linear-gradient(to right, ${snakeSkins[skin].head[0]}, ${snakeSkins[skin].head[2]})`
-                        : undefined,
-                  }}
-                >
-                  {snakeSkins[skin].name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Fruit Type Selection */}
-          <div className="text-center">
-            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-semibold text-white mb-3">
-              Fruit Type
-            </h3>
-            <div className="flex justify-center gap-3 flex-wrap">
-              {(Object.keys(fruitTypes) as FruitType[]).map((fruit) => (
-                <button
-                  key={fruit}
-                  onClick={() => engineRef.current?.setFruitType(fruit)}
-                  disabled={gameState.status === "playing"}
-                  className={`px-4 py-2 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all ${
-                    gameState.fruitType === fruit
-                      ? "text-black scale-105"
-                      : "bg-gray-800 text-white hover:bg-gray-700"
-                  } ${
-                    gameState.status === "playing"
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                  style={{
-                    background:
-                      gameState.fruitType === fruit
-                        ? `linear-gradient(to right, ${fruitTypes[fruit].colors[0]}, ${fruitTypes[fruit].colors[1]})`
-                        : undefined,
-                  }}
-                >
-                  {fruitTypes[fruit].name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* Game Canvas */}
         <div className="relative mx-auto" style={{ maxWidth: "600px" }}>
           <canvas
@@ -648,7 +549,7 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
                     {gameState.score === gameState.highScore &&
                       gameState.score > 0 && (
                         <p className="text-lg text-yellow-400 mb-6">
-                          🎉 New High Score! 🎉
+                          New High Score!
                         </p>
                       )}
                     <button

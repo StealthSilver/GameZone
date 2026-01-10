@@ -74,36 +74,35 @@ export const SnakeSetup: React.FC = () => {
         </div>
 
         {/* Setup Header */}
-        <div className="mb-8 text-center">
-          <h1 className="font-[family-name:var(--font-oxanium)] text-4xl md:text-6xl font-bold text-white mb-4">
-            🐍 Snake Game Setup
+        <div className="mb-6 text-center">
+          <h1 className="font-[family-name:var(--font-oxanium)] text-3xl md:text-4xl font-bold text-white mb-2">
+            Snake Game Setup
           </h1>
-          <p className="font-[family-name:var(--font-oxanium)] text-lg text-gray-400">
+          <p className="font-[family-name:var(--font-oxanium)] text-base text-gray-400">
             Customize your game before you start
           </p>
         </div>
 
         {/* Customization Options */}
-        <div className="bg-gray-900 rounded-2xl p-8 mb-8 space-y-8 border-2 border-gray-800">
+        <div className="bg-gray-900 rounded-xl p-4 mb-4 space-y-4 border-2 border-gray-800">
           {/* Game Mode Selection */}
           <div>
-            <h3 className="font-[family-name:var(--font-oxanium)] text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <span>⚡</span>
-              <span>Choose Difficulty</span>
+            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-2">
+              Choose Difficulty
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {(Object.keys(gameModes) as GameMode[]).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => setSelectedMode(mode)}
-                  className={`p-6 rounded-xl font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
+                  className={`p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
                     selectedMode === mode
                       ? "bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black scale-105 border-transparent"
                       : "bg-gray-800 text-white hover:bg-gray-700 border-gray-700"
                   }`}
                 >
-                  <div className="text-2xl mb-2">{gameModes[mode].name}</div>
-                  <div className="text-sm opacity-75">
+                  <div className="text-lg mb-1">{gameModes[mode].name}</div>
+                  <div className="text-xs opacity-75">
                     {gameModes[mode].description}
                   </div>
                 </button>
@@ -113,16 +112,15 @@ export const SnakeSetup: React.FC = () => {
 
           {/* Snake Skin Selection */}
           <div>
-            <h3 className="font-[family-name:var(--font-oxanium)] text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <span>🎨</span>
-              <span>Choose Snake Skin</span>
+            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-2">
+              Choose Snake Skin
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {(Object.keys(snakeSkins) as SnakeSkin[]).map((skin) => (
                 <button
                   key={skin}
                   onClick={() => setSelectedSkin(skin)}
-                  className={`p-4 rounded-xl font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
+                  className={`p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
                     selectedSkin === skin
                       ? "scale-105 border-white"
                       : "bg-gray-800 hover:bg-gray-700 border-gray-700"
@@ -135,7 +133,7 @@ export const SnakeSetup: React.FC = () => {
                     color: selectedSkin === skin ? "black" : "white",
                   }}
                 >
-                  <div className="text-lg">{snakeSkins[skin].name}</div>
+                  <div className="text-base">{snakeSkins[skin].name}</div>
                 </button>
               ))}
             </div>
@@ -143,16 +141,15 @@ export const SnakeSetup: React.FC = () => {
 
           {/* Fruit Type Selection */}
           <div>
-            <h3 className="font-[family-name:var(--font-oxanium)] text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <span>🍎</span>
-              <span>Choose Fruit</span>
+            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-2">
+              Choose Fruit
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {(Object.keys(fruitTypes) as FruitType[]).map((fruit) => (
                 <button
                   key={fruit}
                   onClick={() => setSelectedFruit(fruit)}
-                  className={`p-4 rounded-xl font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
+                  className={`p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
                     selectedFruit === fruit
                       ? "scale-105 border-white"
                       : "bg-gray-800 hover:bg-gray-700 border-gray-700"
@@ -165,7 +162,7 @@ export const SnakeSetup: React.FC = () => {
                     color: selectedFruit === fruit ? "white" : "white",
                   }}
                 >
-                  <div className="text-lg">{fruitTypes[fruit].name}</div>
+                  <div className="text-base">{fruitTypes[fruit].name}</div>
                 </button>
               ))}
             </div>
@@ -173,12 +170,12 @@ export const SnakeSetup: React.FC = () => {
         </div>
 
         {/* Summary and Start Button */}
-        <div className="bg-gray-900 rounded-2xl p-8 border-2 border-gray-800">
+        <div className="bg-gray-900 rounded-xl p-4 border-2 border-gray-800">
           <div className="text-center">
-            <h3 className="font-[family-name:var(--font-oxanium)] text-xl font-bold text-white mb-4">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-3">
               Your Selection
             </h3>
-            <div className="flex justify-center gap-6 mb-6 font-[family-name:var(--font-oxanium)] text-gray-300 flex-wrap">
+            <div className="flex justify-center gap-4 mb-4 font-[family-name:var(--font-oxanium)] text-sm text-gray-300 flex-wrap">
               <div>
                 <span className="text-gray-500">Mode:</span>{" "}
                 <span className="text-white font-semibold">
@@ -200,25 +197,10 @@ export const SnakeSetup: React.FC = () => {
             </div>
             <button
               onClick={handleStartGame}
-              className="px-12 py-4 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-[family-name:var(--font-oxanium)] text-xl font-bold rounded-xl hover:scale-105 transition-transform shadow-lg"
+              className="px-8 py-2 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-[family-name:var(--font-oxanium)] text-lg font-bold rounded-lg hover:scale-105 transition-transform shadow-lg"
             >
               Start Game →
             </button>
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-8 text-center">
-          <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
-            <h4 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-3">
-              How to Play
-            </h4>
-            <div className="font-[family-name:var(--font-oxanium)] text-gray-400 space-y-2">
-              <p>🎮 Use Arrow Keys or WASD to control the snake</p>
-              <p>🍎 Eat fruits to grow longer and score points</p>
-              <p>⚠️ Don't hit the walls or yourself!</p>
-              <p>⏸️ Press Space to pause/resume the game</p>
-            </div>
           </div>
         </div>
       </div>
