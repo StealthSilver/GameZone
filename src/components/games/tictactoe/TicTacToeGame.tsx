@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { TicTacToeEngine, GameMode, GameState } from "./TicTacToeEngine";
 
@@ -14,6 +14,84 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
   const [gameState, setGameState] = useState<GameState>(gameEngine.getState());
   const [isComputerThinking, setIsComputerThinking] = useState(false);
 
+  // Audio refs for sound effects
+  const audioXRef = useRef<HTMLAudioElement | null>(null);
+  const audioORef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio on mount
+  useEffect(() => {
+    audioXRef.current = new Audio();
+    audioORef.current = new Audio();
+
+    // Create sound for X (higher pitched beep)
+    const audioContextX = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
+    const oscillatorX = audioContextX.createOscillator();
+    const gainNodeX = audioContextX.createGain();
+
+    oscillatorX.connect(gainNodeX);
+    gainNodeX.connect(audioContextX.destination);
+
+    oscillatorX.frequency.value = 800;
+    oscillatorX.type = "sine";
+    gainNodeX.gain.setValueAtTime(0.3, audioContextX.currentTime);
+    gainNodeX.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContextX.currentTime + 0.1
+    );
+
+    // Create sound for O (lower pitched beep)
+    const audioContextO = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
+    const oscillatorO = audioContextO.createOscillator();
+    const gainNodeO = audioContextO.createGain();
+
+    oscillatorO.connect(gainNodeO);
+    gainNodeO.connect(audioContextO.destination);
+
+    oscillatorO.frequency.value = 400;
+    oscillatorO.type = "sine";
+    gainNodeO.gain.setValueAtTime(0.3, audioContextO.currentTime);
+    gainNodeO.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContextO.currentTime + 0.15
+    );
+  }, []);
+
+  const playSound = useCallback((player: "X" | "O") => {
+    try {
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      if (player === "X") {
+        oscillator.frequency.value = 800;
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.1
+        );
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.1);
+      } else {
+        oscillator.frequency.value = 400;
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.15
+        );
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.15);
+      }
+    } catch (error) {
+      console.log("Audio playback failed:", error);
+    }
+  }, []);
+
   const handleCellClick = useCallback(
     (index: number) => {
       if (gameState.winner || gameState.isDraw || isComputerThinking) {
@@ -25,12 +103,14 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
         return;
       }
 
+      const currentPlayerBeforeMove = gameState.currentPlayer;
       const moveMade = gameEngine.makeMove(index);
       if (moveMade) {
+        playSound(currentPlayerBeforeMove);
         setGameState(gameEngine.getState());
       }
     },
-    [gameEngine, gameState, mode, isComputerThinking]
+    [gameEngine, gameState, mode, isComputerThinking, playSound]
   );
 
   const handleReset = useCallback(() => {
@@ -54,13 +134,14 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
       const timer = setTimeout(() => {
         const computerMove = gameEngine.getComputerMove();
         gameEngine.makeMove(computerMove);
+        playSound("O");
         setGameState(gameEngine.getState());
         setIsComputerThinking(false);
       }, 500);
 
       return () => clearTimeout(timer);
     }
-  }, [gameState, mode, gameEngine]);
+  }, [gameState, mode, gameEngine, playSound]);
 
   const renderCell = (index: number) => {
     const value = gameState.board[index];
