@@ -62,13 +62,13 @@ export const SnakeSetup: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-black">
-      {/* Back to Home Button - Fixed at top left on mobile, centered on desktop */}
+      {/* Back to Games Button - Fixed at top left on mobile, centered on desktop */}
       <div className="absolute top-3 left-3 sm:relative sm:top-auto sm:left-auto sm:my-2 z-10">
         <div className="sm:flex sm:justify-center">
-          <Link href="/">
+          <Link href="/games">
             <button className="font-[family-name:var(--font-oxanium)] px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-1.5 sm:gap-2">
               <span>←</span>
-              <span>Back to Home</span>
+              <span>Back to Games</span>
             </button>
           </Link>
         </div>

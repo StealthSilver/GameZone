@@ -561,7 +561,7 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black p-3 sm:p-4 md:p-6">
       <div className="w-full max-w-4xl">
-        {/* Back to Home Button */}
+        {/* Back Buttons */}
         <div className="mb-3 sm:mb-4 flex justify-between items-center gap-2">
           <Link href="/games/snake">
             <button className="font-[family-name:var(--font-oxanium)] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 active:bg-gray-600 transition-colors flex items-center gap-2">
@@ -570,9 +570,9 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
               <span className="sm:hidden">Setup</span>
             </button>
           </Link>
-          <Link href="/">
+          <Link href="/games">
             <button className="font-[family-name:var(--font-oxanium)] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 active:bg-gray-600 transition-colors">
-              Home
+              Games
             </button>
           </Link>
         </div>
