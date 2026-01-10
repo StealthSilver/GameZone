@@ -1,20 +1,12 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import GamesGrid from "@/components/GamesGrid";
-import Community from "@/components/Community";
-import Testimonials from "@/components/Testimonials";
-import Footer from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
+import { Footer } from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <div className="bg-black text-white">
+      <Header />
       <Hero />
-      <Features />
-      <GamesGrid />
-      <Community />
-      <Testimonials />
       <Footer />
     </div>
   );
