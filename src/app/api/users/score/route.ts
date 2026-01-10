@@ -5,22 +5,23 @@ import User from "@/models/User";
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    const { username, score } = await request.json();
+    const { score } = await request.json();
 
-    if (!username || score === undefined) {
-      return NextResponse.json(
-        { error: "Username and score are required" },
-        { status: 400 }
-      );
+    if (score === undefined) {
+      return NextResponse.json({ error: "Score is required" }, { status: 400 });
     }
 
-    const normalizedUsername = username.trim().toLowerCase();
+    // Use a default/global username for storing high scores
+    const globalUsername = "global_player";
 
-    // Find user and update high score if new score is higher
-    const user = await User.findOne({ username: normalizedUsername });
+    // Find or create global user
+    let user = await User.findOne({ username: globalUsername });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      user = await User.create({
+        username: globalUsername,
+        highScore: 0,
+      });
     }
 
     if (score > user.highScore) {
