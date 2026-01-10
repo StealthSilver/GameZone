@@ -675,36 +675,54 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
 
             {/* Game Over Overlay */}
             {gameState.status === "gameOver" && (
-              <div className="absolute inset-0 bg-black/90 flex items-center justify-center rounded-xl backdrop-blur-sm">
-                <div className="text-center p-6">
-                  {countdown !== null ? (
-                    <div>
-                      <h2 className="text-6xl sm:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text mb-4 animate-pulse">
-                        {countdown === 0 ? "GO!" : countdown}
-                      </h2>
-                    </div>
-                  ) : (
-                    <>
-                      <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                        Game Over!
-                      </h2>
-                      <p className="text-lg sm:text-xl text-gray-300 mb-2">
-                        Final Score: {gameState.score}
-                      </p>
-                      {gameState.score === gameState.highScore &&
-                        gameState.score > 0 && (
-                          <p className="text-base sm:text-lg bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text text-transparent font-bold mb-6">
-                            New High Score!
-                          </p>
-                        )}
-                      <button
-                        onClick={handleStart}
-                        className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
-                      >
-                        Play Again
-                      </button>
-                    </>
-                  )}
+              <div className="absolute inset-0 bg-black/90 flex flex-col rounded-xl backdrop-blur-sm">
+                {countdown === null && (
+                  <div className="flex justify-center gap-3 p-4">
+                    <Link
+                      href="/games/snake"
+                      className="px-4 py-2 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-300 text-sm font-medium"
+                    >
+                      Game Setup
+                    </Link>
+                    <Link
+                      href="/games"
+                      className="px-4 py-2 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-300 text-sm font-medium"
+                    >
+                      Back to Games
+                    </Link>
+                  </div>
+                )}
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center p-6">
+                    {countdown !== null ? (
+                      <div>
+                        <h2 className="text-6xl sm:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text mb-4 animate-pulse">
+                          {countdown === 0 ? "GO!" : countdown}
+                        </h2>
+                      </div>
+                    ) : (
+                      <>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                          Game Over!
+                        </h2>
+                        <p className="text-lg sm:text-xl text-gray-300 mb-2">
+                          Final Score: {gameState.score}
+                        </p>
+                        {gameState.score === gameState.highScore &&
+                          gameState.score > 0 && (
+                            <p className="text-base sm:text-lg bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text text-transparent font-bold mb-6">
+                              New High Score!
+                            </p>
+                          )}
+                        <button
+                          onClick={handleStart}
+                          className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
+                        >
+                          Play Again
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -746,17 +764,33 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
 
             {/* Paused Overlay */}
             {gameState.status === "paused" && (
-              <div className="absolute inset-0 bg-black/90 flex items-center justify-center rounded-xl backdrop-blur-sm">
-                <div className="text-center p-6">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                    Paused
-                  </h2>
-                  <button
-                    onClick={handlePause}
-                    className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
+              <div className="absolute inset-0 bg-black/90 flex flex-col rounded-xl backdrop-blur-sm">
+                <div className="flex justify-center gap-3 p-4">
+                  <Link
+                    href="/games/snake"
+                    className="px-4 py-2 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-300 text-sm font-medium"
                   >
-                    Resume
-                  </button>
+                    Game Setup
+                  </Link>
+                  <Link
+                    href="/games"
+                    className="px-4 py-2 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-300 text-sm font-medium"
+                  >
+                    Back to Games
+                  </Link>
+                </div>
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center p-6">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+                      Paused
+                    </h2>
+                    <button
+                      onClick={handlePause}
+                      className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
+                    >
+                      Resume
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
