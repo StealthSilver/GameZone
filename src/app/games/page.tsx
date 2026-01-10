@@ -5,14 +5,44 @@ import Image from "next/image";
 import Link from "next/link";
 
 const games = [
-  { name: "Snakes", image: "/snake.png", available: true },
-  { name: "Tic Tac Toe", image: "/tictac.png", available: false },
-  { name: "Pool", image: "/pool.png", available: false },
-  { name: "Chess", image: "/chess.png", available: false },
-  { name: "Carrom", image: "/carrom.png", available: false },
-  { name: "Tetris", image: "/tetris.png", available: false },
-  { name: "Go", image: "/go.png", available: false },
-  { name: "Snake and Ladder", image: "/snakeladder.png", available: false },
+  {
+    name: "Snake",
+    image: "/snake.png",
+    available: true,
+    route: "/games/snake",
+  },
+  {
+    name: "Tic Tac Toe",
+    image: "/tictac.png",
+    available: false,
+    route: "/games/tic-tac-toe",
+  },
+  { name: "Pool", image: "/pool.png", available: false, route: "/games/pool" },
+  {
+    name: "Chess",
+    image: "/chess.png",
+    available: false,
+    route: "/games/chess",
+  },
+  {
+    name: "Carrom",
+    image: "/carrom.png",
+    available: false,
+    route: "/games/carrom",
+  },
+  {
+    name: "Tetris",
+    image: "/tetris.png",
+    available: false,
+    route: "/games/tetris",
+  },
+  { name: "Go", image: "/go.png", available: false, route: "/games/go" },
+  {
+    name: "Snake and Ladder",
+    image: "/snakeladder.png",
+    available: false,
+    route: "/games/snake-and-ladder",
+  },
 ];
 
 export default function GamesPage() {
@@ -37,13 +67,7 @@ export default function GamesPage() {
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 h-full">
             {games.map((game, index) => {
               const GameWrapper = game.available ? Link : "div";
-              const wrapperProps = game.available
-                ? {
-                    href: `/games/${game.name
-                      .toLowerCase()
-                      .replace(/ /g, "-")}`,
-                  }
-                : {};
+              const wrapperProps = game.available ? { href: game.route } : {};
 
               return (
                 <GameWrapper {...wrapperProps} key={index}>

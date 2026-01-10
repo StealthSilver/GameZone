@@ -1,136 +1,130 @@
-export interface Position {
-  x: number;
-  y: number;
-}
-
-export enum Direction {
-  UP = "UP",
-  DOWN = "DOWN",
-  LEFT = "LEFT",
-  RIGHT = "RIGHT",
-}
+export type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
+export type Position = { x: number; y: number };
+export type GameStatus = "idle" | "playing" | "paused" | "gameOver";
 
 export interface GameState {
   snake: Position[];
-  fruit: Position;
+  food: Position;
   direction: Direction;
   nextDirection: Direction;
   score: number;
-  gameOver: boolean;
-  isPaused: boolean;
   highScore: number;
+  status: GameStatus;
+  speed: number;
 }
 
 export class SnakeGameEngine {
   private gridSize: number;
-  private tileSize: number;
-  private gameState: GameState;
-  private gameLoop: number | null = null;
-  private speed: number;
-  private baseSpeed: number = 150;
+  private state: GameState;
+  private listeners: Set<(state: GameState) => void>;
 
-  constructor(gridSize: number = 20, tileSize: number = 20) {
+  constructor(gridSize: number = 20) {
     this.gridSize = gridSize;
-    this.tileSize = tileSize;
-    this.speed = this.baseSpeed;
-    this.gameState = this.initializeGame();
-  }
+    this.listeners = new Set();
 
-  private initializeGame(): GameState {
-    const centerX = Math.floor(this.gridSize / 2);
-    const centerY = Math.floor(this.gridSize / 2);
+    // Load high score from localStorage if available
+    const savedHighScore =
+      typeof window !== "undefined"
+        ? parseInt(localStorage.getItem("snakeHighScore") || "0", 10)
+        : 0;
 
-    const highScore = this.loadHighScore();
-
-    return {
-      snake: [
-        { x: centerX, y: centerY },
-        { x: centerX - 1, y: centerY },
-        { x: centerX - 2, y: centerY },
-      ],
-      fruit: this.generateFruit([
-        { x: centerX, y: centerY },
-        { x: centerX - 1, y: centerY },
-        { x: centerX - 2, y: centerY },
-      ]),
-      direction: Direction.RIGHT,
-      nextDirection: Direction.RIGHT,
+    this.state = {
+      snake: [{ x: 10, y: 10 }],
+      food: this.generateFood([{ x: 10, y: 10 }]),
+      direction: "RIGHT",
+      nextDirection: "RIGHT",
       score: 0,
-      gameOver: false,
-      isPaused: false,
-      highScore,
+      highScore: savedHighScore,
+      status: "idle",
+      speed: 150,
     };
   }
 
-  private generateFruit(snake: Position[]): Position {
-    let fruit: Position;
-    let isOnSnake: boolean;
-
-    do {
-      fruit = {
-        x: Math.floor(Math.random() * this.gridSize),
-        y: Math.floor(Math.random() * this.gridSize),
-      };
-      isOnSnake = snake.some(
-        (segment) => segment.x === fruit.x && segment.y === fruit.y
-      );
-    } while (isOnSnake);
-
-    return fruit;
+  // Subscribe to state changes
+  subscribe(listener: (state: GameState) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
-  private loadHighScore(): number {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("snakeHighScore");
-      return saved ? parseInt(saved, 10) : 0;
+  // Notify all listeners of state change
+  private notify(): void {
+    this.listeners.forEach((listener) => listener({ ...this.state }));
+  }
+
+  // Get current game state
+  getState(): GameState {
+    return { ...this.state };
+  }
+
+  // Start or restart the game
+  start(): void {
+    this.state = {
+      snake: [{ x: 10, y: 10 }],
+      food: this.generateFood([{ x: 10, y: 10 }]),
+      direction: "RIGHT",
+      nextDirection: "RIGHT",
+      score: 0,
+      highScore: this.state.highScore,
+      status: "playing",
+      speed: 150,
+    };
+    this.notify();
+  }
+
+  // Pause the game
+  pause(): void {
+    if (this.state.status === "playing") {
+      this.state.status = "paused";
+      this.notify();
     }
-    return 0;
   }
 
-  private saveHighScore(score: number): void {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("snakeHighScore", score.toString());
+  // Resume the game
+  resume(): void {
+    if (this.state.status === "paused") {
+      this.state.status = "playing";
+      this.notify();
     }
   }
 
-  public getState(): GameState {
-    return { ...this.gameState };
-  }
+  // Set the next direction (with validation to prevent 180-degree turns)
+  setDirection(direction: Direction): void {
+    if (this.state.status !== "playing") return;
 
-  public changeDirection(newDirection: Direction): void {
-    // Prevent reversing into itself
     const opposites: Record<Direction, Direction> = {
-      [Direction.UP]: Direction.DOWN,
-      [Direction.DOWN]: Direction.UP,
-      [Direction.LEFT]: Direction.RIGHT,
-      [Direction.RIGHT]: Direction.LEFT,
+      UP: "DOWN",
+      DOWN: "UP",
+      LEFT: "RIGHT",
+      RIGHT: "LEFT",
     };
 
-    if (opposites[newDirection] !== this.gameState.direction) {
-      this.gameState.nextDirection = newDirection;
+    // Prevent 180-degree turns
+    if (opposites[direction] !== this.state.direction) {
+      this.state.nextDirection = direction;
     }
   }
 
-  private moveSnake(): void {
-    if (this.gameState.gameOver || this.gameState.isPaused) return;
+  // Main game update loop
+  update(): boolean {
+    if (this.state.status !== "playing") return false;
 
     // Update direction
-    this.gameState.direction = this.gameState.nextDirection;
+    this.state.direction = this.state.nextDirection;
 
-    const head = { ...this.gameState.snake[0] };
+    // Calculate new head position
+    const head = { ...this.state.snake[0] };
 
-    // Move head based on direction
-    switch (this.gameState.direction) {
-      case Direction.UP:
+    switch (this.state.direction) {
+      case "UP":
         head.y -= 1;
         break;
-      case Direction.DOWN:
+      case "DOWN":
         head.y += 1;
         break;
-      case Direction.LEFT:
+      case "LEFT":
         head.x -= 1;
         break;
-      case Direction.RIGHT:
+      case "RIGHT":
         head.x += 1;
         break;
     }
@@ -142,99 +136,82 @@ export class SnakeGameEngine {
       head.y < 0 ||
       head.y >= this.gridSize
     ) {
-      this.endGame();
-      return;
+      this.gameOver();
+      return false;
     }
 
     // Check self collision
-    if (
-      this.gameState.snake.some(
-        (segment) => segment.x === head.x && segment.y === head.y
-      )
-    ) {
-      this.endGame();
-      return;
+    if (this.checkCollision(head, this.state.snake)) {
+      this.gameOver();
+      return false;
     }
 
     // Add new head
-    this.gameState.snake.unshift(head);
+    this.state.snake.unshift(head);
 
-    // Check if fruit is eaten
-    if (
-      head.x === this.gameState.fruit.x &&
-      head.y === this.gameState.fruit.y
-    ) {
-      this.gameState.score += 10;
-
-      // Update high score
-      if (this.gameState.score > this.gameState.highScore) {
-        this.gameState.highScore = this.gameState.score;
-        this.saveHighScore(this.gameState.highScore);
-      }
-
-      // Generate new fruit
-      this.gameState.fruit = this.generateFruit(this.gameState.snake);
-
-      // Increase speed gradually
-      this.speed = Math.max(50, this.baseSpeed - this.gameState.score / 2);
+    // Check food collision
+    if (head.x === this.state.food.x && head.y === this.state.food.y) {
+      this.eatFood();
     } else {
-      // Remove tail if no fruit eaten
-      this.gameState.snake.pop();
+      // Remove tail if no food eaten
+      this.state.snake.pop();
     }
+
+    this.notify();
+    return true;
   }
 
-  private endGame(): void {
-    this.gameState.gameOver = true;
-    if (this.gameLoop !== null) {
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
+  // Handle food consumption
+  private eatFood(): void {
+    this.state.score += 10;
+
+    // Update high score
+    if (this.state.score > this.state.highScore) {
+      this.state.highScore = this.state.score;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("snakeHighScore", this.state.highScore.toString());
+      }
     }
+
+    // Increase speed slightly (cap at 50ms)
+    this.state.speed = Math.max(50, this.state.speed - 2);
+
+    // Generate new food
+    this.state.food = this.generateFood(this.state.snake);
   }
 
-  public start(onUpdate: () => void): void {
-    if (this.gameLoop !== null) return;
+  // Generate food at random position (not on snake)
+  private generateFood(snake: Position[]): Position {
+    let food: Position;
+    let attempts = 0;
+    const maxAttempts = 100;
 
-    const gameStep = () => {
-      this.moveSnake();
-      onUpdate();
-    };
+    do {
+      food = {
+        x: Math.floor(Math.random() * this.gridSize),
+        y: Math.floor(Math.random() * this.gridSize),
+      };
+      attempts++;
+    } while (this.checkCollision(food, snake) && attempts < maxAttempts);
 
-    this.gameLoop = window.setInterval(gameStep, this.speed);
+    return food;
   }
 
-  public pause(): void {
-    this.gameState.isPaused = true;
+  // Check if position collides with any snake segment
+  private checkCollision(position: Position, snake: Position[]): boolean {
+    return snake.some(
+      (segment) => segment.x === position.x && segment.y === position.y
+    );
   }
 
-  public resume(): void {
-    this.gameState.isPaused = false;
+  // Handle game over
+  private gameOver(): void {
+    this.state.status = "gameOver";
+    this.notify();
   }
 
-  public togglePause(): void {
-    this.gameState.isPaused = !this.gameState.isPaused;
-  }
-
-  public reset(): void {
-    if (this.gameLoop !== null) {
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
-    }
-    this.speed = this.baseSpeed;
-    this.gameState = this.initializeGame();
-  }
-
-  public stop(): void {
-    if (this.gameLoop !== null) {
-      clearInterval(this.gameLoop);
-      this.gameLoop = null;
-    }
-  }
-
-  public getGridSize(): number {
+  // Get grid size
+  getGridSize(): number {
     return this.gridSize;
-  }
-
-  public getTileSize(): number {
-    return this.tileSize;
   }
 }
