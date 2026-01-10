@@ -71,7 +71,9 @@ export class SnakeGameEngine {
         x: Math.floor(Math.random() * this.gridSize),
         y: Math.floor(Math.random() * this.gridSize),
       };
-      isOnSnake = snake.some((segment) => segment.x === fruit.x && segment.y === fruit.y);
+      isOnSnake = snake.some(
+        (segment) => segment.x === fruit.x && segment.y === fruit.y
+      );
     } while (isOnSnake);
 
     return fruit;
@@ -158,9 +160,12 @@ export class SnakeGameEngine {
     this.gameState.snake.unshift(head);
 
     // Check if fruit is eaten
-    if (head.x === this.gameState.fruit.x && head.y === this.gameState.fruit.y) {
+    if (
+      head.x === this.gameState.fruit.x &&
+      head.y === this.gameState.fruit.y
+    ) {
       this.gameState.score += 10;
-      
+
       // Update high score
       if (this.gameState.score > this.gameState.highScore) {
         this.gameState.highScore = this.gameState.score;
