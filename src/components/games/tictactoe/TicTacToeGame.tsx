@@ -105,7 +105,7 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
 
       const currentPlayerBeforeMove = gameState.currentPlayer;
       const moveMade = gameEngine.makeMove(index);
-      if (moveMade) {
+      if (moveMade && currentPlayerBeforeMove) {
         playSound(currentPlayerBeforeMove);
         setGameState(gameEngine.getState());
       }
@@ -213,7 +213,7 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
             </div>
           ) : gameState.isDraw ? (
             <div className="text-2xl md:text-3xl font-bold text-gray-300">
-              It&apos;s a Draw! 🤝
+              It&apos;s a Draw!
             </div>
           ) : (
             <div className="text-xl md:text-2xl">
