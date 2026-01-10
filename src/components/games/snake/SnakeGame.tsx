@@ -49,7 +49,17 @@ const gameModes = {
   hard: { name: "Hard", description: "Fast speed" },
 };
 
-export const SnakeGame: React.FC = () => {
+interface SnakeGameProps {
+  initialSkin?: SnakeSkin;
+  initialFruit?: FruitType;
+  initialMode?: GameMode;
+}
+
+export const SnakeGame: React.FC<SnakeGameProps> = ({
+  initialSkin = "classic",
+  initialFruit = "apple",
+  initialMode = "medium",
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<SnakeGameEngine | null>(null);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
@@ -60,6 +70,12 @@ export const SnakeGame: React.FC = () => {
   useEffect(() => {
     engineRef.current = new SnakeGameEngine(20);
     const unsubscribe = engineRef.current.subscribe(setGameState);
+
+    // Set initial customization
+    engineRef.current.setSnakeSkin(initialSkin);
+    engineRef.current.setFruitType(initialFruit);
+    engineRef.current.setGameMode(initialMode);
+
     setGameState(engineRef.current.getState());
 
     return () => {
@@ -68,7 +84,7 @@ export const SnakeGame: React.FC = () => {
         clearInterval(gameLoopRef.current);
       }
     };
-  }, []);
+  }, [initialSkin, initialFruit, initialMode]);
 
   // Start game loop
   const startGameLoop = useCallback(() => {
@@ -448,11 +464,16 @@ export const SnakeGame: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-[92vh] bg-black p-4">
       <div className="w-full max-w-4xl">
         {/* Back to Home Button */}
-        <div className="mb-4">
-          <Link href="/">
+        <div className="mb-4 flex justify-between items-center">
+          <Link href="/games/snake">
             <button className="font-[family-name:var(--font-oxanium)] px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
               <span>←</span>
-              <span>Back to Home</span>
+              <span>Back to Setup</span>
+            </button>
+          </Link>
+          <Link href="/">
+            <button className="font-[family-name:var(--font-oxanium)] px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors">
+              Home
             </button>
           </Link>
         </div>
@@ -466,6 +487,16 @@ export const SnakeGame: React.FC = () => {
             Mode:{" "}
             <span className="text-white font-semibold">
               {gameModes[gameState.gameMode].name}
+            </span>
+            {" | "}
+            Snake:{" "}
+            <span className="text-white font-semibold">
+              {snakeSkins[gameState.snakeSkin].name}
+            </span>
+            {" | "}
+            Fruit:{" "}
+            <span className="text-white font-semibold">
+              {fruitTypes[gameState.fruitType].name}
             </span>
           </p>
           <div className="flex justify-center gap-8 font-[family-name:var(--font-oxanium)]">
