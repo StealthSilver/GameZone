@@ -9,6 +9,11 @@ export const SnakeGame: React.FC = () => {
   const engineRef = useRef<SnakeGameEngine | null>(null);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [username, setUsername] = useState<string>("");
+  const [isUsernameSet, setIsUsernameSet] = useState<boolean>(false);
+  const [usernameInput, setUsernameInput] = useState<string>("");
+  const [usernameError, setUsernameError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Initialize game engine
   useEffect(() => {
@@ -67,8 +72,33 @@ export const SnakeGame: React.FC = () => {
       stopGameLoop();
     }
 
+    // Save score when game is over
+    if (gameState.status === "gameOver" && username && gameState.score > 0) {
+      saveScore(gameState.score);
+    }
+
     return () => stopGameLoop();
-  }, [gameState?.status, startGameLoop, stopGameLoop]);
+  }, [gameState?.status, startGameLoop, stopGameLoop, username]);
+
+  const saveScore = async (score: number) => {
+    try {
+      const response = await fetch("/api/users/score", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, score }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.isNewHighScore) {
+        console.log("New high score saved!", data.highScore);
+      }
+    } catch (error) {
+      console.error("Error saving score:", error);
+    }
+  };
 
   // Handle keyboard controls
   useEffect(() => {
@@ -276,6 +306,48 @@ export const SnakeGame: React.FC = () => {
   }, [gameState]);
 
   // Handle button clicks
+  const handleUsernameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUsernameError("");
+
+    if (!usernameInput.trim()) {
+      setUsernameError("Username cannot be empty");
+      return;
+    }
+
+    if (usernameInput.trim().length < 3) {
+      setUsernameError("Username must be at least 3 characters");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/users/check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: usernameInput.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUsername(usernameInput.trim());
+        setIsUsernameSet(true);
+        setUsernameError("");
+      } else {
+        setUsernameError(data.error || "Username already taken");
+      }
+    } catch (error) {
+      console.error("Error checking username:", error);
+      setUsernameError("Failed to verify username. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleStart = () => {
     if (engineRef.current) {
       engineRef.current.start();
@@ -406,16 +478,51 @@ export const SnakeGame: React.FC = () => {
           {/* Idle/Start Overlay */}
           {gameState.status === "idle" && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
-              <div className="text-center font-[family-name:var(--font-oxanium)]">
-                <h2 className="text-4xl font-bold text-white mb-6">
-                  Ready to Play?
-                </h2>
-                <button
-                  onClick={handleStart}
-                  className="px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform mb-4"
-                >
-                  Start Game
-                </button>
+              <div className="text-center font-[family-name:var(--font-oxanium)] p-6">
+                {!isUsernameSet ? (
+                  <div className="max-w-md">
+                    <h2 className="text-4xl font-bold text-white mb-4">
+                      Welcome!
+                    </h2>
+                    <p className="text-gray-300 mb-6">
+                      Enter a unique username to start playing
+                    </p>
+                    <form onSubmit={handleUsernameSubmit} className="space-y-4">
+                      <input
+                        type="text"
+                        value={usernameInput}
+                        onChange={(e) => setUsernameInput(e.target.value)}
+                        placeholder="Enter username"
+                        className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:border-[#8CECF7] outline-none"
+                        disabled={isLoading}
+                        autoFocus
+                      />
+                      {usernameError && (
+                        <p className="text-red-400 text-sm">{usernameError}</p>
+                      )}
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? "Checking..." : "Continue"}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-4xl font-bold text-white mb-2">
+                      Ready to Play?
+                    </h2>
+                    <p className="text-gray-300 mb-6">Welcome, {username}!</p>
+                    <button
+                      onClick={handleStart}
+                      className="px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform mb-4"
+                    >
+                      Start Game
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
