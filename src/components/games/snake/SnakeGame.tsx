@@ -559,29 +559,30 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
   if (!gameState) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[92vh] bg-black p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black p-3 sm:p-4 md:p-6">
       <div className="w-full max-w-4xl">
         {/* Back to Home Button */}
-        <div className="mb-4 flex justify-between items-center">
+        <div className="mb-3 sm:mb-4 flex justify-between items-center gap-2">
           <Link href="/games/snake">
-            <button className="font-[family-name:var(--font-oxanium)] px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+            <button className="font-[family-name:var(--font-oxanium)] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 active:bg-gray-600 transition-colors flex items-center gap-2">
               <span>←</span>
-              <span>Back to Setup</span>
+              <span className="hidden sm:inline">Back to Setup</span>
+              <span className="sm:hidden">Setup</span>
             </button>
           </Link>
           <Link href="/">
-            <button className="font-[family-name:var(--font-oxanium)] px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors">
+            <button className="font-[family-name:var(--font-oxanium)] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 active:bg-gray-600 transition-colors">
               Home
             </button>
           </Link>
         </div>
 
         {/* Game Header */}
-        <div className="mb-6 text-center">
-          <h1 className="font-[family-name:var(--font-oxanium)] text-4xl md:text-5xl font-bold text-white mb-2">
+        <div className="mb-4 sm:mb-6 text-center">
+          <h1 className="font-[family-name:var(--font-oxanium)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
             Snake Game
           </h1>
-          <p className="font-[family-name:var(--font-oxanium)] text-sm text-gray-400 mb-3">
+          <p className="font-[family-name:var(--font-oxanium)] text-xs sm:text-sm text-gray-400 mb-3">
             Mode:{" "}
             <span className="text-white font-semibold">
               {gameModes[gameState.gameMode].name}
@@ -597,18 +598,18 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
               {fruitTypes[gameState.fruitType].name}
             </span>
           </p>
-          <div className="flex justify-center gap-8 font-[family-name:var(--font-oxanium)]">
+          <div className="flex justify-center gap-4 sm:gap-8 font-[family-name:var(--font-oxanium)]">
             <div className="text-center">
-              <p className="text-gray-400 text-sm mb-1">Score</p>
-              <p className="text-2xl font-bold bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text text-transparent">
+              <p className="text-gray-400 text-xs sm:text-sm mb-1">Score</p>
+              <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text text-transparent">
                 {gameState.score}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-gray-400 text-sm mb-1">
+              <p className="text-gray-400 text-xs sm:text-sm mb-1">
                 High Score ({gameModes[gameState.gameMode].name})
               </p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-xl sm:text-2xl font-bold text-white">
                 {gameState.highScore}
               </p>
             </div>
@@ -616,43 +617,107 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
         </div>
 
         {/* Game Canvas */}
-        <div className="relative mx-auto" style={{ maxWidth: "600px" }}>
+        <div className="relative mx-auto max-w-[600px] w-full">
           <canvas
             ref={canvasRef}
             width={600}
             height={600}
-            className="border-2 border-gray-800 rounded-lg shadow-2xl w-full h-auto"
+            className="border-2 border-gray-800 rounded-lg shadow-2xl w-full h-auto touch-none"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           />
 
+          {/* Mobile Touch Controls */}
+          {(gameState.status === "playing" ||
+            gameState.status === "paused") && (
+            <div className="sm:hidden mt-4 grid grid-cols-3 gap-2 max-w-[280px] mx-auto">
+              <div></div>
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  if (engineRef.current) engineRef.current.setDirection("UP");
+                }}
+                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
+              >
+                ↑
+              </button>
+              <div></div>
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  if (engineRef.current) engineRef.current.setDirection("LEFT");
+                }}
+                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
+              >
+                ←
+              </button>
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  if (gameState.status === "playing" && engineRef.current) {
+                    engineRef.current.pause();
+                  } else if (
+                    gameState.status === "paused" &&
+                    engineRef.current
+                  ) {
+                    engineRef.current.resume();
+                  }
+                }}
+                className="bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black p-4 rounded-lg active:opacity-80 transition-opacity font-bold text-sm"
+              >
+                {gameState.status === "paused" ? "▶" : "⏸"}
+              </button>
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  if (engineRef.current)
+                    engineRef.current.setDirection("RIGHT");
+                }}
+                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
+              >
+                →
+              </button>
+              <div></div>
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  if (engineRef.current) engineRef.current.setDirection("DOWN");
+                }}
+                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
+              >
+                ↓
+              </button>
+              <div></div>
+            </div>
+          )}
+
           {/* Game Over Overlay */}
           {gameState.status === "gameOver" && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
-              <div className="text-center font-[family-name:var(--font-oxanium)]">
+              <div className="text-center font-[family-name:var(--font-oxanium)] p-4">
                 {countdown !== null ? (
                   <div>
-                    <h2 className="text-8xl font-bold text-white mb-4 animate-pulse">
+                    <h2 className="text-6xl sm:text-8xl font-bold text-white mb-4 animate-pulse">
                       {countdown === 0 ? "GO!" : countdown}
                     </h2>
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-4xl font-bold text-white mb-4">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                       Game Over!
                     </h2>
-                    <p className="text-xl text-gray-300 mb-2">
+                    <p className="text-lg sm:text-xl text-gray-300 mb-2">
                       Final Score: {gameState.score}
                     </p>
                     {gameState.score === gameState.highScore &&
                       gameState.score > 0 && (
-                        <p className="text-lg text-yellow-400 mb-6">
+                        <p className="text-base sm:text-lg text-yellow-400 mb-6">
                           New High Score!
                         </p>
                       )}
                     <button
                       onClick={handleStart}
-                      className="px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform"
+                      className="px-6 py-3 sm:px-8 text-base sm:text-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform w-full sm:w-auto"
                     >
                       Play Again
                     </button>
@@ -665,24 +730,29 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
           {/* Idle/Start Overlay */}
           {gameState.status === "idle" && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
-              <div className="text-center font-[family-name:var(--font-oxanium)] p-6">
+              <div className="text-center font-[family-name:var(--font-oxanium)] p-4 sm:p-6">
                 {countdown !== null ? (
                   <div>
-                    <h2 className="text-8xl font-bold text-white mb-4 animate-pulse">
+                    <h2 className="text-6xl sm:text-8xl font-bold text-white mb-4 animate-pulse">
                       {countdown === 0 ? "GO!" : countdown}
                     </h2>
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-4xl font-bold text-white mb-2">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                       Ready to Play?
                     </h2>
-                    <p className="text-gray-300 mb-6">
-                      Use arrow keys or WASD to control the snake
+                    <p className="text-sm sm:text-base text-gray-300 mb-6">
+                      <span className="hidden sm:inline">
+                        Use arrow keys or WASD to control the snake
+                      </span>
+                      <span className="sm:hidden">
+                        Swipe or use buttons to control
+                      </span>
                     </p>
                     <button
                       onClick={handleStart}
-                      className="px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform mb-4"
+                      className="px-6 py-3 sm:px-8 text-base sm:text-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform mb-4 w-full sm:w-auto"
                     >
                       Start Game
                     </button>
@@ -695,11 +765,13 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
           {/* Paused Overlay */}
           {gameState.status === "paused" && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
-              <div className="text-center font-[family-name:var(--font-oxanium)]">
-                <h2 className="text-4xl font-bold text-white mb-6">Paused</h2>
+              <div className="text-center font-[family-name:var(--font-oxanium)] p-4">
+                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+                  Paused
+                </h2>
                 <button
                   onClick={handlePause}
-                  className="px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform"
+                  className="px-6 py-3 sm:px-8 text-base sm:text-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform w-full sm:w-auto"
                 >
                   Resume
                 </button>

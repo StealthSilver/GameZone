@@ -61,12 +61,12 @@ export const SnakeSetup: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[92vh] bg-black p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black p-3 sm:p-4 md:p-6">
       <div className="w-full max-w-4xl">
         {/* Back to Home Button */}
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <Link href="/">
-            <button className="font-[family-name:var(--font-oxanium)] px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+            <button className="font-[family-name:var(--font-oxanium)] px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-1.5 sm:gap-2">
               <span>←</span>
               <span>Back to Home</span>
             </button>
@@ -74,35 +74,37 @@ export const SnakeSetup: React.FC = () => {
         </div>
 
         {/* Setup Header */}
-        <div className="mb-6 text-center">
-          <h1 className="font-[family-name:var(--font-oxanium)] text-3xl md:text-4xl font-bold text-white mb-2">
+        <div className="mb-4 sm:mb-6 text-center">
+          <h1 className="font-[family-name:var(--font-oxanium)] text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-2">
             Snake Game Setup
           </h1>
-          <p className="font-[family-name:var(--font-oxanium)] text-base text-gray-400">
+          <p className="font-[family-name:var(--font-oxanium)] text-xs sm:text-base text-gray-400">
             Customize your game before you start
           </p>
         </div>
 
         {/* Customization Options */}
-        <div className="bg-gray-900 rounded-xl p-4 mb-4 space-y-4 border-2 border-gray-800">
+        <div className="bg-gray-900 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 space-y-4 sm:space-y-4 border-2 border-gray-800">
           {/* Game Mode Selection */}
           <div>
-            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-2">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-2">
               Choose Difficulty
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
               {(Object.keys(gameModes) as GameMode[]).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => setSelectedMode(mode)}
-                  className={`p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
+                  className={`py-1.5 px-2 sm:p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 active:scale-95 ${
                     selectedMode === mode
-                      ? "bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black scale-105 border-transparent"
+                      ? "bg-gradient-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white scale-105 border-transparent shadow-lg shadow-purple-500/30"
                       : "bg-gray-800 text-white hover:bg-gray-700 border-gray-700"
                   }`}
                 >
-                  <div className="text-lg mb-1">{gameModes[mode].name}</div>
-                  <div className="text-xs opacity-75">
+                  <div className="text-xs sm:text-base mb-0">
+                    {gameModes[mode].name}
+                  </div>
+                  <div className="text-[9px] sm:text-xs opacity-75 leading-tight">
                     {gameModes[mode].description}
                   </div>
                 </button>
@@ -112,17 +114,17 @@ export const SnakeSetup: React.FC = () => {
 
           {/* Snake Skin Selection */}
           <div>
-            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-2">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-2">
               Choose Snake Skin
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
               {(Object.keys(snakeSkins) as SnakeSkin[]).map((skin) => (
                 <button
                   key={skin}
                   onClick={() => setSelectedSkin(skin)}
-                  className={`p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
+                  className={`py-1.5 px-1.5 sm:p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 active:scale-95 ${
                     selectedSkin === skin
-                      ? "scale-105 border-white"
+                      ? "scale-105 border-white shadow-lg"
                       : "bg-gray-800 hover:bg-gray-700 border-gray-700"
                   }`}
                   style={{
@@ -133,7 +135,9 @@ export const SnakeSetup: React.FC = () => {
                     color: selectedSkin === skin ? "black" : "white",
                   }}
                 >
-                  <div className="text-base">{snakeSkins[skin].name}</div>
+                  <div className="text-[11px] sm:text-base">
+                    {snakeSkins[skin].name}
+                  </div>
                 </button>
               ))}
             </div>
@@ -141,17 +145,17 @@ export const SnakeSetup: React.FC = () => {
 
           {/* Fruit Type Selection */}
           <div>
-            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-2">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-2">
               Choose Fruit
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
               {(Object.keys(fruitTypes) as FruitType[]).map((fruit) => (
                 <button
                   key={fruit}
                   onClick={() => setSelectedFruit(fruit)}
-                  className={`p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 ${
+                  className={`py-1.5 px-1.5 sm:p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 active:scale-95 ${
                     selectedFruit === fruit
-                      ? "scale-105 border-white"
+                      ? "scale-105 border-white shadow-lg"
                       : "bg-gray-800 hover:bg-gray-700 border-gray-700"
                   }`}
                   style={{
@@ -162,7 +166,9 @@ export const SnakeSetup: React.FC = () => {
                     color: selectedFruit === fruit ? "white" : "white",
                   }}
                 >
-                  <div className="text-base">{fruitTypes[fruit].name}</div>
+                  <div className="text-[11px] sm:text-base">
+                    {fruitTypes[fruit].name}
+                  </div>
                 </button>
               ))}
             </div>
@@ -170,12 +176,12 @@ export const SnakeSetup: React.FC = () => {
         </div>
 
         {/* Summary and Start Button */}
-        <div className="bg-gray-900 rounded-xl p-4 border-2 border-gray-800">
+        <div className="bg-gray-900 rounded-xl p-3 sm:p-4 border-2 border-gray-800">
           <div className="text-center">
-            <h3 className="font-[family-name:var(--font-oxanium)] text-lg font-bold text-white mb-3">
+            <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-3">
               Your Selection
             </h3>
-            <div className="flex justify-center gap-4 mb-4 font-[family-name:var(--font-oxanium)] text-sm text-gray-300 flex-wrap">
+            <div className="flex justify-center gap-2.5 sm:gap-4 mb-3 sm:mb-4 font-[family-name:var(--font-oxanium)] text-[9px] sm:text-sm text-gray-300 flex-wrap">
               <div>
                 <span className="text-gray-500">Mode:</span>{" "}
                 <span className="text-white font-semibold">
@@ -197,7 +203,7 @@ export const SnakeSetup: React.FC = () => {
             </div>
             <button
               onClick={handleStartGame}
-              className="px-8 py-2 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-[family-name:var(--font-oxanium)] text-lg font-bold rounded-lg hover:scale-105 transition-transform shadow-lg"
+              className="px-4 py-1.5 sm:px-8 sm:py-3 bg-gradient-to-r from-[#10b981] via-[#059669] to-[#047857] text-white font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-green-500/30 w-full sm:w-auto"
             >
               Start Game →
             </button>
