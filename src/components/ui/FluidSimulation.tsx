@@ -306,7 +306,7 @@ const FluidSimulationScene = ({ fluidColor }: { fluidColor: THREE.Color }) => {
 };
 
 const FluidSimulation: React.FC = () => {
-  const [color, setColor] = useState("#cc1a1a");
+  const [color, setColor] = useState("#E9FA00");
   const fluidColor = useMemo(() => new THREE.Color(color), [color]);
 
   return (
