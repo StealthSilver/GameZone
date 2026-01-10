@@ -8,6 +8,7 @@ import {
   SnakeSkin,
   FruitType,
   GameMode,
+  GameStatus,
 } from "./SnakeGameEngine";
 
 // Snake skin color schemes
@@ -65,6 +66,80 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const previousScoreRef = useRef<number>(0);
+  const previousStatusRef = useRef<GameStatus>("idle");
+
+  // Initialize audio context
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      audioContextRef.current = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+    }
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  // Play eating sound
+  const playEatSound = useCallback(() => {
+    if (!audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    // Pleasant "pop" sound
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      400,
+      ctx.currentTime + 0.1
+    );
+
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.1);
+  }, []);
+
+  // Play crash sound
+  const playCrashSound = useCallback(() => {
+    if (!audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    oscillator.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    // Harsh crash sound
+    oscillator.type = "sawtooth";
+    oscillator.frequency.setValueAtTime(200, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      50,
+      ctx.currentTime + 0.3
+    );
+
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(1000, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
+
+    gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.3);
+  }, []);
 
   // Initialize game engine
   useEffect(() => {
@@ -85,6 +160,29 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
       }
     };
   }, [initialSkin, initialFruit, initialMode]);
+
+  // Detect score changes (eating food) and game over
+  useEffect(() => {
+    if (!gameState) return;
+
+    // Check if score increased (food eaten)
+    if (
+      gameState.score > previousScoreRef.current &&
+      gameState.status === "playing"
+    ) {
+      playEatSound();
+    }
+    previousScoreRef.current = gameState.score;
+
+    // Check if game just ended
+    if (
+      gameState.status === "gameOver" &&
+      previousStatusRef.current === "playing"
+    ) {
+      playCrashSound();
+    }
+    previousStatusRef.current = gameState.status;
+  }, [gameState?.score, gameState?.status, playEatSound, playCrashSound]);
 
   // Start game loop
   const startGameLoop = useCallback(() => {
@@ -607,26 +705,6 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
                 </button>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Control Buttons */}
-        <div className="mt-4 flex justify-center gap-3 font-[family-name:var(--font-oxanium)]">
-          {gameState.status === "playing" && (
-            <button
-              onClick={handlePause}
-              className="px-4 py-2 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Pause
-            </button>
-          )}
-          {gameState.status === "paused" && (
-            <button
-              onClick={handlePause}
-              className="px-4 py-2 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform"
-            >
-              Resume
-            </button>
           )}
         </div>
       </div>
