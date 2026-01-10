@@ -4,9 +4,8 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+// Register plugin on the client side only
+gsap.registerPlugin(ScrollTrigger);
 
 const stats = [
   { value: "50K+", label: "Active Players", color: "#6C85EA" },
@@ -54,7 +53,7 @@ export default function Community() {
     <section
       id="community"
       ref={sectionRef}
-      className="relative py-32 bg-gradient-to-b from-black via-[#0a0a0a] to-black overflow-hidden"
+      className="relative py-20 sm:py-24 lg:py-32 bg-gradient-to-b from-black via-[#0a0a0a] to-black overflow-hidden"
     >
       {/* Background Elements */}
       <div className="absolute inset-0 opacity-10">
@@ -65,15 +64,15 @@ export default function Community() {
         ></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
-        <div className="text-center mb-20">
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 sm:mb-6">
             Join the{" "}
             <span className="bg-gradient-to-r from-[#6C85EA] via-[#AAFDBB] to-[#E9FA00] bg-clip-text text-transparent">
               Community
             </span>
           </h2>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-white/60 max-w-2xl mx-auto px-4">
             Thousands of players worldwide are already enjoying the action
           </p>
         </div>
@@ -81,12 +80,12 @@ export default function Community() {
         {/* Stats Grid */}
         <div
           ref={statsRef}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16 lg:mb-20"
         >
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="group relative bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-white/30 transition-all duration-500 cursor-pointer text-center overflow-hidden"
+              className="group relative bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-white/10 hover:border-white/30 transition-all duration-500 cursor-pointer text-center overflow-hidden"
             >
               {/* Glow Effect */}
               <div
@@ -96,12 +95,12 @@ export default function Community() {
 
               <div className="relative z-10">
                 <div
-                  className="text-5xl md:text-6xl font-black mb-3"
+                  className="text-4xl sm:text-5xl md:text-6xl font-black mb-2 sm:mb-3"
                   style={{ color: stat.color }}
                 >
                   {stat.value}
                 </div>
-                <div className="text-white/60 text-lg group-hover:text-white/80 transition-colors duration-300">
+                <div className="text-sm sm:text-base md:text-lg text-white/60 group-hover:text-white/80 transition-colors duration-300">
                   {stat.label}
                 </div>
               </div>
@@ -117,21 +116,21 @@ export default function Community() {
 
         {/* CTA Section */}
         <div className="text-center">
-          <div className="inline-block bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-3xl p-12 border border-white/20">
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <div className="inline-block bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg rounded-3xl p-6 sm:p-8 lg:p-12 border border-white/20 w-full max-w-3xl">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6">
               Ready to Play?
             </h3>
-            <p className="text-xl text-white/70 mb-8 max-w-2xl">
+            <p className="text-base sm:text-lg md:text-xl text-white/70 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
               Join our growing community and start your gaming journey today. No
               downloads, no hassle.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="group relative px-10 py-5 text-lg font-bold text-black bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(108,133,234,0.6)] hover:shadow-[0_0_60px_rgba(108,133,234,0.9)]">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <button className="group relative px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-black bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(108,133,234,0.6)] hover:shadow-[0_0_60px_rgba(108,133,234,0.9)] w-full sm:w-auto max-w-xs">
                 <span className="relative z-10">Start Playing</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#AAFDBB] to-[#E9FA00] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
 
-              <button className="group relative px-10 py-5 text-lg font-bold text-[#AAFDBB] bg-transparent border-2 border-[#AAFDBB] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 hover:text-black shadow-[0_0_20px_rgba(170,253,187,0.3)] hover:shadow-[0_0_40px_rgba(170,253,187,0.8)]">
+              <button className="group relative px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-[#AAFDBB] bg-transparent border-2 border-[#AAFDBB] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 hover:text-black shadow-[0_0_20px_rgba(170,253,187,0.3)] hover:shadow-[0_0_40px_rgba(170,253,187,0.8)] w-full sm:w-auto max-w-xs">
                 <span className="relative z-10">Join Discord</span>
                 <div className="absolute inset-0 bg-[#AAFDBB] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>

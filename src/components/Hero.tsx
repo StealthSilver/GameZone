@@ -3,6 +3,22 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
+// Fixed positions for particles to avoid hydration mismatch
+const particlePositions = [
+  { left: 15, top: 20 },
+  { left: 75, top: 10 },
+  { left: 25, top: 80 },
+  { left: 85, top: 70 },
+  { left: 45, top: 15 },
+  { left: 65, top: 85 },
+  { left: 10, top: 50 },
+  { left: 90, top: 40 },
+  { left: 35, top: 65 },
+  { left: 55, top: 25 },
+  { left: 20, top: 45 },
+  { left: 80, top: 55 },
+];
+
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -71,7 +87,7 @@ export default function Hero() {
     <section
       id="home"
       ref={heroRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black"
+      className="relative h-screen flex items-center justify-center overflow-hidden bg-black pt-16"
     >
       {/* Animated Grid Background */}
       <div className="absolute inset-0 opacity-20">
@@ -97,13 +113,13 @@ export default function Hero() {
 
       {/* Floating Particles */}
       <div ref={particlesRef} className="absolute inset-0 pointer-events-none">
-        {[...Array(12)].map((_, i) => (
+        {particlePositions.map((position, i) => (
           <div
             key={i}
             className="absolute text-4xl opacity-30"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: `${position.left}%`,
+              top: `${position.top}%`,
               color: ["#6C85EA", "#AAFDBB", "#E9FA00"][i % 3],
             }}
           >
@@ -113,22 +129,22 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1
           ref={headlineRef}
-          className="text-6xl md:text-8xl font-black mb-6 leading-tight"
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 sm:mb-8 leading-tight"
         >
           <span className="block bg-gradient-to-r from-[#6C85EA] via-[#AAFDBB] to-[#E9FA00] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(108,133,234,0.5)]">
             Classic Games.
           </span>
-          <span className="block text-white mt-2 drop-shadow-[0_0_20px_rgba(170,253,187,0.3)]">
+          <span className="block text-white mt-2 sm:mt-3 drop-shadow-[0_0_20px_rgba(170,253,187,0.3)]">
             Modern Energy.
           </span>
         </h1>
 
         <p
           ref={subheadingRef}
-          className="text-xl md:text-2xl text-white/70 mb-12 max-w-3xl mx-auto leading-relaxed"
+          className="text-lg sm:text-xl md:text-2xl text-white/70 mb-10 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4"
         >
           Experience nostalgic gameplay reimagined with cutting-edge design.
           <br />
@@ -139,14 +155,14 @@ export default function Hero() {
 
         <div
           ref={ctaRef}
-          className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+          className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center"
         >
-          <button className="group relative px-10 py-5 text-lg font-bold text-black bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(108,133,234,0.6)] hover:shadow-[0_0_60px_rgba(108,133,234,0.9)]">
+          <button className="group relative px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-black bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(108,133,234,0.6)] hover:shadow-[0_0_60px_rgba(108,133,234,0.9)] w-full sm:w-auto max-w-xs">
             <span className="relative z-10">Play Now</span>
             <div className="absolute inset-0 bg-gradient-to-r from-[#AAFDBB] to-[#E9FA00] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
 
-          <button className="group relative px-10 py-5 text-lg font-bold text-[#6C85EA] bg-transparent border-2 border-[#6C85EA] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 hover:text-black shadow-[0_0_20px_rgba(108,133,234,0.3)] hover:shadow-[0_0_40px_rgba(108,133,234,0.8)]">
+          <button className="group relative px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-lg font-bold text-[#6C85EA] bg-transparent border-2 border-[#6C85EA] rounded-full overflow-hidden transform hover:scale-105 transition-all duration-300 hover:text-black shadow-[0_0_20px_rgba(108,133,234,0.3)] hover:shadow-[0_0_40px_rgba(108,133,234,0.8)] w-full sm:w-auto max-w-xs">
             <span className="relative z-10">Explore Games</span>
             <div className="absolute inset-0 bg-[#6C85EA] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>

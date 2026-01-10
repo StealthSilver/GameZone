@@ -4,9 +4,8 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+// Register plugin on the client side only
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Footer() {
   const footerRef = useRef<HTMLElement>(null);
@@ -58,8 +57,8 @@ export default function Footer() {
       {/* Background Glow */}
       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[600px] h-[300px] bg-[#6C85EA] rounded-full blur-[200px] opacity-10"></div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 mb-8 sm:mb-12">
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3 group cursor-pointer">
@@ -159,26 +158,26 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-          <p className="text-white/40 text-sm">
+        <div className="pt-6 sm:pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+          <p className="text-white/40 text-sm text-center md:text-left">
             © 2026 The Game Zone. All rights reserved.
           </p>
 
-          <div className="flex space-x-6 text-sm text-white/40">
+          <div className="flex flex-wrap items-center justify-center space-x-4 sm:space-x-6 text-sm text-white/40">
             <a
               href="#"
               className="hover:text-[#6C85EA] transition-colors duration-300"
             >
               Privacy Policy
             </a>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <a
               href="#"
               className="hover:text-[#6C85EA] transition-colors duration-300"
             >
               Terms of Service
             </a>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <a
               href="#"
               className="hover:text-[#6C85EA] transition-colors duration-300"
@@ -187,7 +186,7 @@ export default function Footer() {
             </a>
           </div>
 
-          <p className="text-xs text-white/30">
+          <p className="text-xs text-white/30 text-center md:text-right">
             Made with <span className="text-[#E9FA00] animate-pulse">⚡</span>{" "}
             by passionate gamers
           </p>

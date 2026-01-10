@@ -4,9 +4,8 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+// Register plugin on the client side only
+gsap.registerPlugin(ScrollTrigger);
 
 const features = [
   {
@@ -78,7 +77,7 @@ export default function Features() {
     <section
       id="features"
       ref={sectionRef}
-      className="relative py-32 bg-black overflow-hidden"
+      className="relative py-20 sm:py-24 lg:py-32 bg-black overflow-hidden"
     >
       {/* Background Elements */}
       <div className="absolute inset-0 opacity-10">
@@ -86,16 +85,16 @@ export default function Features() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#AAFDBB] rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
-        <div className="text-center mb-20">
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 sm:mb-6">
             Why Choose{" "}
             <span className="bg-gradient-to-r from-[#6C85EA] to-[#AAFDBB] bg-clip-text text-transparent">
               Game Zone
             </span>
             ?
           </h2>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-white/60 max-w-2xl mx-auto px-4">
             Premium features designed for serious gamers and casual players
             alike
           </p>
@@ -103,12 +102,12 @@ export default function Features() {
 
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
         >
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group relative bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-[#6C85EA] transition-all duration-500 cursor-pointer overflow-hidden"
+              className="group relative bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-white/10 hover:border-[#6C85EA] transition-all duration-500 cursor-pointer overflow-hidden"
             >
               {/* Hover Glow Effect */}
               <div
