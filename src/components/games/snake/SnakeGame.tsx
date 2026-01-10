@@ -559,225 +559,218 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
   if (!gameState) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black p-3 sm:p-4 md:p-6">
-      <div className="w-full max-w-4xl">
-        {/* Back Buttons */}
-        <div className="mb-3 sm:mb-4 flex justify-between items-center gap-2">
-          <Link href="/games/snake">
-            <button className="font-[family-name:var(--font-oxanium)] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 active:bg-gray-600 transition-colors flex items-center gap-2">
-              <span>←</span>
-              <span className="hidden sm:inline">Back to Setup</span>
-              <span className="sm:hidden">Setup</span>
-            </button>
-          </Link>
-          <Link href="/games">
-            <button className="font-[family-name:var(--font-oxanium)] px-3 py-2 sm:px-4 text-sm sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 active:bg-gray-600 transition-colors">
-              Games
-            </button>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)]">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#8CECF7]/10 rounded-full blur-3xl" />
+      </div>
 
-        {/* Game Header */}
-        <div className="mb-4 sm:mb-6 text-center">
-          <h1 className="font-[family-name:var(--font-oxanium)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
-            Snake Game
-          </h1>
-          <p className="font-[family-name:var(--font-oxanium)] text-xs sm:text-sm text-gray-400 mb-3">
-            Mode:{" "}
-            <span className="text-white font-semibold">
-              {gameModes[gameState.gameMode].name}
-            </span>
-            {" | "}
-            Snake:{" "}
-            <span className="text-white font-semibold">
-              {snakeSkins[gameState.snakeSkin].name}
-            </span>
-            {" | "}
-            Fruit:{" "}
-            <span className="text-white font-semibold">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
+        <div className="w-full max-w-2xl">
+          {/* Game Header */}
+          <div className="mb-6 text-center">
+            <h1 className="text-3xl md:text-5xl font-bold mb-3 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+              Snake Game
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-400 mb-4">
+              {gameModes[gameState.gameMode].name} •{" "}
+              {snakeSkins[gameState.snakeSkin].name} •{" "}
               {fruitTypes[gameState.fruitType].name}
-            </span>
-          </p>
-          <div className="flex justify-center gap-4 sm:gap-8 font-[family-name:var(--font-oxanium)]">
-            <div className="text-center">
-              <p className="text-gray-400 text-xs sm:text-sm mb-1">Score</p>
-              <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text text-transparent">
-                {gameState.score}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-400 text-xs sm:text-sm mb-1">
-                High Score ({gameModes[gameState.gameMode].name})
-              </p>
-              <p className="text-xl sm:text-2xl font-bold text-white">
-                {gameState.highScore}
-              </p>
+            </p>
+            <div className="flex justify-center gap-6 sm:gap-12">
+              <div className="text-center">
+                <p className="text-gray-400 text-xs sm:text-sm mb-1">Score</p>
+                <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text text-transparent">
+                  {gameState.score}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-400 text-xs sm:text-sm mb-1">
+                  High Score
+                </p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">
+                  {gameState.highScore}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Game Canvas */}
-        <div className="relative mx-auto max-w-[600px] w-full">
-          <canvas
-            ref={canvasRef}
-            width={600}
-            height={600}
-            className="border-2 border-gray-800 rounded-lg shadow-2xl w-full h-auto touch-none"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          />
+          {/* Game Canvas */}
+          <div className="relative mx-auto">
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={600}
+              className="border-2 border-gray-800/50 rounded-xl shadow-2xl shadow-[#8CECF7]/10 w-full h-auto touch-none bg-black"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            />
 
-          {/* Mobile Touch Controls */}
-          {(gameState.status === "playing" ||
-            gameState.status === "paused") && (
-            <div className="sm:hidden mt-4 grid grid-cols-3 gap-2 max-w-[280px] mx-auto">
-              <div></div>
-              <button
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  if (engineRef.current) engineRef.current.setDirection("UP");
-                }}
-                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
-              >
-                ↑
-              </button>
-              <div></div>
-              <button
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  if (engineRef.current) engineRef.current.setDirection("LEFT");
-                }}
-                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
-              >
-                ←
-              </button>
-              <button
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  if (gameState.status === "playing" && engineRef.current) {
-                    engineRef.current.pause();
-                  } else if (
-                    gameState.status === "paused" &&
-                    engineRef.current
-                  ) {
-                    engineRef.current.resume();
-                  }
-                }}
-                className="bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black p-4 rounded-lg active:opacity-80 transition-opacity font-bold text-sm"
-              >
-                {gameState.status === "paused" ? "▶" : "⏸"}
-              </button>
-              <button
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  if (engineRef.current)
-                    engineRef.current.setDirection("RIGHT");
-                }}
-                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
-              >
-                →
-              </button>
-              <div></div>
-              <button
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  if (engineRef.current) engineRef.current.setDirection("DOWN");
-                }}
-                className="bg-gray-800 text-white p-4 rounded-lg active:bg-gray-600 transition-colors font-bold text-xl"
-              >
-                ↓
-              </button>
-              <div></div>
-            </div>
-          )}
-
-          {/* Game Over Overlay */}
-          {gameState.status === "gameOver" && (
-            <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
-              <div className="text-center font-[family-name:var(--font-oxanium)] p-4">
-                {countdown !== null ? (
-                  <div>
-                    <h2 className="text-6xl sm:text-8xl font-bold text-white mb-4 animate-pulse">
-                      {countdown === 0 ? "GO!" : countdown}
-                    </h2>
-                  </div>
-                ) : (
-                  <>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                      Game Over!
-                    </h2>
-                    <p className="text-lg sm:text-xl text-gray-300 mb-2">
-                      Final Score: {gameState.score}
-                    </p>
-                    {gameState.score === gameState.highScore &&
-                      gameState.score > 0 && (
-                        <p className="text-base sm:text-lg text-yellow-400 mb-6">
-                          New High Score!
-                        </p>
-                      )}
-                    <button
-                      onClick={handleStart}
-                      className="px-6 py-3 sm:px-8 text-base sm:text-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform w-full sm:w-auto"
-                    >
-                      Play Again
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Idle/Start Overlay */}
-          {gameState.status === "idle" && (
-            <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
-              <div className="text-center font-[family-name:var(--font-oxanium)] p-4 sm:p-6">
-                {countdown !== null ? (
-                  <div>
-                    <h2 className="text-6xl sm:text-8xl font-bold text-white mb-4 animate-pulse">
-                      {countdown === 0 ? "GO!" : countdown}
-                    </h2>
-                  </div>
-                ) : (
-                  <>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-                      Ready to Play?
-                    </h2>
-                    <p className="text-sm sm:text-base text-gray-300 mb-6">
-                      <span className="hidden sm:inline">
-                        Use arrow keys or WASD to control the snake
-                      </span>
-                      <span className="sm:hidden">
-                        Swipe or use buttons to control
-                      </span>
-                    </p>
-                    <button
-                      onClick={handleStart}
-                      className="px-6 py-3 sm:px-8 text-base sm:text-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform mb-4 w-full sm:w-auto"
-                    >
-                      Start Game
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Paused Overlay */}
-          {gameState.status === "paused" && (
-            <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
-              <div className="text-center font-[family-name:var(--font-oxanium)] p-4">
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                  Paused
-                </h2>
+            {/* Mobile Touch Controls */}
+            {(gameState.status === "playing" ||
+              gameState.status === "paused") && (
+              <div className="sm:hidden mt-6 grid grid-cols-3 gap-2 max-w-[280px] mx-auto">
+                <div></div>
                 <button
-                  onClick={handlePause}
-                  className="px-6 py-3 sm:px-8 text-base sm:text-lg bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform w-full sm:w-auto"
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    if (engineRef.current) engineRef.current.setDirection("UP");
+                  }}
+                  className="bg-gray-900/50 border-2 border-gray-800 text-white p-4 rounded-xl active:border-[#8CECF7] active:bg-[#8CECF7]/10 transition-all font-bold text-xl"
                 >
-                  Resume
+                  ↑
                 </button>
+                <div></div>
+                <button
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    if (engineRef.current)
+                      engineRef.current.setDirection("LEFT");
+                  }}
+                  className="bg-gray-900/50 border-2 border-gray-800 text-white p-4 rounded-xl active:border-[#8CECF7] active:bg-[#8CECF7]/10 transition-all font-bold text-xl"
+                >
+                  ←
+                </button>
+                <button
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    if (gameState.status === "playing" && engineRef.current) {
+                      engineRef.current.pause();
+                    } else if (
+                      gameState.status === "paused" &&
+                      engineRef.current
+                    ) {
+                      engineRef.current.resume();
+                    }
+                  }}
+                  className="bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black p-4 rounded-xl active:opacity-80 transition-opacity font-bold text-sm shadow-lg shadow-[#8CECF7]/20"
+                >
+                  {gameState.status === "paused" ? "▶" : "⏸"}
+                </button>
+                <button
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    if (engineRef.current)
+                      engineRef.current.setDirection("RIGHT");
+                  }}
+                  className="bg-gray-900/50 border-2 border-gray-800 text-white p-4 rounded-xl active:border-[#8CECF7] active:bg-[#8CECF7]/10 transition-all font-bold text-xl"
+                >
+                  →
+                </button>
+                <div></div>
+                <button
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    if (engineRef.current)
+                      engineRef.current.setDirection("DOWN");
+                  }}
+                  className="bg-gray-900/50 border-2 border-gray-800 text-white p-4 rounded-xl active:border-[#8CECF7] active:bg-[#8CECF7]/10 transition-all font-bold text-xl"
+                >
+                  ↓
+                </button>
+                <div></div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Game Over Overlay */}
+            {gameState.status === "gameOver" && (
+              <div className="absolute inset-0 bg-black/90 flex items-center justify-center rounded-xl backdrop-blur-sm">
+                <div className="text-center p-6">
+                  {countdown !== null ? (
+                    <div>
+                      <h2 className="text-6xl sm:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text mb-4 animate-pulse">
+                        {countdown === 0 ? "GO!" : countdown}
+                      </h2>
+                    </div>
+                  ) : (
+                    <>
+                      <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                        Game Over!
+                      </h2>
+                      <p className="text-lg sm:text-xl text-gray-300 mb-2">
+                        Final Score: {gameState.score}
+                      </p>
+                      {gameState.score === gameState.highScore &&
+                        gameState.score > 0 && (
+                          <p className="text-base sm:text-lg bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text text-transparent font-bold mb-6">
+                            New High Score!
+                          </p>
+                        )}
+                      <button
+                        onClick={handleStart}
+                        className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
+                      >
+                        Play Again
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Idle/Start Overlay */}
+            {gameState.status === "idle" && (
+              <div className="absolute inset-0 bg-black/90 flex items-center justify-center rounded-xl backdrop-blur-sm">
+                <div className="text-center p-6">
+                  {countdown !== null ? (
+                    <div>
+                      <h2 className="text-6xl sm:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text mb-4 animate-pulse">
+                        {countdown === 0 ? "GO!" : countdown}
+                      </h2>
+                    </div>
+                  ) : (
+                    <>
+                      <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+                        Ready to Play?
+                      </h2>
+                      <p className="text-sm sm:text-base text-gray-400 mb-6">
+                        <span className="hidden sm:inline">
+                          Use arrow keys or WASD to control
+                        </span>
+                        <span className="sm:hidden">
+                          Swipe or use buttons below
+                        </span>
+                      </p>
+                      <button
+                        onClick={handleStart}
+                        className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
+                      >
+                        Start Game
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Paused Overlay */}
+            {gameState.status === "paused" && (
+              <div className="absolute inset-0 bg-black/90 flex items-center justify-center rounded-xl backdrop-blur-sm">
+                <div className="text-center p-6">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+                    Paused
+                  </h2>
+                  <button
+                    onClick={handlePause}
+                    className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
+                  >
+                    Resume
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Back Button */}
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => (window.location.href = "/games")}
+              className="px-6 py-3 rounded-lg border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300 transition-all duration-300"
+            >
+              Back to Games
+            </button>
+          </div>
         </div>
       </div>
     </div>

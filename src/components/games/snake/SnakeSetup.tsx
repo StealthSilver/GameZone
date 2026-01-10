@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SnakeSkin, FruitType, GameMode } from "./SnakeGameEngine";
 
@@ -39,9 +38,9 @@ const fruitTypes = {
 
 // Game modes
 const gameModes = {
-  easy: { name: "Easy", description: "Slow speed - Perfect for beginners" },
-  medium: { name: "Medium", description: "Normal speed - Balanced challenge" },
-  hard: { name: "Hard", description: "Fast speed - For experts only!" },
+  easy: { name: "Easy", description: "Slow speed" },
+  medium: { name: "Medium", description: "Normal speed" },
+  hard: { name: "Hard", description: "Fast speed" },
 };
 
 export const SnakeSetup: React.FC = () => {
@@ -61,158 +60,130 @@ export const SnakeSetup: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-black">
-      {/* Back to Games Button - Fixed at top left on mobile, centered on desktop */}
-      <div className="absolute top-3 left-3 sm:relative sm:top-auto sm:left-auto sm:my-2 z-10">
-        <div className="sm:flex sm:justify-center">
-          <Link href="/games">
-            <button className="font-[family-name:var(--font-oxanium)] px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-base bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-1.5 sm:gap-2">
-              <span>←</span>
-              <span>Back to Games</span>
-            </button>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)]">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#8CECF7]/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="flex flex-col items-center justify-center flex-1 p-3 sm:p-4 md:p-6 pt-16 sm:pt-0">
-        <div className="w-full max-w-4xl">
-          {/* Setup Header */}
-          <div className="mb-4 sm:mb-6 text-center">
-            <h1 className="font-[family-name:var(--font-oxanium)] text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-2">
-              Snake Game Setup
-            </h1>
-            <p className="font-[family-name:var(--font-oxanium)] text-xs sm:text-base text-gray-400">
-              Customize your game before you start
-            </p>
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
+        {/* Title */}
+        <h1 className="text-4xl md:text-6xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+          Snake Game
+        </h1>
+        <p className="text-gray-400 mb-12 text-center max-w-md">
+          Customize your game settings and start playing
+        </p>
+
+        {/* Game Settings */}
+        <div className="w-full max-w-md space-y-6 mb-8">
+          {/* Difficulty Selection */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 text-gray-300">
+              Difficulty
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {(Object.keys(gameModes) as GameMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setSelectedMode(mode)}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                    selectedMode === mode
+                      ? "border-[#AAFDBB] bg-[#AAFDBB]/10 shadow-lg shadow-[#AAFDBB]/20"
+                      : "border-gray-800 bg-gray-900/50 hover:border-gray-700"
+                  }`}
+                >
+                  <div className="text-sm font-bold">
+                    {gameModes[mode].name}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {gameModes[mode].description}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Customization Options */}
-          <div className="bg-gray-900 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 space-y-4 sm:space-y-4 border-2 border-gray-800">
-            {/* Game Mode Selection */}
-            <div>
-              <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-2">
-                Choose Difficulty
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
-                {(Object.keys(gameModes) as GameMode[]).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setSelectedMode(mode)}
-                    className={`py-1.5 px-2 sm:p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 active:scale-95 ${
-                      selectedMode === mode
-                        ? "bg-gradient-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white scale-105 border-transparent shadow-lg shadow-purple-500/30"
-                        : "bg-gray-800 text-white hover:bg-gray-700 border-gray-700"
-                    }`}
-                  >
-                    <div className="text-xs sm:text-base mb-0">
-                      {gameModes[mode].name}
-                    </div>
-                    <div className="text-[9px] sm:text-xs opacity-75 leading-tight">
-                      {gameModes[mode].description}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Snake Skin Selection */}
-            <div>
-              <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-2">
-                Choose Snake Skin
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                {(Object.keys(snakeSkins) as SnakeSkin[]).map((skin) => (
-                  <button
-                    key={skin}
-                    onClick={() => setSelectedSkin(skin)}
-                    className={`py-1.5 px-1.5 sm:p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 active:scale-95 ${
+          {/* Snake Skin Selection */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 text-gray-300">
+              Snake Skin
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {(Object.keys(snakeSkins) as SnakeSkin[]).map((skin) => (
+                <button
+                  key={skin}
+                  onClick={() => setSelectedSkin(skin)}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                    selectedSkin === skin
+                      ? "border-white shadow-lg"
+                      : "border-gray-800 bg-gray-900/50 hover:border-gray-700"
+                  }`}
+                  style={{
+                    background:
                       selectedSkin === skin
-                        ? "scale-105 border-white shadow-lg"
-                        : "bg-gray-800 hover:bg-gray-700 border-gray-700"
-                    }`}
+                        ? `linear-gradient(135deg, ${snakeSkins[skin].head[0]}, ${snakeSkins[skin].head[2]})`
+                        : undefined,
+                  }}
+                >
+                  <div
+                    className="font-bold"
                     style={{
-                      background:
-                        selectedSkin === skin
-                          ? `linear-gradient(135deg, ${snakeSkins[skin].head[0]}, ${snakeSkins[skin].head[2]})`
-                          : undefined,
-                      color: selectedSkin === skin ? "black" : "white",
+                      color: selectedSkin === skin ? "#000" : "#fff",
                     }}
                   >
-                    <div className="text-[11px] sm:text-base">
-                      {snakeSkins[skin].name}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Fruit Type Selection */}
-            <div>
-              <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-2">
-                Choose Fruit
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                {(Object.keys(fruitTypes) as FruitType[]).map((fruit) => (
-                  <button
-                    key={fruit}
-                    onClick={() => setSelectedFruit(fruit)}
-                    className={`py-1.5 px-1.5 sm:p-3 rounded-lg font-[family-name:var(--font-oxanium)] font-semibold transition-all border-2 active:scale-95 ${
-                      selectedFruit === fruit
-                        ? "scale-105 border-white shadow-lg"
-                        : "bg-gray-800 hover:bg-gray-700 border-gray-700"
-                    }`}
-                    style={{
-                      background:
-                        selectedFruit === fruit
-                          ? `linear-gradient(135deg, ${fruitTypes[fruit].colors[0]}, ${fruitTypes[fruit].colors[1]})`
-                          : undefined,
-                      color: selectedFruit === fruit ? "white" : "white",
-                    }}
-                  >
-                    <div className="text-[11px] sm:text-base">
-                      {fruitTypes[fruit].name}
-                    </div>
-                  </button>
-                ))}
-              </div>
+                    {snakeSkins[skin].name}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Summary and Start Button */}
-          <div className="bg-gray-900 rounded-xl p-3 sm:p-4 border-2 border-gray-800">
-            <div className="text-center">
-              <h3 className="font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold text-white mb-2 sm:mb-3">
-                Your Selection
-              </h3>
-              <div className="flex justify-center gap-2.5 sm:gap-4 mb-3 sm:mb-4 font-[family-name:var(--font-oxanium)] text-[9px] sm:text-sm text-gray-300 flex-wrap">
-                <div>
-                  <span className="text-gray-500">Mode:</span>{" "}
-                  <span className="text-white font-semibold">
-                    {gameModes[selectedMode].name}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Snake:</span>{" "}
-                  <span className="text-white font-semibold">
-                    {snakeSkins[selectedSkin].name}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Fruit:</span>{" "}
-                  <span className="text-white font-semibold">
-                    {fruitTypes[selectedFruit].name}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={handleStartGame}
-                className="px-4 py-1.5 sm:px-8 sm:py-3 bg-gradient-to-r from-[#10b981] via-[#059669] to-[#047857] text-white font-[family-name:var(--font-oxanium)] text-xs sm:text-lg font-bold rounded-lg hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-green-500/30 w-full sm:w-auto"
-              >
-                Start Game →
-              </button>
+          {/* Fruit Selection */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 text-gray-300">Fruit</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {(Object.keys(fruitTypes) as FruitType[]).map((fruit) => (
+                <button
+                  key={fruit}
+                  onClick={() => setSelectedFruit(fruit)}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                    selectedFruit === fruit
+                      ? "border-white shadow-lg"
+                      : "border-gray-800 bg-gray-900/50 hover:border-gray-700"
+                  }`}
+                  style={{
+                    background:
+                      selectedFruit === fruit
+                        ? `linear-gradient(135deg, ${fruitTypes[fruit].colors[0]}, ${fruitTypes[fruit].colors[1]})`
+                        : undefined,
+                  }}
+                >
+                  <div className="font-bold text-white">
+                    {fruitTypes[fruit].name}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
+
+        {/* Start Game Button */}
+        <button
+          onClick={handleStartGame}
+          className="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black hover:shadow-lg hover:shadow-[#8CECF7]/50 hover:scale-105"
+        >
+          Start Game
+        </button>
+
+        {/* Back Button */}
+        <button
+          onClick={() => router.push("/games")}
+          className="mt-6 px-6 py-3 rounded-lg border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300 transition-all duration-300"
+        >
+          Back to Games
+        </button>
       </div>
     </div>
   );
