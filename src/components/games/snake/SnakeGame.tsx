@@ -795,16 +795,6 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
               </div>
             )}
           </div>
-
-          {/* Back Button */}
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={() => (window.location.href = "/games")}
-              className="px-6 py-3 rounded-lg border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300 transition-all duration-300"
-            >
-              Back to Games
-            </button>
-          </div>
         </div>
       </div>
     </div>
