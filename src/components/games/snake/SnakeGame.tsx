@@ -423,24 +423,34 @@ export const SnakeGame: React.FC = () => {
           {gameState.status === "gameOver" && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-lg backdrop-blur-sm">
               <div className="text-center font-[family-name:var(--font-oxanium)]">
-                <h2 className="text-4xl font-bold text-white mb-4">
-                  Game Over!
-                </h2>
-                <p className="text-xl text-gray-300 mb-2">
-                  Final Score: {gameState.score}
-                </p>
-                {gameState.score === gameState.highScore &&
-                  gameState.score > 0 && (
-                    <p className="text-lg text-yellow-400 mb-6">
-                      🎉 New High Score! 🎉
+                {countdown !== null ? (
+                  <div>
+                    <h2 className="text-8xl font-bold text-white mb-4 animate-pulse">
+                      {countdown === 0 ? "GO!" : countdown}
+                    </h2>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-4xl font-bold text-white mb-4">
+                      Game Over!
+                    </h2>
+                    <p className="text-xl text-gray-300 mb-2">
+                      Final Score: {gameState.score}
                     </p>
-                  )}
-                <button
-                  onClick={handleStart}
-                  className="px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform"
-                >
-                  Play Again
-                </button>
+                    {gameState.score === gameState.highScore &&
+                      gameState.score > 0 && (
+                        <p className="text-lg text-yellow-400 mb-6">
+                          🎉 New High Score! 🎉
+                        </p>
+                      )}
+                    <button
+                      onClick={handleStart}
+                      className="px-8 py-3 bg-gradient-to-br from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:scale-105 transition-transform"
+                    >
+                      Play Again
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
