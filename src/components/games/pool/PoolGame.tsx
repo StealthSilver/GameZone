@@ -23,6 +23,7 @@ export const PoolGame = () => {
   );
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const renderLoopRef = useRef<number | null>(null);
 
   const gameMode = (searchParams.get("mode") as GameMode) || "player";
 
@@ -57,8 +58,45 @@ export const PoolGame = () => {
       if (engineRef.current) {
         engineRef.current.cleanup();
       }
+      if (renderLoopRef.current) {
+        cancelAnimationFrame(renderLoopRef.current);
+      }
     };
   }, [gameMode]);
+
+  // Continuous render loop
+  useEffect(() => {
+    if (!gameState || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawTable(ctx);
+      drawPockets(ctx, gameState.pockets);
+
+      // Draw all balls
+      gameState.balls.forEach((ball) => {
+        drawBall(ctx, ball);
+      });
+
+      drawCue(ctx, gameState);
+      drawPowerBar(ctx, gameState);
+
+      renderLoopRef.current = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      if (renderLoopRef.current) {
+        cancelAnimationFrame(renderLoopRef.current);
+      }
+    };
+  }, [gameState, drawTable, drawPockets, drawBall, drawCue, drawPowerBar]);
 
   // Drawing functions
   const drawTable = useCallback((ctx: CanvasRenderingContext2D) => {
