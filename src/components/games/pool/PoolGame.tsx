@@ -52,14 +52,6 @@ export const PoolGame = () => {
       engine.startGame();
       const initialState = engine.getState();
       setGameState(initialState);
-
-      // Debug log
-      console.log("Game initialized:", {
-        ballCount: initialState.balls.length,
-        tableWidth,
-        tableHeight,
-        gameStatus: initialState.gameStatus,
-      });
     }, 100);
 
     return () => {
@@ -72,52 +64,6 @@ export const PoolGame = () => {
       }
     };
   }, [gameMode]);
-
-  // Continuous render loop
-  useEffect(() => {
-    if (!gameState || !canvasRef.current) {
-      console.log("Render loop not starting:", {
-        gameState: !!gameState,
-        canvas: !!canvasRef.current,
-      });
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      console.log("No canvas context");
-      return;
-    }
-
-    console.log("Starting render loop, balls:", gameState.balls.length);
-
-    let animationId: number;
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      drawTable(ctx);
-      drawPockets(ctx, gameState.pockets);
-
-      // Draw all balls
-      gameState.balls.forEach((ball) => {
-        drawBall(ctx, ball);
-      });
-
-      drawCue(ctx, gameState);
-      drawPowerBar(ctx, gameState);
-
-      animationId = requestAnimationFrame(render);
-    };
-
-    animationId = requestAnimationFrame(render);
-
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    };
-  }, [gameState]);
 
   // Drawing functions
   const drawTable = useCallback((ctx: CanvasRenderingContext2D) => {
@@ -187,11 +133,6 @@ export const PoolGame = () => {
     if (ball.pocketed) return;
 
     const { position, radius, color, type, number } = ball;
-
-    // Debug first ball
-    if (ball.id === 0) {
-      console.log("Drawing cue ball at:", position, "radius:", radius);
-    }
 
     // Ball shadow
     ctx.beginPath();
@@ -352,6 +293,45 @@ export const PoolGame = () => {
     },
     []
   );
+
+  // Continuous render loop
+  useEffect(() => {
+    if (!gameState || !canvasRef.current) {
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+
+    let animationId: number;
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawTable(ctx);
+      drawPockets(ctx, gameState.pockets);
+
+      // Draw all balls
+      gameState.balls.forEach((ball) => {
+        drawBall(ctx, ball);
+      });
+
+      drawCue(ctx, gameState);
+      drawPowerBar(ctx, gameState);
+
+      animationId = requestAnimationFrame(render);
+    };
+
+    animationId = requestAnimationFrame(render);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [gameState, drawTable, drawPockets, drawBall, drawCue, drawPowerBar]);
 
   // Mouse handlers for aiming and shooting
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
