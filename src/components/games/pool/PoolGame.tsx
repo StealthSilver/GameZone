@@ -33,22 +33,21 @@ export const PoolGame = () => {
     if (!canvas) return;
 
     const initGame = () => {
-      // Force a layout by getting parent width
-      const parent = canvas.parentElement;
-      const parentWidth = parent ? parent.clientWidth : 800;
-      const tableWidth = Math.min(800, parentWidth);
-      const tableHeight = tableWidth * 0.5;
+      // Set fixed large dimensions for better visibility
+      const tableWidth = 1200;
+      const tableHeight = 600;
 
-      console.log("Initializing canvas with parent width:", parentWidth);
+      console.log("Initializing canvas:", tableWidth, "x", tableHeight);
 
+      // Set canvas internal resolution
       canvas.width = tableWidth;
       canvas.height = tableHeight;
 
-      // Set explicit CSS size to match canvas dimensions
+      // Set CSS dimensions to match (important for proper display)
       canvas.style.width = `${tableWidth}px`;
       canvas.style.height = `${tableHeight}px`;
 
-      console.log("Canvas initialized:", tableWidth, "x", tableHeight);
+      console.log("Canvas dimensions set:", canvas.width, "x", canvas.height);
 
       const engine = new PoolGameEngine(tableWidth, tableHeight, gameMode);
       engineRef.current = engine;
@@ -62,9 +61,12 @@ export const PoolGame = () => {
       setGameState(initialState);
 
       console.log("Game started with", initialState.balls.length, "balls");
+      console.log("Ball radius:", initialState.balls[0]?.radius);
+      console.log("First ball position:", initialState.balls[0]?.position);
     };
 
-    const timer = setTimeout(initGame, 100);
+    // Give DOM time to settle
+    const timer = setTimeout(initGame, 150);
 
     return () => {
       clearTimeout(timer);
@@ -72,7 +74,9 @@ export const PoolGame = () => {
         engineRef.current.cleanup();
       }
     };
-  }, [gameMode]); // Render loop
+  }, [gameMode]);
+
+  // Render loop
   useEffect(() => {
     if (!gameState || !canvasRef.current) return;
 
@@ -82,18 +86,61 @@ export const PoolGame = () => {
 
     let animationId: number;
 
-    const render = () => {
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Helper function to lighten colors for gradient
+    const lightenColor = (color: string, percent: number): string => {
+      const num = parseInt(color.replace("#", ""), 16);
+      const amt = Math.round(2.55 * percent);
+      const R = Math.min(255, (num >> 16) + amt);
+      const G = Math.min(255, ((num >> 8) & 0x00ff) + amt);
+      const B = Math.min(255, (num & 0x0000ff) + amt);
+      return `#${((1 << 24) | (R << 16) | (G << 8) | B).toString(16).slice(1)}`;
+    };
 
-      // Draw table
+    const render = () => {
+      // Clear canvas with black background
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw table border (wood)
       ctx.fillStyle = "#8B4513";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#0a5f38";
-      ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-      // Draw pockets
+      // Draw playing surface (green felt) with padding
+      const padding = 40;
+      ctx.fillStyle = "#0a5f38";
+      ctx.fillRect(
+        padding,
+        padding,
+        canvas.width - padding * 2,
+        canvas.height - padding * 2
+      );
+
+      // Draw pockets with glow effect
       gameState.pockets.forEach((pocket) => {
+        // Outer glow
+        const gradient = ctx.createRadialGradient(
+          pocket.position.x,
+          pocket.position.y,
+          pocket.radius * 0.5,
+          pocket.position.x,
+          pocket.position.y,
+          pocket.radius * 1.2
+        );
+        gradient.addColorStop(0, "#000000");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0.3)");
+
+        ctx.beginPath();
+        ctx.arc(
+          pocket.position.x,
+          pocket.position.y,
+          pocket.radius * 1.2,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Main pocket
         ctx.beginPath();
         ctx.arc(
           pocket.position.x,
@@ -106,34 +153,64 @@ export const PoolGame = () => {
         ctx.fill();
       });
 
-      // Draw balls
+      // Draw balls with enhanced visuals
       gameState.balls.forEach((ball) => {
         if (ball.pocketed) return;
 
-        // Ball body
+        // Ball shadow
+        ctx.beginPath();
+        ctx.arc(
+          ball.position.x + 3,
+          ball.position.y + 3,
+          ball.radius,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        ctx.fill();
+
+        // Ball body with gradient for 3D effect
+        const ballGradient = ctx.createRadialGradient(
+          ball.position.x - ball.radius * 0.3,
+          ball.position.y - ball.radius * 0.3,
+          ball.radius * 0.2,
+          ball.position.x,
+          ball.position.y,
+          ball.radius
+        );
+        ballGradient.addColorStop(
+          0,
+          ball.color === "#FFFFFF" ? "#FFFFFF" : lightenColor(ball.color, 40)
+        );
+        ballGradient.addColorStop(1, ball.color);
+
         ctx.beginPath();
         ctx.arc(ball.position.x, ball.position.y, ball.radius, 0, Math.PI * 2);
-        ctx.fillStyle = ball.color;
+        ctx.fillStyle = ballGradient;
         ctx.fill();
-        ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
-        ctx.lineWidth = 1;
+
+        // Ball border
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Ball number
+        // Ball number with white circle background
         if (ball.type !== "cue") {
+          // White circle for number
           ctx.fillStyle = "#FFFFFF";
           ctx.beginPath();
           ctx.arc(
             ball.position.x,
             ball.position.y,
-            ball.radius * 0.5,
+            ball.radius * 0.6,
             0,
             Math.PI * 2
           );
           ctx.fill();
 
+          // Number text
           ctx.fillStyle = "#000000";
-          ctx.font = `bold ${ball.radius * 0.8}px Arial`;
+          ctx.font = `bold ${Math.floor(ball.radius * 1.0)}px Arial`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(
@@ -144,7 +221,7 @@ export const PoolGame = () => {
         }
       });
 
-      // Draw cue stick
+      // Draw cue stick when aiming
       if (gameState.gameStatus === "aiming" && gameState.canShoot) {
         const cueBall = gameState.balls.find(
           (b) => b.type === "cue" && !b.pocketed
@@ -152,8 +229,8 @@ export const PoolGame = () => {
         if (cueBall) {
           const angle = gameState.cueAngle;
           const power = gameState.cuePower;
-          const cueLength = 150;
-          const cueDistance = 30 + (power / 100) * 50;
+          const cueLength = 250;
+          const cueDistance = 50 + (power / 100) * 70;
 
           const startX =
             cueBall.position.x + Math.cos(angle + Math.PI) * cueDistance;
@@ -162,25 +239,76 @@ export const PoolGame = () => {
           const endX = startX + Math.cos(angle + Math.PI) * cueLength;
           const endY = startY + Math.sin(angle + Math.PI) * cueLength;
 
+          // Cue stick body
           ctx.beginPath();
           ctx.moveTo(startX, startY);
           ctx.lineTo(endX, endY);
-          ctx.strokeStyle = "#8B4513";
-          ctx.lineWidth = 6;
+          ctx.strokeStyle = "#D2691E";
+          ctx.lineWidth = 12;
           ctx.lineCap = "round";
           ctx.stroke();
 
-          // Aim line
-          const aimEndX = cueBall.position.x + Math.cos(angle) * 200;
-          const aimEndY = cueBall.position.y + Math.sin(angle) * 200;
+          // Cue tip
+          ctx.beginPath();
+          ctx.arc(startX, startY, 8, 0, Math.PI * 2);
+          ctx.fillStyle = "#4169E1";
+          ctx.fill();
+
+          // Aim line (trajectory prediction)
+          const aimEndX = cueBall.position.x + Math.cos(angle) * 400;
+          const aimEndY = cueBall.position.y + Math.sin(angle) * 400;
           ctx.beginPath();
           ctx.moveTo(cueBall.position.x, cueBall.position.y);
           ctx.lineTo(aimEndX, aimEndY);
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-          ctx.lineWidth = 2;
-          ctx.setLineDash([10, 10]);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([20, 10]);
           ctx.stroke();
           ctx.setLineDash([]);
+
+          // Power indicator bar
+          const powerBarWidth = 200;
+          const powerBarHeight = 20;
+          const powerBarX = canvas.width / 2 - powerBarWidth / 2;
+          const powerBarY = canvas.height - 60;
+
+          // Background
+          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+          ctx.fillRect(
+            powerBarX - 8,
+            powerBarY - 8,
+            powerBarWidth + 16,
+            powerBarHeight + 16
+          );
+
+          // Power bar outline
+          ctx.strokeStyle = "#FFFFFF";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(powerBarX, powerBarY, powerBarWidth, powerBarHeight);
+
+          // Power fill
+          const powerFill = (power / 100) * powerBarWidth;
+          const powerGradient = ctx.createLinearGradient(
+            powerBarX,
+            0,
+            powerBarX + powerFill,
+            0
+          );
+          powerGradient.addColorStop(0, "#00FF00");
+          powerGradient.addColorStop(0.5, "#FFFF00");
+          powerGradient.addColorStop(1, "#FF0000");
+          ctx.fillStyle = powerGradient;
+          ctx.fillRect(powerBarX, powerBarY, powerFill, powerBarHeight);
+
+          // Power text
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "bold 16px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText(
+            `Power: ${Math.round(power)}%`,
+            canvas.width / 2,
+            powerBarY - 15
+          );
         }
       }
 
@@ -277,17 +405,23 @@ export const PoolGame = () => {
     <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col">
       {/* Debug Panel */}
       {gameState && canvasRef.current && (
-        <div className="fixed top-4 right-4 bg-red-900/90 p-4 rounded-lg text-xs z-50">
-          <div>
-            Canvas: {canvasRef.current.width}x{canvasRef.current.height}
+        <div className="fixed top-4 right-4 bg-black/90 p-4 rounded-lg text-xs z-50 border border-[#8CECF7]">
+          <div className="text-[#8CECF7] font-bold mb-2">Debug Info</div>
+          <div className="space-y-1">
+            <div>
+              Canvas: {canvasRef.current.width}x{canvasRef.current.height}px
+            </div>
+            <div>
+              Balls: {gameState.balls.filter((b) => !b.pocketed).length} active
+            </div>
+            <div>Ball Radius: {gameState.balls[0]?.radius}px</div>
+            <div>Pocket Radius: {gameState.pockets[0]?.radius}px</div>
+            <div>
+              Status:{" "}
+              <span className="text-[#AAFDBB]">{gameState.gameStatus}</span>
+            </div>
+            <div>Player: {gameState.currentPlayer}</div>
           </div>
-          <div>
-            Display: {canvasRef.current.style.width} x{" "}
-            {canvasRef.current.style.height}
-          </div>
-          <div>Balls: {gameState.balls.length}</div>
-          <div>Pockets: {gameState.pockets.length}</div>
-          <div>Status: {gameState.gameStatus}</div>
         </div>
       )}
 
@@ -319,7 +453,7 @@ export const PoolGame = () => {
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {/* Score Board */}
         {gameState && (
-          <div className="w-full max-w-4xl mb-4 flex justify-between items-center gap-4">
+          <div className="w-full max-w-7xl mb-6 px-4 flex justify-between items-center gap-4">
             <div
               className={`flex-1 p-4 rounded-lg border-2 ${
                 gameState.currentPlayer === 1
@@ -375,15 +509,19 @@ export const PoolGame = () => {
         )}
 
         {/* Game Canvas */}
-        <div className="relative max-w-4xl w-full flex justify-center">
+        <div className="relative w-full flex justify-center items-center p-4">
           <canvas
             ref={canvasRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            className="border-4 border-[#8B4513] rounded-lg shadow-2xl cursor-crosshair"
-            style={{ display: "block", backgroundColor: "#0a5f38" }}
+            className="border-8 border-[#8B4513] rounded-2xl shadow-2xl cursor-crosshair"
+            style={{
+              display: "block",
+              backgroundColor: "#0a5f38",
+              maxWidth: "100%",
+            }}
           />
         </div>
 

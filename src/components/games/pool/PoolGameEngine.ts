@@ -58,16 +58,16 @@ export class PoolGameEngine {
   private readonly tableWidth: number;
   private readonly tableHeight: number;
   private readonly friction: number = 0.98;
-  private readonly pocketRadius: number = 20;
-  private readonly ballRadius: number = 12;
+  private readonly pocketRadius: number = 30;
+  private readonly ballRadius: number = 18;
   private readonly maxPower: number = 30;
   private readonly minMovementSpeed: number = 0.1;
   private animationFrameId: number | null = null;
   private onStateChange: ((state: GameState) => void) | null = null;
 
   constructor(
-    tableWidth: number = 800,
-    tableHeight: number = 400,
+    tableWidth: number = 1200,
+    tableHeight: number = 600,
     gameMode: GameMode = "player"
   ) {
     this.tableWidth = tableWidth;
@@ -100,7 +100,7 @@ export class PoolGameEngine {
   }
 
   private initializePockets(): void {
-    const margin = 25; // Distance from edge
+    const margin = 50; // Distance from edge - increased for larger table
     const pocketPositions: Vector2D[] = [
       { x: margin, y: margin }, // Top-left
       { x: this.tableWidth / 2, y: margin }, // Top-center
@@ -302,7 +302,7 @@ export class PoolGameEngine {
   }
 
   private updateBalls(): void {
-    const tablePadding = 25; // Keep balls away from edges
+    const tablePadding = 50; // Keep balls away from edges - matches visual padding
 
     this.state.balls.forEach((ball) => {
       if (ball.pocketed || !ball.isMoving) return;
