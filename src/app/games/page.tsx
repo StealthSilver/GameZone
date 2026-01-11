@@ -17,7 +17,7 @@ const games = [
     available: true,
     route: "/games/tictactoe",
   },
-  { name: "Pool", image: "/pool.png", available: false, route: "/games/pool" },
+  { name: "Pool", image: "/pool.png", available: true, route: "/games/pool" },
   {
     name: "Chess",
     image: "/chess.png",
