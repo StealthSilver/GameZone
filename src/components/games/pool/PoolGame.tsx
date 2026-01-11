@@ -52,6 +52,14 @@ export const PoolGame = () => {
       engine.startGame();
       const initialState = engine.getState();
       setGameState(initialState);
+
+      // Force initial render
+      setTimeout(() => {
+        const ctx = canvas.getContext("2d");
+        if (ctx && initialState) {
+          renderFrame(ctx, initialState);
+        }
+      }, 50);
     }, 100);
 
     return () => {
@@ -75,15 +83,28 @@ export const PoolGame = () => {
     ctx.fillStyle = "#0a5f38";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Table border
-    ctx.strokeStyle = "#8B4513";
-    ctx.lineWidth = 20;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    // Table border (wood)
+    ctx.fillStyle = "#8B4513";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Inner border
+    // Playing surface
+    ctx.fillStyle = "#0a5f38";
+    ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+    // Inner border decoration
     ctx.strokeStyle = "#654321";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+    ctx.lineWidth = 3;
+    ctx.strokeRect(22, 22, canvas.width - 44, canvas.height - 44);
+
+    // Center line
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 10]);
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 20);
+    ctx.lineTo(canvas.width / 2, canvas.height - 20);
+    ctx.stroke();
+    ctx.setLineDash([]);
   }, []);
 
   const drawPockets = useCallback(
@@ -213,16 +234,20 @@ export const PoolGame = () => {
       const angle = state.cueAngle;
       const power = state.cuePower;
       const cueLength = 150;
-      const cueDistance = 30 + (100 - power) * 0.5; // Cue pulls back with power
+      const cueDistance = 30 + (power / 100) * 50; // Cue pulls back with power
 
-      const startX = cueBall.position.x + Math.cos(angle) * cueDistance;
-      const startY = cueBall.position.y + Math.sin(angle) * cueDistance;
-      const endX = startX + Math.cos(angle) * cueLength;
-      const endY = startY + Math.sin(angle) * cueLength;
+      // Draw from the opposite side of where we're aiming
+      const startX =
+        cueBall.position.x + Math.cos(angle + Math.PI) * cueDistance;
+      const startY =
+        cueBall.position.y + Math.sin(angle + Math.PI) * cueDistance;
+      const endX = startX + Math.cos(angle + Math.PI) * cueLength;
+      const endY = startY + Math.sin(angle + Math.PI) * cueLength;
 
       // Cue stick
       const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
-      gradient.addColorStop(0, "#8B4513");
+      gradient.addColorStop(0, "#4169E1");
+      gradient.addColorStop(0.2, "#8B4513");
       gradient.addColorStop(0.7, "#D2691E");
       gradient.addColorStop(1, "#F4A460");
 
@@ -240,7 +265,7 @@ export const PoolGame = () => {
       ctx.fillStyle = "#4169E1";
       ctx.fill();
 
-      // Aim line
+      // Aim line (shows where ball will go)
       const aimLineLength = 200;
       const aimEndX = cueBall.position.x + Math.cos(angle) * aimLineLength;
       const aimEndY = cueBall.position.y + Math.sin(angle) * aimLineLength;
@@ -248,9 +273,9 @@ export const PoolGame = () => {
       ctx.beginPath();
       ctx.moveTo(cueBall.position.x, cueBall.position.y);
       ctx.lineTo(aimEndX, aimEndY);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
       ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
+      ctx.setLineDash([10, 10]);
       ctx.stroke();
       ctx.setLineDash([]);
     },
@@ -294,6 +319,28 @@ export const PoolGame = () => {
     []
   );
 
+  // Render a single frame
+  const renderFrame = useCallback(
+    (ctx: CanvasRenderingContext2D, state: GameState) => {
+      if (!canvasRef.current) return;
+      const canvas = canvasRef.current;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawTable(ctx);
+      drawPockets(ctx, state.pockets);
+
+      // Draw all balls
+      state.balls.forEach((ball) => {
+        drawBall(ctx, ball);
+      });
+
+      drawCue(ctx, state);
+      drawPowerBar(ctx, state);
+    },
+    [drawTable, drawPockets, drawBall, drawCue, drawPowerBar]
+  );
+
   // Continuous render loop
   useEffect(() => {
     if (!gameState || !canvasRef.current) {
@@ -308,19 +355,7 @@ export const PoolGame = () => {
 
     let animationId: number;
     const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      drawTable(ctx);
-      drawPockets(ctx, gameState.pockets);
-
-      // Draw all balls
-      gameState.balls.forEach((ball) => {
-        drawBall(ctx, ball);
-      });
-
-      drawCue(ctx, gameState);
-      drawPowerBar(ctx, gameState);
-
+      renderFrame(ctx, gameState);
       animationId = requestAnimationFrame(render);
     };
 
@@ -331,7 +366,7 @@ export const PoolGame = () => {
         cancelAnimationFrame(animationId);
       }
     };
-  }, [gameState, drawTable, drawPockets, drawBall, drawCue, drawPowerBar]);
+  }, [gameState, renderFrame]);
 
   // Mouse handlers for aiming and shooting
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -379,16 +414,14 @@ export const PoolGame = () => {
     );
     if (!cueBall) return;
 
-    const dx = x - cueBall.position.x;
-    const dy = y - cueBall.position.y;
+    // Calculate angle from cue ball to mouse (opposite direction for shooting)
+    const dx = cueBall.position.x - x;
+    const dy = cueBall.position.y - y;
     const angle = Math.atan2(dy, dx);
 
-    const pullBackX = x - cueBall.position.x;
-    const pullBackY = y - cueBall.position.y;
-    const pullBackDistance = Math.sqrt(
-      pullBackX * pullBackX + pullBackY * pullBackY
-    );
-    const power = Math.min(100, Math.max(10, (pullBackDistance / 100) * 100));
+    // Calculate power based on pull-back distance
+    const pullBackDistance = Math.sqrt(dx * dx + dy * dy);
+    const power = Math.min(100, Math.max(10, (pullBackDistance / 150) * 100));
 
     if (engineRef.current) {
       engineRef.current.setCueAngle(angle);
@@ -453,16 +486,14 @@ export const PoolGame = () => {
     );
     if (!cueBall) return;
 
-    const dx = x - cueBall.position.x;
-    const dy = y - cueBall.position.y;
+    // Calculate angle from cue ball to touch (opposite direction for shooting)
+    const dx = cueBall.position.x - x;
+    const dy = cueBall.position.y - y;
     const angle = Math.atan2(dy, dx);
 
-    const pullBackX = x - cueBall.position.x;
-    const pullBackY = y - cueBall.position.y;
-    const pullBackDistance = Math.sqrt(
-      pullBackX * pullBackX + pullBackY * pullBackY
-    );
-    const power = Math.min(100, Math.max(10, (pullBackDistance / 100) * 100));
+    // Calculate power based on pull-back distance
+    const pullBackDistance = Math.sqrt(dx * dx + dy * dy);
+    const power = Math.min(100, Math.max(10, (pullBackDistance / 150) * 100));
 
     if (engineRef.current) {
       engineRef.current.setCueAngle(angle);
@@ -635,9 +666,9 @@ export const PoolGame = () => {
           gameState.gameStatus === "aiming" &&
           gameState.canShoot &&
           !(gameMode === "computer" && gameState.currentPlayer === 2) && (
-            <div className="mt-4 text-gray-400 text-sm text-center">
-              Click and drag on the cue ball to aim. Pull back to set power,
-              release to shoot.
+            <div className="mt-4 text-gray-400 text-sm text-center max-w-md">
+              Click on the cue ball and drag in the opposite direction to aim.
+              Pull farther to increase power, then release to shoot.
             </div>
           )}
       </div>

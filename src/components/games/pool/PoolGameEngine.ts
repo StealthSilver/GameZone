@@ -100,13 +100,14 @@ export class PoolGameEngine {
   }
 
   private initializePockets(): void {
+    const margin = 25; // Distance from edge
     const pocketPositions: Vector2D[] = [
-      { x: 15, y: 15 }, // Top-left
-      { x: this.tableWidth / 2, y: 10 }, // Top-center
-      { x: this.tableWidth - 15, y: 15 }, // Top-right
-      { x: 15, y: this.tableHeight - 15 }, // Bottom-left
-      { x: this.tableWidth / 2, y: this.tableHeight - 10 }, // Bottom-center
-      { x: this.tableWidth - 15, y: this.tableHeight - 15 }, // Bottom-right
+      { x: margin, y: margin }, // Top-left
+      { x: this.tableWidth / 2, y: margin }, // Top-center
+      { x: this.tableWidth - margin, y: margin }, // Top-right
+      { x: margin, y: this.tableHeight - margin }, // Bottom-left
+      { x: this.tableWidth / 2, y: this.tableHeight - margin }, // Bottom-center
+      { x: this.tableWidth - margin, y: this.tableHeight - margin }, // Bottom-right
     ];
 
     this.state.pockets = pocketPositions.map((position) => ({
@@ -212,12 +213,24 @@ export class PoolGameEngine {
   public startGame(): void {
     this.state.gameStatus = "aiming";
     this.state.canShoot = true;
+    this.state.isAiming = true;
+    this.updateCuePosition();
     this.notifyStateChange();
+  }
+
+  private updateCuePosition(): void {
+    const cueBall = this.state.balls.find(
+      (b) => b.type === "cue" && !b.pocketed
+    );
+    if (cueBall) {
+      this.state.cuePosition = { ...cueBall.position };
+    }
   }
 
   public setCueAngle(angle: number): void {
     if (this.state.gameStatus === "aiming") {
       this.state.cueAngle = angle;
+      this.state.isAiming = true;
       this.notifyStateChange();
     }
   }
@@ -225,6 +238,7 @@ export class PoolGameEngine {
   public setCuePower(power: number): void {
     if (this.state.gameStatus === "aiming") {
       this.state.cuePower = Math.max(0, Math.min(power, 100));
+      this.state.isAiming = true;
       this.notifyStateChange();
     }
   }
@@ -288,6 +302,8 @@ export class PoolGameEngine {
   }
 
   private updateBalls(): void {
+    const tablePadding = 25; // Keep balls away from edges
+
     this.state.balls.forEach((ball) => {
       if (ball.pocketed || !ball.isMoving) return;
 
@@ -299,20 +315,26 @@ export class PoolGameEngine {
       ball.position.x += ball.velocity.x;
       ball.position.y += ball.velocity.y;
 
-      // Wall collisions with bounce
-      if (ball.position.x - ball.radius < 0) {
-        ball.position.x = ball.radius;
+      // Wall collisions with bounce (accounting for table borders)
+      if (ball.position.x - ball.radius < tablePadding) {
+        ball.position.x = tablePadding + ball.radius;
         ball.velocity.x *= -0.8;
-      } else if (ball.position.x + ball.radius > this.tableWidth) {
-        ball.position.x = this.tableWidth - ball.radius;
+      } else if (
+        ball.position.x + ball.radius >
+        this.tableWidth - tablePadding
+      ) {
+        ball.position.x = this.tableWidth - tablePadding - ball.radius;
         ball.velocity.x *= -0.8;
       }
 
-      if (ball.position.y - ball.radius < 0) {
-        ball.position.y = ball.radius;
+      if (ball.position.y - ball.radius < tablePadding) {
+        ball.position.y = tablePadding + ball.radius;
         ball.velocity.y *= -0.8;
-      } else if (ball.position.y + ball.radius > this.tableHeight) {
-        ball.position.y = this.tableHeight - ball.radius;
+      } else if (
+        ball.position.y + ball.radius >
+        this.tableHeight - tablePadding
+      ) {
+        ball.position.y = this.tableHeight - tablePadding - ball.radius;
         ball.velocity.y *= -0.8;
       }
 
@@ -523,6 +545,7 @@ export class PoolGameEngine {
       cueBall.position = { x: this.tableWidth * 0.25, y: this.tableHeight / 2 };
       cueBall.velocity = { x: 0, y: 0 };
       cueBall.isMoving = false;
+      this.updateCuePosition();
     }
   }
 
