@@ -60,10 +60,12 @@ export class PoolGameEngine {
   private readonly friction: number = 0.98;
   private readonly pocketRadius: number = 30;
   private readonly ballRadius: number = 18;
-  private readonly maxPower: number = 30;
-  private readonly minMovementSpeed: number = 0.1;
+  private readonly maxPower: number = 28;
+  private readonly minMovementSpeed: number = 0.03;
   private animationFrameId: number | null = null;
   private onStateChange: ((state: GameState) => void) | null = null;
+  private onShot: (() => void) | null = null;
+  private onPocket: ((ball: Ball) => void) | null = null;
 
   constructor(
     tableWidth: number = 1200,
@@ -200,6 +202,14 @@ export class PoolGameEngine {
     this.onStateChange = callback;
   }
 
+  public setEventCallbacks(callbacks: {
+    onShot?: () => void;
+    onPocket?: (ball: Ball) => void;
+  }): void {
+    this.onShot = callbacks.onShot ?? null;
+    this.onPocket = callbacks.onPocket ?? null;
+  }
+
   private notifyStateChange(): void {
     if (this.onStateChange) {
       this.onStateChange({ ...this.state });
@@ -262,6 +272,10 @@ export class PoolGameEngine {
       y: Math.sin(angle) * power,
     };
     cueBall.isMoving = true;
+
+    if (this.onShot) {
+      this.onShot();
+    }
 
     this.state.gameStatus = "shooting";
     this.state.canShoot = false;
@@ -426,6 +440,10 @@ export class PoolGameEngine {
           ball.pocketed = true;
           ball.isMoving = false;
           ball.velocity = { x: 0, y: 0 };
+
+          if (this.onPocket) {
+            this.onPocket(ball);
+          }
 
           // Handle scoring
           if (ball.type === "cue") {

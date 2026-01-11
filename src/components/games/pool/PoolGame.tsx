@@ -17,14 +17,55 @@ export const PoolGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<PoolGameEngine | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const gameStateRef = useRef<GameState | null>(null);
   const [isAiming, setIsAiming] = useState(false);
   const [aimStart, setAimStart] = useState<{ x: number; y: number } | null>(
     null
   );
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [mounted] = useState(true);
+  const audioRef = useRef<{
+    shot?: HTMLAudioElement;
+    pocket?: HTMLAudioElement;
+  }>({});
 
   const gameMode = (searchParams.get("mode") as GameMode) || "player";
+
+  // Preload audio (runs once on mount)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    audioRef.current.shot = new Audio("/sounds/pool_shot.mp3");
+    audioRef.current.pocket = new Audio("/sounds/pool_pocket.mp3");
+
+    Object.values(audioRef.current).forEach((audio) => {
+      if (audio) {
+        audio.volume = 0.45;
+      }
+    });
+  }, []);
+
+  const playShotSound = useCallback(() => {
+    const audio = audioRef.current.shot;
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      void audio.play();
+    } catch {
+      // Ignore playback errors (e.g., autoplay restrictions)
+    }
+  }, []);
+
+  const playPocketSound = useCallback(() => {
+    const audio = audioRef.current.pocket;
+    if (!audio) return;
+    try {
+      audio.currentTime = 0;
+      void audio.play();
+    } catch {
+      // Ignore playback errors
+    }
+  }, []);
 
   // Initialize game
   useEffect(() => {
@@ -46,7 +87,17 @@ export const PoolGame = () => {
       engineRef.current = engine;
 
       engine.setStateChangeCallback((state) => {
+        gameStateRef.current = state;
         setGameState(state);
+      });
+
+      engine.setEventCallbacks({
+        onShot: () => {
+          playShotSound();
+        },
+        onPocket: () => {
+          playPocketSound();
+        },
       });
 
       engine.startGame();
@@ -318,9 +369,9 @@ export const PoolGame = () => {
     [drawTable, drawPockets, drawBall, drawCue, drawPowerBar]
   );
 
-  // Continuous render loop
+  // Continuous render loop (decoupled from React state for smoothness)
   useEffect(() => {
-    if (!gameState || !canvasRef.current) return;
+    if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -328,7 +379,10 @@ export const PoolGame = () => {
 
     let animationId: number;
     const render = () => {
-      renderFrame(ctx, gameState);
+      const state = gameStateRef.current;
+      if (state) {
+        renderFrame(ctx, state);
+      }
       animationId = requestAnimationFrame(render);
     };
 
@@ -339,7 +393,7 @@ export const PoolGame = () => {
         cancelAnimationFrame(animationId);
       }
     };
-  }, [gameState, renderFrame]);
+  }, [renderFrame]);
 
   // Mouse handlers for aiming and shooting
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
