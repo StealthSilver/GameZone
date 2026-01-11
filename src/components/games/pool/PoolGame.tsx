@@ -50,7 +50,16 @@ export const PoolGame = () => {
       });
 
       engine.startGame();
-      setGameState(engine.getState());
+      const initialState = engine.getState();
+      setGameState(initialState);
+
+      // Debug log
+      console.log("Game initialized:", {
+        ballCount: initialState.balls.length,
+        tableWidth,
+        tableHeight,
+        gameStatus: initialState.gameStatus,
+      });
     }, 100);
 
     return () => {
@@ -66,12 +75,24 @@ export const PoolGame = () => {
 
   // Continuous render loop
   useEffect(() => {
-    if (!gameState || !canvasRef.current) return;
+    if (!gameState || !canvasRef.current) {
+      console.log("Render loop not starting:", {
+        gameState: !!gameState,
+        canvas: !!canvasRef.current,
+      });
+      return;
+    }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      console.log("No canvas context");
+      return;
+    }
 
+    console.log("Starting render loop, balls:", gameState.balls.length);
+
+    let animationId: number;
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -86,17 +107,17 @@ export const PoolGame = () => {
       drawCue(ctx, gameState);
       drawPowerBar(ctx, gameState);
 
-      renderLoopRef.current = requestAnimationFrame(render);
+      animationId = requestAnimationFrame(render);
     };
 
-    render();
+    animationId = requestAnimationFrame(render);
 
     return () => {
-      if (renderLoopRef.current) {
-        cancelAnimationFrame(renderLoopRef.current);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
       }
     };
-  }, [gameState, drawTable, drawPockets, drawBall, drawCue, drawPowerBar]);
+  }, [gameState]);
 
   // Drawing functions
   const drawTable = useCallback((ctx: CanvasRenderingContext2D) => {
@@ -167,6 +188,11 @@ export const PoolGame = () => {
 
     const { position, radius, color, type, number } = ball;
 
+    // Debug first ball
+    if (ball.id === 0) {
+      console.log("Drawing cue ball at:", position, "radius:", radius);
+    }
+
     // Ball shadow
     ctx.beginPath();
     ctx.arc(position.x + 2, position.y + 2, radius, 0, Math.PI * 2);
@@ -191,10 +217,14 @@ export const PoolGame = () => {
     gradient.addColorStop(0, "rgba(255, 255, 255, 0.6)");
     gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.1)");
     gradient.addColorStop(1, "rgba(0, 0, 0, 0.1)");
+    ctx.beginPath();
+    ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
     ctx.fillStyle = gradient;
     ctx.fill();
 
     // Ball outline
+    ctx.beginPath();
+    ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
     ctx.lineWidth = 1;
     ctx.stroke();
@@ -323,27 +353,6 @@ export const PoolGame = () => {
     []
   );
 
-  // Render game
-  useEffect(() => {
-    if (!gameState || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    drawTable(ctx);
-    drawPockets(ctx, gameState.pockets);
-
-    gameState.balls.forEach((ball) => {
-      drawBall(ctx, ball);
-    });
-
-    drawCue(ctx, gameState);
-    drawPowerBar(ctx, gameState);
-  }, [gameState, drawTable, drawPockets, drawBall, drawCue, drawPowerBar]);
-
   // Mouse handlers for aiming and shooting
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (
@@ -394,12 +403,12 @@ export const PoolGame = () => {
     const dy = y - cueBall.position.y;
     const angle = Math.atan2(dy, dx);
 
-    const pullBackX = aimStart.x - cueBall.position.x;
-    const pullBackY = aimStart.y - cueBall.position.y;
+    const pullBackX = x - cueBall.position.x;
+    const pullBackY = y - cueBall.position.y;
     const pullBackDistance = Math.sqrt(
       pullBackX * pullBackX + pullBackY * pullBackY
     );
-    const power = Math.min(100, (pullBackDistance / 100) * 100);
+    const power = Math.min(100, Math.max(10, (pullBackDistance / 100) * 100));
 
     if (engineRef.current) {
       engineRef.current.setCueAngle(angle);
@@ -408,7 +417,81 @@ export const PoolGame = () => {
   };
 
   const handleMouseUp = () => {
-    if (isAiming && engineRef.current) {
+    if (isAiming && engineRef.current && gameState) {
+      engineRef.current.shoot();
+    }
+    setIsAiming(false);
+    setAimStart(null);
+  };
+
+  // Touch handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (
+      !gameState ||
+      !canvasRef.current ||
+      gameState.gameStatus !== "aiming" ||
+      !gameState.canShoot
+    ) {
+      return;
+    }
+
+    if (gameState.gameMode === "computer" && gameState.currentPlayer === 2) {
+      return;
+    }
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const cueBall = gameState.balls.find(
+      (b) => b.type === "cue" && !b.pocketed
+    );
+    if (!cueBall) return;
+
+    const dx = x - cueBall.position.x;
+    const dy = y - cueBall.position.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < cueBall.radius + 20) {
+      setIsAiming(true);
+      setAimStart({ x, y });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isAiming || !gameState || !canvasRef.current || !aimStart) return;
+
+    e.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const cueBall = gameState.balls.find(
+      (b) => b.type === "cue" && !b.pocketed
+    );
+    if (!cueBall) return;
+
+    const dx = x - cueBall.position.x;
+    const dy = y - cueBall.position.y;
+    const angle = Math.atan2(dy, dx);
+
+    const pullBackX = x - cueBall.position.x;
+    const pullBackY = y - cueBall.position.y;
+    const pullBackDistance = Math.sqrt(
+      pullBackX * pullBackX + pullBackY * pullBackY
+    );
+    const power = Math.min(100, Math.max(10, (pullBackDistance / 100) * 100));
+
+    if (engineRef.current) {
+      engineRef.current.setCueAngle(angle);
+      engineRef.current.setCuePower(power);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (isAiming && engineRef.current && gameState) {
       engineRef.current.shoot();
     }
     setIsAiming(false);
@@ -537,7 +620,10 @@ export const PoolGame = () => {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            className="border-4 border-[#8B4513] rounded-lg shadow-2xl cursor-crosshair"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className="border-4 border-[#8B4513] rounded-lg shadow-2xl cursor-crosshair bg-[#0a5f38]"
             style={{ maxWidth: "100%", height: "auto" }}
           />
 
