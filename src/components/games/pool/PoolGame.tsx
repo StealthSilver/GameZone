@@ -39,8 +39,13 @@ export const PoolGame = () => {
       const tableWidth = Math.min(800, rect.width || 800);
       const tableHeight = tableWidth * 0.5; // 2:1 ratio
 
+      // Set canvas internal resolution
       canvas.width = tableWidth;
       canvas.height = tableHeight;
+
+      // Set canvas display size to match
+      canvas.style.width = `${tableWidth}px`;
+      canvas.style.height = `${tableHeight}px`;
 
       const engine = new PoolGameEngine(tableWidth, tableHeight, gameMode);
       engineRef.current = engine;
@@ -53,15 +58,28 @@ export const PoolGame = () => {
       const initialState = engine.getState();
       setGameState(initialState);
 
-      // Force initial render
-      setTimeout(() => {
-        const ctx = canvas.getContext("2d");
-        if (ctx && initialState) {
-          renderFrame(ctx, initialState);
-        }
-      }, 50);
-    }, 100);
+      // Debug: Log initial state
+      console.log("Game initialized with balls:", initialState.balls.length);
+      console.log(
+        "Game initialized with pockets:",
+        initialState.pockets.length
+      );
+      console.log("First ball:", initialState.balls[0]);
+      console.log("Canvas size:", canvas.width, "x", canvas.height);
+      console.log("Game status:", initialState.gameStatus);
 
+      // Test render immediately
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "red";
+        ctx.fillRect(50, 50, 100, 100);
+        ctx.fillStyle = "blue";
+        ctx.beginPath();
+        ctx.arc(200, 200, 20, 0, Math.PI * 2);
+        ctx.fill();
+        console.log("Test shapes drawn");
+      }
+    }, 100);
     return () => {
       clearTimeout(initTimeout);
       if (engineRef.current) {
@@ -344,18 +362,32 @@ export const PoolGame = () => {
   // Continuous render loop
   useEffect(() => {
     if (!gameState || !canvasRef.current) {
+      console.log(
+        "Render loop skipped - gameState:",
+        !!gameState,
+        "canvas:",
+        !!canvasRef.current
+      );
       return;
     }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
+      console.log("Failed to get 2D context");
       return;
     }
 
+    console.log("Starting render loop with", gameState.balls.length, "balls");
+
     let animationId: number;
+    let frameCount = 0;
     const render = () => {
       renderFrame(ctx, gameState);
+      if (frameCount === 0) {
+        console.log("First frame rendered");
+      }
+      frameCount++;
       animationId = requestAnimationFrame(render);
     };
 
@@ -365,6 +397,7 @@ export const PoolGame = () => {
       if (animationId) {
         cancelAnimationFrame(animationId);
       }
+      console.log("Render loop stopped after", frameCount, "frames");
     };
   }, [gameState, renderFrame]);
 
@@ -530,6 +563,21 @@ export const PoolGame = () => {
 
   return (
     <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col">
+      {/* Debug Info */}
+      {gameState && (
+        <div className="fixed top-2 left-2 bg-black/80 text-white p-2 text-xs z-50 rounded">
+          <div>Balls: {gameState.balls.length}</div>
+          <div>Pockets: {gameState.pockets.length}</div>
+          <div>Status: {gameState.gameStatus}</div>
+          <div>
+            Canvas:{" "}
+            {canvasRef.current
+              ? `${canvasRef.current.width}x${canvasRef.current.height}`
+              : "null"}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-black border-b border-gray-800/50 py-4">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
@@ -622,11 +670,9 @@ export const PoolGame = () => {
         )}
 
         {/* Game Canvas */}
-        <div className="relative">
+        <div className="relative" style={{ maxWidth: "800px", width: "100%" }}>
           <canvas
             ref={canvasRef}
-            width={800}
-            height={400}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -634,8 +680,8 @@ export const PoolGame = () => {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className="border-4 border-[#8B4513] rounded-lg shadow-2xl cursor-crosshair bg-[#0a5f38]"
-            style={{ maxWidth: "100%", height: "auto" }}
+            className="border-4 border-[#8B4513] rounded-lg shadow-2xl cursor-crosshair bg-[#0a5f38] w-full"
+            style={{ display: "block" }}
           />
 
           {/* Status Messages */}
