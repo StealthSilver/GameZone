@@ -24,47 +24,89 @@ export const PoolGame = () => {
   );
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [mounted] = useState(true);
-  const audioRef = useRef<{
-    shot?: HTMLAudioElement;
-    pocket?: HTMLAudioElement;
-  }>({});
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const gameMode = (searchParams.get("mode") as GameMode) || "player";
 
-  // Preload audio (runs once on mount)
+  // Initialize Web Audio context (runs once on mount)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    audioRef.current.shot = new Audio("/sounds/pool_shot.mp3");
-    audioRef.current.pocket = new Audio("/sounds/pool_pocket.mp3");
+    const AudioCtx =
+      (
+        window as unknown as {
+          AudioContext?: typeof AudioContext;
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).AudioContext ||
+      (
+        window as unknown as {
+          AudioContext?: typeof AudioContext;
+          webkitAudioContext?: typeof AudioContext;
+        }
+      ).webkitAudioContext;
+    if (!AudioCtx) return;
 
-    Object.values(audioRef.current).forEach((audio) => {
-      if (audio) {
-        audio.volume = 0.45;
+    try {
+      audioContextRef.current = new AudioCtx();
+    } catch {
+      audioContextRef.current = null;
+    }
+
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
       }
-    });
+    };
   }, []);
 
   const playShotSound = useCallback(() => {
-    const audio = audioRef.current.shot;
-    if (!audio) return;
-    try {
-      audio.currentTime = 0;
-      void audio.play();
-    } catch {
-      // Ignore playback errors (e.g., autoplay restrictions)
-    }
+    const ctx = audioContextRef.current;
+    if (!ctx) return;
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.type = "square";
+    oscillator.frequency.setValueAtTime(750, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      320,
+      ctx.currentTime + 0.12
+    );
+
+    gainNode.gain.setValueAtTime(0.45, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.12);
   }, []);
 
   const playPocketSound = useCallback(() => {
-    const audio = audioRef.current.pocket;
-    if (!audio) return;
-    try {
-      audio.currentTime = 0;
-      void audio.play();
-    } catch {
-      // Ignore playback errors
-    }
+    const ctx = audioContextRef.current;
+    if (!ctx) return;
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(220, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      90,
+      ctx.currentTime + 0.18
+    );
+
+    gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.18);
   }, []);
 
   // Initialize game
@@ -111,7 +153,7 @@ export const PoolGame = () => {
         engineRef.current.cleanup();
       }
     };
-  }, [gameMode]);
+  }, [gameMode, playShotSound, playPocketSound]);
 
   const drawTable = useCallback((ctx: CanvasRenderingContext2D) => {
     if (!canvasRef.current) return;
@@ -481,7 +523,13 @@ export const PoolGame = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col">
+    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-[#8CECF7]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Debug Info */}
       {gameState && (
         <div className="fixed top-2 left-2 bg-black/80 text-white p-2 text-xs z-50 rounded">
@@ -521,7 +569,7 @@ export const PoolGame = () => {
       </div>
 
       {/* Game Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4">
         {/* Score Board */}
         {gameState && (
           <div className="w-full max-w-4xl mb-4 flex justify-between items-center">
@@ -590,7 +638,7 @@ export const PoolGame = () => {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            className="border-4 border-[#8B4513] rounded-lg shadow-2xl cursor-crosshair bg-[#0a5f38] w-full"
+            className="border-4 border-[#8B4513] rounded-2xl shadow-2xl shadow-black/80 cursor-crosshair bg-[#0a5f38] w-full transition-transform duration-300 hover:scale-[1.01]"
             style={{ display: "block" }}
           />
 
