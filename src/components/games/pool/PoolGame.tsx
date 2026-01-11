@@ -22,33 +22,41 @@ export const PoolGame = () => {
     null
   );
   const [showRestartModal, setShowRestartModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const gameMode = (searchParams.get("mode") as GameMode) || "player";
 
   // Initialize game
   useEffect(() => {
+    setMounted(true);
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const tableWidth = Math.min(800, rect.width);
-    const tableHeight = tableWidth * 0.5; // 2:1 ratio
+    // Use a timeout to ensure the canvas is fully rendered
+    const initTimeout = setTimeout(() => {
+      const rect = canvas.getBoundingClientRect();
+      const tableWidth = Math.min(800, rect.width || 800);
+      const tableHeight = tableWidth * 0.5; // 2:1 ratio
 
-    canvas.width = tableWidth;
-    canvas.height = tableHeight;
+      canvas.width = tableWidth;
+      canvas.height = tableHeight;
 
-    const engine = new PoolGameEngine(tableWidth, tableHeight, gameMode);
-    engineRef.current = engine;
+      const engine = new PoolGameEngine(tableWidth, tableHeight, gameMode);
+      engineRef.current = engine;
 
-    engine.setStateChangeCallback((state) => {
-      setGameState(state);
-    });
+      engine.setStateChangeCallback((state) => {
+        setGameState(state);
+      });
 
-    engine.startGame();
-    setGameState(engine.getState());
+      engine.startGame();
+      setGameState(engine.getState());
+    }, 100);
 
     return () => {
-      engine.cleanup();
+      clearTimeout(initTimeout);
+      if (engineRef.current) {
+        engineRef.current.cleanup();
+      }
     };
   }, [gameMode]);
 
@@ -379,10 +387,11 @@ export const PoolGame = () => {
     router.push("/games/pool");
   };
 
-  if (!gameState) {
+  // Show loading only if not mounted yet
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-2xl">Loading game...</div>
+        <div className="text-white text-2xl">Initializing game...</div>
       </div>
     );
   }
@@ -421,67 +430,71 @@ export const PoolGame = () => {
       {/* Game Area */}
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {/* Score Board */}
-        <div className="w-full max-w-4xl mb-4 flex justify-between items-center">
-          {/* Player 1 */}
-          <div
-            className={`flex-1 p-4 rounded-lg border-2 ${
-              gameState.currentPlayer === 1
-                ? "border-[#8CECF7] bg-[#8CECF7]/10"
-                : "border-gray-800 bg-gray-900/50"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg">Player 1</h3>
-                <p className="text-sm text-gray-400">
-                  {gameState.player1Type
-                    ? gameState.player1Type === "solid"
-                      ? "Solids (1-7)"
-                      : "Stripes (9-15)"
-                    : "Not assigned"}
-                </p>
+        {gameState && (
+          <div className="w-full max-w-4xl mb-4 flex justify-between items-center">
+            {/* Player 1 */}
+            <div
+              className={`flex-1 p-4 rounded-lg border-2 ${
+                gameState.currentPlayer === 1
+                  ? "border-[#8CECF7] bg-[#8CECF7]/10"
+                  : "border-gray-800 bg-gray-900/50"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-lg">Player 1</h3>
+                  <p className="text-sm text-gray-400">
+                    {gameState.player1Type
+                      ? gameState.player1Type === "solid"
+                        ? "Solids (1-7)"
+                        : "Stripes (9-15)"
+                      : "Not assigned"}
+                  </p>
+                </div>
+                <div className="text-3xl font-bold text-[#AAFDBB]">
+                  {gameState.player1Score}
+                </div>
               </div>
-              <div className="text-3xl font-bold text-[#AAFDBB]">
-                {gameState.player1Score}
+            </div>
+
+            {/* VS */}
+            <div className="px-6 text-2xl font-bold text-gray-600">VS</div>
+
+            {/* Player 2 */}
+            <div
+              className={`flex-1 p-4 rounded-lg border-2 ${
+                gameState.currentPlayer === 2
+                  ? "border-[#8CECF7] bg-[#8CECF7]/10"
+                  : "border-gray-800 bg-gray-900/50"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-lg">
+                    {gameMode === "computer" ? "Computer" : "Player 2"}
+                  </h3>
+                  <p className="text-sm text-gray-400">
+                    {gameState.player2Type
+                      ? gameState.player2Type === "solid"
+                        ? "Solids (1-7)"
+                        : "Stripes (9-15)"
+                      : "Not assigned"}
+                  </p>
+                </div>
+                <div className="text-3xl font-bold text-[#6C85EA]">
+                  {gameState.player2Score}
+                </div>
               </div>
             </div>
           </div>
-
-          {/* VS */}
-          <div className="px-6 text-2xl font-bold text-gray-600">VS</div>
-
-          {/* Player 2 */}
-          <div
-            className={`flex-1 p-4 rounded-lg border-2 ${
-              gameState.currentPlayer === 2
-                ? "border-[#8CECF7] bg-[#8CECF7]/10"
-                : "border-gray-800 bg-gray-900/50"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-lg">
-                  {gameMode === "computer" ? "Computer" : "Player 2"}
-                </h3>
-                <p className="text-sm text-gray-400">
-                  {gameState.player2Type
-                    ? gameState.player2Type === "solid"
-                      ? "Solids (1-7)"
-                      : "Stripes (9-15)"
-                    : "Not assigned"}
-                </p>
-              </div>
-              <div className="text-3xl font-bold text-[#6C85EA]">
-                {gameState.player2Score}
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Game Canvas */}
         <div className="relative">
           <canvas
             ref={canvasRef}
+            width={800}
+            height={400}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -491,19 +504,20 @@ export const PoolGame = () => {
           />
 
           {/* Status Messages */}
-          {gameState.foul && gameState.gameStatus === "aiming" && (
+          {gameState && gameState.foul && gameState.gameStatus === "aiming" && (
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg">
               FOUL! Turn switched
             </div>
           )}
 
-          {gameState.gameStatus === "shooting" && (
+          {gameState && gameState.gameStatus === "shooting" && (
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white px-6 py-2 rounded-lg font-bold shadow-lg">
               Balls in motion...
             </div>
           )}
 
-          {gameMode === "computer" &&
+          {gameState &&
+            gameMode === "computer" &&
             gameState.currentPlayer === 2 &&
             gameState.gameStatus === "aiming" && (
               <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg animate-pulse">
@@ -513,7 +527,8 @@ export const PoolGame = () => {
         </div>
 
         {/* Instructions */}
-        {gameState.gameStatus === "aiming" &&
+        {gameState &&
+          gameState.gameStatus === "aiming" &&
           gameState.canShoot &&
           !(gameMode === "computer" && gameState.currentPlayer === 2) && (
             <div className="mt-4 text-gray-400 text-sm text-center">
@@ -524,7 +539,7 @@ export const PoolGame = () => {
       </div>
 
       {/* Game Over Modal */}
-      {gameState.gameStatus === "gameOver" && (
+      {gameState && gameState.gameStatus === "gameOver" && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-gray-900 rounded-xl p-8 border-2 border-[#8CECF7] max-w-md w-full mx-4">
             <h2 className="text-3xl font-bold text-center mb-6 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
