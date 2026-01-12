@@ -787,13 +787,13 @@ export const PoolGame = () => {
           {gameState && (
             <div className="w-full flex justify-center mb-2 md:mb-0">
               {gameState.foul && gameState.gameStatus === "aiming" && (
-                <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 bg-red-500 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg">
+                <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg bg-gradient-to-r from-red-500 via-red-400 to-orange-400 text-white border border-red-300/70 backdrop-blur-sm">
                   FOUL! Turn switched
                 </div>
               )}
 
               {gameState.gameStatus === "shooting" && (
-                <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 bg-gray-900/90 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg">
+                <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg bg-gray-900/80 text-gray-100 border border-gray-700/80 backdrop-blur-sm">
                   Balls in motion...
                 </div>
               )}
@@ -801,7 +801,7 @@ export const PoolGame = () => {
               {gameMode === "computer" &&
                 gameState.currentPlayer === 2 &&
                 gameState.gameStatus === "aiming" && (
-                  <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 bg-blue-500 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg animate-pulse">
+                  <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black border border-white/20 backdrop-blur-sm animate-pulse">
                     Computer is thinking...
                   </div>
                 )}

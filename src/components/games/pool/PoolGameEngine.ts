@@ -57,6 +57,7 @@ export class PoolGameEngine {
   private state: GameState;
   private readonly tableWidth: number;
   private readonly tableHeight: number;
+  private readonly scale: number;
   private readonly friction: number = 0.98;
   private pocketRadius: number;
   // Slightly larger radius used for physics so pockets "pull" balls in
@@ -86,13 +87,19 @@ export class PoolGameEngine {
     // proportionally smaller balls, pockets, and cushions.
     const baseWidth = 1200;
     const rawScale = tableWidth / baseWidth;
-    const scale = Math.max(0.4, Math.min(1, rawScale));
+    const clampedScale = Math.max(0.4, Math.min(1, rawScale));
+    this.scale = clampedScale;
 
-    this.ballRadius = 18 * scale;
-    this.pocketRadius = 30 * scale;
-    this.pocketCaptureRadius = 45 * scale;
-    this.cushionInset = 20 * scale;
-    this.maxPower = 28; // keep power consistent across sizes for feel
+    this.ballRadius = 18 * this.scale;
+    this.pocketRadius = 30 * this.scale;
+    this.pocketCaptureRadius = 45 * this.scale;
+    this.cushionInset = 20 * this.scale;
+
+    // Scale max power with table size so that on phones (small tables)
+    // the cue cannot launch balls unrealistically fast.
+    const baseMaxPower = 28;
+    const powerScale = this.scale; // 40% power at min scale, 100% at full size
+    this.maxPower = baseMaxPower * powerScale;
 
     // Initialize game state
     this.state = {
