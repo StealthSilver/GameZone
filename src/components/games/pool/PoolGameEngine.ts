@@ -66,6 +66,9 @@ export class PoolGameEngine {
   private onStateChange: ((state: GameState) => void) | null = null;
   private onShot: (() => void) | null = null;
   private onPocket: ((ball: Ball) => void) | null = null;
+  private onCollision:
+    | ((ball1: Ball, ball2: Ball, impact: number) => void)
+    | null = null;
 
   constructor(
     tableWidth: number = 1200,
@@ -205,9 +208,11 @@ export class PoolGameEngine {
   public setEventCallbacks(callbacks: {
     onShot?: () => void;
     onPocket?: (ball: Ball) => void;
+    onCollision?: (ball1: Ball, ball2: Ball, impact: number) => void;
   }): void {
     this.onShot = callbacks.onShot ?? null;
     this.onPocket = callbacks.onPocket ?? null;
+    this.onCollision = callbacks.onCollision ?? null;
   }
 
   private notifyStateChange(): void {
@@ -422,6 +427,18 @@ export class PoolGameEngine {
 
           ball1.isMoving = true;
           ball2.isMoving = true;
+
+          // Trigger collision sound based on impact strength
+          if (this.onCollision) {
+            const relVx = ball1.velocity.x - ball2.velocity.x;
+            const relVy = ball1.velocity.y - ball2.velocity.y;
+            const impact = Math.sqrt(relVx * relVx + relVy * relVy);
+
+            // Only play sound for noticeable impacts
+            if (impact > 0.3) {
+              this.onCollision(ball1, ball2, impact);
+            }
+          }
         }
       }
     }

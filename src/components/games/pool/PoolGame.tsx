@@ -25,6 +25,7 @@ export const PoolGame = () => {
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [mounted] = useState(true);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const collisionCooldownRef = useRef<number>(0);
 
   const gameMode = (searchParams.get("mode") as GameMode) || "player";
 
@@ -69,14 +70,14 @@ export const PoolGame = () => {
     const gainNode = ctx.createGain();
 
     oscillator.type = "square";
-    oscillator.frequency.setValueAtTime(750, ctx.currentTime);
+    oscillator.frequency.setValueAtTime(1200, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(
-      320,
-      ctx.currentTime + 0.12
+      450,
+      ctx.currentTime + 0.08
     );
 
-    gainNode.gain.setValueAtTime(0.45, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+    gainNode.gain.setValueAtTime(0.6, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
 
     oscillator.connect(gainNode);
     gainNode.connect(ctx.destination);
@@ -89,24 +90,53 @@ export const PoolGame = () => {
     const ctx = audioContextRef.current;
     if (!ctx) return;
 
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    // Low thud for pocket / gutter
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(220, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(
-      90,
-      ctx.currentTime + 0.18
-    );
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(180, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.22);
 
-    gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+    gain.gain.setValueAtTime(0.7, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
 
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.18);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+  }, []);
+
+  const playCollisionSound = useCallback((impact: number) => {
+    const ctx = audioContextRef.current;
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    // Simple cooldown so we don't spam sounds on clustered collisions
+    if (now < collisionCooldownRef.current) {
+      return;
+    }
+    collisionCooldownRef.current = now + 0.03;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    const normalizedImpact = Math.min(1, impact / 20);
+    const volume = 0.1 + 0.25 * normalizedImpact;
+
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(1500, now);
+    osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
+
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.06);
   }, []);
 
   // Initialize game
@@ -139,6 +169,9 @@ export const PoolGame = () => {
         },
         onPocket: () => {
           playPocketSound();
+        },
+        onCollision: (_ball1, _ball2, impact) => {
+          playCollisionSound(impact);
         },
       });
 
@@ -450,6 +483,10 @@ export const PoolGame = () => {
 
     if (gameState.gameMode === "computer" && gameState.currentPlayer === 2) {
       return;
+    }
+
+    if (audioContextRef.current?.state === "suspended") {
+      audioContextRef.current.resume().catch(() => {});
     }
 
     const rect = canvasRef.current.getBoundingClientRect();
