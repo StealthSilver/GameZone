@@ -61,6 +61,8 @@ export class PoolGameEngine {
   private readonly pocketRadius: number = 30;
   // Slightly larger radius used for physics so pockets "pull" balls in
   private readonly pocketCaptureRadius: number = 45;
+  // Visual cloth inset used in rendering (see PoolGame drawTable)
+  private readonly cushionInset: number = 20;
   private readonly ballRadius: number = 18;
   private readonly maxPower: number = 28;
   private readonly minMovementSpeed: number = 0.03;
@@ -107,7 +109,8 @@ export class PoolGameEngine {
   }
 
   private initializePockets(): void {
-    const margin = 50; // Distance from edge - increased for larger table
+    // Place pocket centers so the pocket edge is aligned with the cloth edge
+    const margin = this.cushionInset + this.pocketRadius;
     const pocketPositions: Vector2D[] = [
       { x: margin, y: margin }, // Top-left
       { x: this.tableWidth / 2, y: margin }, // Top-center
@@ -323,8 +326,6 @@ export class PoolGameEngine {
   }
 
   private updateBalls(): void {
-    const tablePadding = 50; // Keep balls away from edges - matches visual padding
-
     this.state.balls.forEach((ball) => {
       if (ball.pocketed || !ball.isMoving) return;
 
@@ -336,26 +337,25 @@ export class PoolGameEngine {
       ball.position.x += ball.velocity.x;
       ball.position.y += ball.velocity.y;
 
-      // Wall collisions with bounce (accounting for table borders)
-      if (ball.position.x - ball.radius < tablePadding) {
-        ball.position.x = tablePadding + ball.radius;
+      // Wall collisions with bounce (aligned to visual cloth area)
+      const minX = this.cushionInset + ball.radius;
+      const maxX = this.tableWidth - this.cushionInset - ball.radius;
+      const minY = this.cushionInset + ball.radius;
+      const maxY = this.tableHeight - this.cushionInset - ball.radius;
+
+      if (ball.position.x < minX) {
+        ball.position.x = minX;
         ball.velocity.x *= -0.8;
-      } else if (
-        ball.position.x + ball.radius >
-        this.tableWidth - tablePadding
-      ) {
-        ball.position.x = this.tableWidth - tablePadding - ball.radius;
+      } else if (ball.position.x > maxX) {
+        ball.position.x = maxX;
         ball.velocity.x *= -0.8;
       }
 
-      if (ball.position.y - ball.radius < tablePadding) {
-        ball.position.y = tablePadding + ball.radius;
+      if (ball.position.y < minY) {
+        ball.position.y = minY;
         ball.velocity.y *= -0.8;
-      } else if (
-        ball.position.y + ball.radius >
-        this.tableHeight - tablePadding
-      ) {
-        ball.position.y = this.tableHeight - tablePadding - ball.radius;
+      } else if (ball.position.y > maxY) {
+        ball.position.y = maxY;
         ball.velocity.y *= -0.8;
       }
 

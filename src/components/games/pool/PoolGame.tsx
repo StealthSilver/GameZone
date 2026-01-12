@@ -567,15 +567,6 @@ export const PoolGame = () => {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Debug Info */}
-      {gameState && (
-        <div className="fixed top-2 left-2 bg-black/80 text-white p-2 text-xs z-50 rounded">
-          <div>Balls: {gameState.balls.length}</div>
-          <div>Pockets: {gameState.pockets.length}</div>
-          <div>Status: {gameState.gameStatus}</div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="bg-black border-b border-gray-800/50 py-4">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
