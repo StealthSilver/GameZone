@@ -59,6 +59,8 @@ export class PoolGameEngine {
   private readonly tableHeight: number;
   private readonly friction: number = 0.98;
   private readonly pocketRadius: number = 30;
+  // Slightly larger radius used for physics so pockets "pull" balls in
+  private readonly pocketCaptureRadius: number = 45;
   private readonly ballRadius: number = 18;
   private readonly maxPower: number = 28;
   private readonly minMovementSpeed: number = 0.03;
@@ -453,10 +455,32 @@ export class PoolGameEngine {
         const dy = ball.position.y - pocket.position.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < pocket.radius) {
+        if (distance === 0) {
+          return;
+        }
+
+        // Give pockets a "slope" by gently pulling nearby balls inward
+        if (distance < this.pocketCaptureRadius) {
+          const nx = dx / distance;
+          const ny = dy / distance;
+
+          // Pull strength increases the closer the ball is to the pocket
+          const pullFactor =
+            (this.pocketCaptureRadius - distance) / this.pocketCaptureRadius;
+          const pullStrength = 0.45 * pullFactor;
+
+          ball.velocity.x -= nx * pullStrength;
+          ball.velocity.y -= ny * pullStrength;
+          ball.isMoving = true;
+        }
+
+        // Once the ball is close enough to the center, treat it as pocketed
+        const pocketInnerRadius = this.pocketRadius * 0.85;
+        if (distance < pocketInnerRadius) {
           ball.pocketed = true;
           ball.isMoving = false;
           ball.velocity = { x: 0, y: 0 };
+          ball.position = { ...pocket.position };
 
           if (this.onPocket) {
             this.onPocket(ball);
