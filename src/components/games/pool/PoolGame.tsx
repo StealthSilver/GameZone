@@ -395,10 +395,13 @@ export const PoolGame = () => {
     (ctx: CanvasRenderingContext2D, state: GameState) => {
       if (state.gameStatus !== "aiming" || !state.canShoot) return;
 
-      const barWidth = 220;
-      const barHeight = 22;
-      const barX = (canvasRef.current!.width - barWidth) / 2;
-      const barY = canvasRef.current!.height - 50;
+      const canvas = canvasRef.current!;
+      const isSmallTable = canvas.width < 700;
+
+      const barWidth = isSmallTable ? canvas.width * 0.6 : 220;
+      const barHeight = isSmallTable ? 18 : 22;
+      const barX = (canvas.width - barWidth) / 2;
+      const barY = isSmallTable ? canvas.height - 40 : canvas.height - 50;
 
       ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
       ctx.fillRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10);
@@ -502,7 +505,10 @@ export const PoolGame = () => {
     const dy = y - cueBall.position.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance < cueBall.radius + 20) {
+    const isSmallTable = canvasRef.current.width < 700;
+    const aimRadius = cueBall.radius + (isSmallTable ? 30 : 20);
+
+    if (distance < aimRadius) {
       setIsAiming(true);
       setAimStart({ x, y });
     }
@@ -534,6 +540,88 @@ export const PoolGame = () => {
   };
 
   const handleMouseUp = () => {
+    if (isAiming && engineRef.current && gameState) {
+      engineRef.current.shoot();
+    }
+    setIsAiming(false);
+    setAimStart(null);
+  };
+
+  // Touch handlers for mobile / tablets
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (
+      !gameState ||
+      !canvasRef.current ||
+      gameState.gameStatus !== "aiming" ||
+      !gameState.canShoot
+    ) {
+      return;
+    }
+
+    if (gameState.gameMode === "computer" && gameState.currentPlayer === 2) {
+      return;
+    }
+
+    if (audioContextRef.current?.state === "suspended") {
+      audioContextRef.current.resume().catch(() => {});
+    }
+
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const cueBall = gameState.balls.find(
+      (b) => b.type === "cue" && !b.pocketed
+    );
+    if (!cueBall) return;
+
+    const dx = x - cueBall.position.x;
+    const dy = y - cueBall.position.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    const isSmallTable = canvasRef.current.width < 700;
+    const aimRadius = cueBall.radius + (isSmallTable ? 30 : 20);
+
+    if (distance < aimRadius) {
+      e.preventDefault();
+      setIsAiming(true);
+      setAimStart({ x, y });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isAiming || !gameState || !canvasRef.current || !aimStart) return;
+
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    const cueBall = gameState.balls.find(
+      (b) => b.type === "cue" && !b.pocketed
+    );
+    if (!cueBall) return;
+
+    const dx = cueBall.position.x - x;
+    const dy = cueBall.position.y - y;
+    const angle = Math.atan2(dy, dx);
+
+    const pullBackDistance = Math.sqrt(dx * dx + dy * dy);
+    const power = Math.min(100, Math.max(10, (pullBackDistance / 150) * 100));
+
+    if (engineRef.current) {
+      e.preventDefault();
+      engineRef.current.setCueAngle(angle);
+      engineRef.current.setCuePower(power);
+    }
+  };
+
+  const handleTouchEnd = () => {
     if (isAiming && engineRef.current && gameState) {
       engineRef.current.shoot();
     }
@@ -600,7 +688,7 @@ export const PoolGame = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4">
         {/* Score Board */}
         {gameState && (
-          <div className="w-full max-w-4xl mb-4 flex justify-between items-center">
+          <div className="w-full max-w-4xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             {/* Player 1 */}
             <div
               className={`flex-1 p-4 rounded-lg border-2 ${
@@ -627,7 +715,9 @@ export const PoolGame = () => {
             </div>
 
             {/* VS */}
-            <div className="px-6 text-2xl font-bold text-gray-600">VS</div>
+            <div className="px-6 text-2xl font-bold text-gray-600 text-center md:text-left">
+              VS
+            </div>
 
             {/* Player 2 */}
             <div
@@ -666,7 +756,11 @@ export const PoolGame = () => {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            className="border-4 border-[#8B4513] rounded-2xl shadow-2xl shadow-black/80 cursor-crosshair bg-[#0a5f38] w-full transition-transform duration-300 hover:scale-[1.01]"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+            className="border-4 border-[#8B4513] rounded-2xl shadow-2xl shadow-black/80 cursor-crosshair bg-[#0a5f38] w-full transition-transform duration-300 hover:scale-[1.01] touch-none"
             style={{ display: "block" }}
           />
 
@@ -699,8 +793,8 @@ export const PoolGame = () => {
           gameState.canShoot &&
           !(gameMode === "computer" && gameState.currentPlayer === 2) && (
             <div className="mt-4 text-gray-400 text-sm text-center max-w-md">
-              Click on the cue ball and drag in the opposite direction to aim.
-              Pull farther to increase power, then release to shoot.
+              Click or tap on the cue ball and drag in the opposite direction to
+              aim. Pull farther to increase power, then release to shoot.
             </div>
           )}
       </div>
