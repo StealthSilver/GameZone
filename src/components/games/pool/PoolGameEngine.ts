@@ -58,13 +58,13 @@ export class PoolGameEngine {
   private readonly tableWidth: number;
   private readonly tableHeight: number;
   private readonly friction: number = 0.98;
-  private readonly pocketRadius: number = 30;
+  private pocketRadius: number;
   // Slightly larger radius used for physics so pockets "pull" balls in
-  private readonly pocketCaptureRadius: number = 45;
+  private pocketCaptureRadius: number;
   // Visual cloth inset used in rendering (see PoolGame drawTable)
-  private readonly cushionInset: number = 20;
-  private readonly ballRadius: number = 18;
-  private readonly maxPower: number = 28;
+  private cushionInset: number;
+  private ballRadius: number;
+  private maxPower: number;
   private readonly minMovementSpeed: number = 0.03;
   private animationFrameId: number | null = null;
   private onStateChange: ((state: GameState) => void) | null = null;
@@ -81,6 +81,18 @@ export class PoolGameEngine {
   ) {
     this.tableWidth = tableWidth;
     this.tableHeight = tableHeight;
+
+    // Scale geometry based on table width so smaller screens get
+    // proportionally smaller balls, pockets, and cushions.
+    const baseWidth = 1200;
+    const rawScale = tableWidth / baseWidth;
+    const scale = Math.max(0.4, Math.min(1, rawScale));
+
+    this.ballRadius = 18 * scale;
+    this.pocketRadius = 30 * scale;
+    this.pocketCaptureRadius = 45 * scale;
+    this.cushionInset = 20 * scale;
+    this.maxPower = 28; // keep power consistent across sizes for feel
 
     // Initialize game state
     this.state = {

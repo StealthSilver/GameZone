@@ -155,7 +155,7 @@ export const PoolGame = () => {
       const isSmallScreen = viewportWidth < 768;
 
       // On larger screens, keep previous behavior (max 1200px wide, 2:1 ratio)
-      let tableWidth = isSmallScreen
+      const tableWidth = isSmallScreen
         ? rawWidth
         : Math.min(1200, rawWidth || 1200);
 
@@ -213,6 +213,10 @@ export const PoolGame = () => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
 
+    const isSmallTable = canvas.width < 700;
+    const borderInset = isSmallTable ? 10 : 20;
+    const innerInset = borderInset + (isSmallTable ? 2 : 2);
+
     // Table background
     ctx.fillStyle = "#0a5f38";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -223,20 +227,30 @@ export const PoolGame = () => {
 
     // Playing surface
     ctx.fillStyle = "#0a5f38";
-    ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+    ctx.fillRect(
+      borderInset,
+      borderInset,
+      canvas.width - borderInset * 2,
+      canvas.height - borderInset * 2
+    );
 
     // Inner border decoration
     ctx.strokeStyle = "#654321";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(22, 22, canvas.width - 44, canvas.height - 44);
+    ctx.lineWidth = isSmallTable ? 1.5 : 3;
+    ctx.strokeRect(
+      innerInset,
+      innerInset,
+      canvas.width - innerInset * 2,
+      canvas.height - innerInset * 2
+    );
 
     // Center line
     ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = isSmallTable ? 1 : 2;
     ctx.setLineDash([10, 10]);
     ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 20);
-    ctx.lineTo(canvas.width / 2, canvas.height - 20);
+    ctx.moveTo(canvas.width / 2, borderInset);
+    ctx.lineTo(canvas.width / 2, canvas.height - borderInset);
     ctx.stroke();
     ctx.setLineDash([]);
   }, []);
@@ -419,10 +433,10 @@ export const PoolGame = () => {
       const canvas = canvasRef.current!;
       const isSmallTable = canvas.width < 700;
 
-      const barWidth = isSmallTable ? canvas.width * 0.6 : 220;
-      const barHeight = isSmallTable ? 18 : 22;
+      const barWidth = isSmallTable ? canvas.width * 0.45 : 220;
+      const barHeight = isSmallTable ? 14 : 22;
       const barX = (canvas.width - barWidth) / 2;
-      const barY = isSmallTable ? canvas.height - 40 : canvas.height - 50;
+      const barY = isSmallTable ? canvas.height - 34 : canvas.height - 50;
 
       ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
       ctx.fillRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10);
@@ -607,7 +621,6 @@ export const PoolGame = () => {
     const aimRadius = cueBall.radius + (isSmallTable ? 30 : 20);
 
     if (distance < aimRadius) {
-      e.preventDefault();
       setIsAiming(true);
       setAimStart({ x, y });
     }
@@ -636,7 +649,6 @@ export const PoolGame = () => {
     const power = Math.min(100, Math.max(10, (pullBackDistance / 150) * 100));
 
     if (engineRef.current) {
-      e.preventDefault();
       engineRef.current.setCueAngle(angle);
       engineRef.current.setCuePower(power);
     }
@@ -709,10 +721,10 @@ export const PoolGame = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4">
         {/* Score Board */}
         {gameState && (
-          <div className="w-full max-w-4xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="w-full max-w-4xl mb-4 flex flex-col gap-2 md:gap-3 md:flex-row md:items-center md:justify-between">
             {/* Player 1 */}
             <div
-              className={`flex-1 p-4 rounded-lg border-2 ${
+              className={`flex-1 p-3 md:p-4 rounded-lg border ${
                 gameState.currentPlayer === 1
                   ? "border-[#8CECF7] bg-[#8CECF7]/10"
                   : "border-gray-800 bg-gray-900/50"
@@ -720,8 +732,8 @@ export const PoolGame = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-lg">Player 1</h3>
-                  <p className="text-sm text-gray-400">
+                  <h3 className="font-bold text-sm md:text-lg">Player 1</h3>
+                  <p className="text-xs md:text-sm text-gray-400">
                     {gameState.player1Type
                       ? gameState.player1Type === "solid"
                         ? "Solids (1-7)"
@@ -729,20 +741,20 @@ export const PoolGame = () => {
                       : "Not assigned"}
                   </p>
                 </div>
-                <div className="text-3xl font-bold text-[#AAFDBB]">
+                <div className="text-xl md:text-3xl font-bold text-[#AAFDBB]">
                   {gameState.player1Score}
                 </div>
               </div>
             </div>
 
             {/* VS */}
-            <div className="px-6 text-2xl font-bold text-gray-600 text-center md:text-left">
+            <div className="px-6 text-lg md:text-2xl font-bold text-gray-600 text-center md:text-left">
               VS
             </div>
 
             {/* Player 2 */}
             <div
-              className={`flex-1 p-4 rounded-lg border-2 ${
+              className={`flex-1 p-3 md:p-4 rounded-lg border ${
                 gameState.currentPlayer === 2
                   ? "border-[#8CECF7] bg-[#8CECF7]/10"
                   : "border-gray-800 bg-gray-900/50"
@@ -750,10 +762,10 @@ export const PoolGame = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-lg">
+                  <h3 className="font-bold text-sm md:text-lg">
                     {gameMode === "computer" ? "Computer" : "Player 2"}
                   </h3>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs md:text-sm text-gray-400">
                     {gameState.player2Type
                       ? gameState.player2Type === "solid"
                         ? "Solids (1-7)"
@@ -761,7 +773,7 @@ export const PoolGame = () => {
                       : "Not assigned"}
                   </p>
                 </div>
-                <div className="text-3xl font-bold text-[#6C85EA]">
+                <div className="text-xl md:text-3xl font-bold text-[#6C85EA]">
                   {gameState.player2Score}
                 </div>
               </div>
@@ -771,6 +783,31 @@ export const PoolGame = () => {
 
         {/* Game Canvas */}
         <div className="relative" style={{ maxWidth: "1200px", width: "100%" }}>
+          {/* Status Messages */}
+          {gameState && (
+            <div className="w-full flex justify-center mb-2 md:mb-0">
+              {gameState.foul && gameState.gameStatus === "aiming" && (
+                <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 bg-red-500 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg">
+                  FOUL! Turn switched
+                </div>
+              )}
+
+              {gameState.gameStatus === "shooting" && (
+                <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 bg-gray-900/90 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg">
+                  Balls in motion...
+                </div>
+              )}
+
+              {gameMode === "computer" &&
+                gameState.currentPlayer === 2 &&
+                gameState.gameStatus === "aiming" && (
+                  <div className="md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 bg-blue-500 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg animate-pulse">
+                    Computer is thinking...
+                  </div>
+                )}
+            </div>
+          )}
+
           <canvas
             ref={canvasRef}
             onMouseDown={handleMouseDown}
@@ -781,31 +818,9 @@ export const PoolGame = () => {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onTouchCancel={handleTouchEnd}
-            className="border-4 border-[#8B4513] rounded-2xl shadow-2xl shadow-black/80 cursor-crosshair bg-[#0a5f38] w-full transition-transform duration-300 hover:scale-[1.01] touch-none"
+            className="border md:border-4 border-[#8B4513] rounded-2xl shadow-2xl shadow-black/80 cursor-crosshair bg-[#0a5f38] w-full transition-transform duration-300 hover:scale-[1.01] touch-none"
             style={{ display: "block" }}
           />
-
-          {/* Status Messages */}
-          {gameState && gameState.foul && gameState.gameStatus === "aiming" && (
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg">
-              FOUL! Turn switched
-            </div>
-          )}
-
-          {gameState && gameState.gameStatus === "shooting" && (
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-900/90 text-white px-6 py-2 rounded-lg font-bold shadow-lg">
-              Balls in motion...
-            </div>
-          )}
-
-          {gameState &&
-            gameMode === "computer" &&
-            gameState.currentPlayer === 2 &&
-            gameState.gameStatus === "aiming" && (
-              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg animate-pulse">
-                Computer is thinking...
-              </div>
-            )}
         </div>
 
         {/* Instructions */}
