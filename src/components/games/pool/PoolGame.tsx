@@ -186,7 +186,7 @@ export const PoolGame = () => {
         engineRef.current.cleanup();
       }
     };
-  }, [gameMode, playShotSound, playPocketSound]);
+  }, [gameMode, playShotSound, playPocketSound, playCollisionSound]);
 
   const drawTable = useCallback((ctx: CanvasRenderingContext2D) => {
     if (!canvasRef.current) return;
