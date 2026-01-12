@@ -47,7 +47,7 @@ const games = [
 
 export default function GamesPage() {
   return (
-    <div className="h-[92vh] bg-black overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col">
       {/* Header Section */}
       <div className="bg-black border-b border-gray-800/50 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,7 +62,7 @@ export default function GamesPage() {
       </div>
 
       {/* Games Grid */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 h-full">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 h-full">
             {games.map((game, index) => {
