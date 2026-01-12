@@ -146,13 +146,34 @@ export const PoolGame = () => {
 
     const initTimeout = setTimeout(() => {
       const rect = canvas.getBoundingClientRect();
-      const tableWidth = Math.min(1200, rect.width || 1200);
-      const tableHeight = tableWidth * 0.5; // 2:1 ratio
+      const rawWidth = rect.width || 1200;
+      const viewportWidth =
+        typeof window !== "undefined" ? window.innerWidth : rawWidth;
+      const viewportHeight =
+        typeof window !== "undefined" ? window.innerHeight : rawWidth * 0.5;
+
+      const isSmallScreen = viewportWidth < 768;
+
+      // On larger screens, keep previous behavior (max 1200px wide, 2:1 ratio)
+      let tableWidth = isSmallScreen
+        ? rawWidth
+        : Math.min(1200, rawWidth || 1200);
+
+      // On small screens, give the table a bit more height so it feels
+      // more playable, while keeping it within a safe portion of viewport.
+      const desiredHeight = tableWidth * (isSmallScreen ? 0.65 : 0.5);
+      const maxAllowedHeight = viewportHeight * (isSmallScreen ? 0.7 : 0.6);
+      const tableHeight = Math.min(desiredHeight, maxAllowedHeight);
 
       canvas.width = tableWidth;
       canvas.height = tableHeight;
 
-      canvas.style.width = `${tableWidth}px`;
+      if (isSmallScreen) {
+        // Let CSS width: 100% drive visual width on mobile for responsiveness
+        canvas.style.width = "100%";
+      } else {
+        canvas.style.width = `${tableWidth}px`;
+      }
       canvas.style.height = `${tableHeight}px`;
 
       const engine = new PoolGameEngine(tableWidth, tableHeight, gameMode);
