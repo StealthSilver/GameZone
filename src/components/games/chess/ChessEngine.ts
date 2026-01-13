@@ -19,7 +19,13 @@ export type Square = Piece | null;
 
 export type ChessBoard = Square[][]; // 8x8
 
-export type GameStatus = "ongoing" | "check" | "checkmate" | "stalemate";
+export type GameStatus =
+  | "ongoing"
+  | "check"
+  | "checkmate"
+  | "stalemate"
+  | "drawRepetition"
+  | "drawInsufficient";
 
 export interface ChessState {
   board: ChessBoard;
@@ -27,6 +33,8 @@ export interface ChessState {
   status: GameStatus;
   selected: { row: number; col: number } | null;
   possibleMoves: { row: number; col: number }[];
+  // Tracks how many times a position has occurred (for repetition draws)
+  positionCounts: Record<string, number>;
   lastMove?: {
     from: Position;
     to: Position;
@@ -80,12 +88,17 @@ export function createInitialBoard(): ChessBoard {
 }
 
 export function createInitialState(): ChessState {
+  const board = createInitialBoard();
+  const positionKey = getPositionKey(board, "white");
   return {
-    board: createInitialBoard(),
+    board,
     currentTurn: "white",
     status: "ongoing",
     selected: null,
     possibleMoves: [],
+    positionCounts: {
+      [positionKey]: 1,
+    },
   };
 }
 
@@ -99,6 +112,46 @@ const cloneBoard = (board: ChessBoard): ChessBoard =>
 
 const oppositeColor = (color: ChessColor): ChessColor =>
   color === "white" ? "black" : "white";
+
+// Serialize a position (board + side to move) for repetition tracking.
+function getPositionKey(board: ChessBoard, currentTurn: ChessColor): string {
+  let key = currentTurn === "white" ? "w|" : "b|";
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const p = board[row][col];
+      if (!p) {
+        key += ".";
+      } else {
+        let base: string;
+        switch (p.type) {
+          case "pawn":
+            base = "p";
+            break;
+          case "knight":
+            base = "n";
+            break;
+          case "bishop":
+            base = "b";
+            break;
+          case "rook":
+            base = "r";
+            break;
+          case "queen":
+            base = "q";
+            break;
+          case "king":
+            base = "k";
+            break;
+        }
+        const char = p.color === "white" ? base.toUpperCase() : base;
+        const moved = p.hasMoved ? "1" : "0";
+        key += char + moved;
+      }
+      key += ",";
+    }
+  }
+  return key;
+}
 
 function findKing(board: ChessBoard, color: ChessColor): Position | null {
   for (let row = 0; row < 8; row++) {
@@ -373,7 +426,41 @@ function generatePseudoMovesForPiece(
           if (!target || target.color !== color) moves.push({ row: r, col: c });
         }
       }
-      // Castling not implemented for simplicity
+      // Castling
+      const startRow = color === "white" ? 7 : 0;
+      if (row === startRow && !piece.hasMoved && !isKingInCheck(board, color)) {
+        const enemy = oppositeColor(color);
+
+        // King-side castling (short)
+        if (!board[row][5] && !board[row][6]) {
+          const rook = board[row][7];
+          if (
+            rook &&
+            rook.type === "rook" &&
+            rook.color === color &&
+            !rook.hasMoved &&
+            !isSquareAttacked(board, row, 5, enemy) &&
+            !isSquareAttacked(board, row, 6, enemy)
+          ) {
+            moves.push({ row, col: 6 });
+          }
+        }
+
+        // Queen-side castling (long)
+        if (!board[row][1] && !board[row][2] && !board[row][3]) {
+          const rook = board[row][0];
+          if (
+            rook &&
+            rook.type === "rook" &&
+            rook.color === color &&
+            !rook.hasMoved &&
+            !isSquareAttacked(board, row, 2, enemy) &&
+            !isSquareAttacked(board, row, 3, enemy)
+          ) {
+            moves.push({ row, col: 2 });
+          }
+        }
+      }
       break;
     }
   }
@@ -404,9 +491,55 @@ function applyMoveOnBoard(board: ChessBoard, move: Move): ChessBoard {
   const piece = newBoard[move.from.row][move.from.col];
   if (!piece) return board;
 
+  const fromRow = move.from.row;
+  const fromCol = move.from.col;
+  const toRow = move.to.row;
+  const toCol = move.to.col;
+
+  // Handle castling: king moves two squares horizontally and rook hops over.
+  if (piece.type === "king" && Math.abs(toCol - fromCol) === 2) {
+    // Move king
+    newBoard[toRow][toCol] = { ...piece, hasMoved: true };
+    newBoard[fromRow][fromCol] = null;
+
+    // Move rook on the appropriate side
+    if (toCol === 6) {
+      // King-side
+      const rook = newBoard[fromRow][7];
+      if (rook && rook.type === "rook" && rook.color === piece.color) {
+        newBoard[fromRow][5] = { ...rook, hasMoved: true };
+        newBoard[fromRow][7] = null;
+      }
+    } else if (toCol === 2) {
+      // Queen-side
+      const rook = newBoard[fromRow][0];
+      if (rook && rook.type === "rook" && rook.color === piece.color) {
+        newBoard[fromRow][3] = { ...rook, hasMoved: true };
+        newBoard[fromRow][0] = null;
+      }
+    }
+
+    return newBoard;
+  }
+
+  // Handle en passant capture: pawn moves diagonally to an empty square
+  if (piece.type === "pawn" && fromCol !== toCol && !newBoard[toRow][toCol]) {
+    const dir = piece.color === "white" ? -1 : 1;
+    const capturedRow = toRow - dir;
+    const capturedCol = toCol;
+    const capturedPawn = newBoard[capturedRow]?.[capturedCol];
+    if (
+      capturedPawn &&
+      capturedPawn.type === "pawn" &&
+      capturedPawn.color !== piece.color
+    ) {
+      newBoard[capturedRow][capturedCol] = null;
+    }
+  }
+
   // Basic move and capture
-  newBoard[move.to.row][move.to.col] = { ...piece, hasMoved: true };
-  newBoard[move.from.row][move.from.col] = null;
+  newBoard[toRow][toCol] = { ...piece, hasMoved: true };
+  newBoard[fromRow][fromCol] = null;
 
   // Pawn promotion (auto-queen)
   const movedPiece = newBoard[move.to.row][move.to.col];
@@ -444,10 +577,75 @@ function getGameStatus(board: ChessBoard, colorToMove: ChessColor): GameStatus {
   const inCheck = isKingInCheck(board, colorToMove);
   const anyMoves = getAllLegalMoves(board, colorToMove).length > 0;
 
+  if (hasInsufficientMaterial(board)) return "drawInsufficient";
+
   if (inCheck && !anyMoves) return "checkmate";
   if (!inCheck && !anyMoves) return "stalemate";
   if (inCheck) return "check";
   return "ongoing";
+}
+
+// Detect positions where neither side has sufficient material to checkmate.
+function hasInsufficientMaterial(board: ChessBoard): boolean {
+  type MinorInfo = { color: ChessColor; type: PieceType; squareColor: number };
+
+  const minors: MinorInfo[] = [];
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const p = board[row][col];
+      if (!p) continue;
+
+      if (p.type === "pawn" || p.type === "rook" || p.type === "queen") {
+        return false; // Pawns, rooks, or queens give sufficient mating potential
+      }
+
+      if (p.type === "bishop" || p.type === "knight") {
+        minors.push({
+          color: p.color,
+          type: p.type,
+          squareColor: (row + col) % 2,
+        });
+      }
+    }
+  }
+
+  const whiteMinors = minors.filter((m) => m.color === "white");
+  const blackMinors = minors.filter((m) => m.color === "black");
+
+  // King vs King
+  if (whiteMinors.length === 0 && blackMinors.length === 0) {
+    return true;
+  }
+
+  // King + minor vs King
+  if (
+    whiteMinors.length === 1 &&
+    (whiteMinors[0].type === "bishop" || whiteMinors[0].type === "knight") &&
+    blackMinors.length === 0
+  ) {
+    return true;
+  }
+  if (
+    blackMinors.length === 1 &&
+    (blackMinors[0].type === "bishop" || blackMinors[0].type === "knight") &&
+    whiteMinors.length === 0
+  ) {
+    return true;
+  }
+
+  // King + bishop vs King + bishop (same color squares)
+  if (
+    whiteMinors.length === 1 &&
+    blackMinors.length === 1 &&
+    whiteMinors[0].type === "bishop" &&
+    blackMinors[0].type === "bishop" &&
+    whiteMinors[0].squareColor === blackMinors[0].squareColor
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
@@ -472,11 +670,21 @@ function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
   const promotionOccurred =
     movingPiece?.type === "pawn" && (move.to.row === 0 || move.to.row === 7);
 
+  // Update repetition tracking for the new position
+  const positionKey = getPositionKey(boardAfter, nextTurn);
+  const positionCounts = { ...(state.positionCounts || {}) };
+  positionCounts[positionKey] = (positionCounts[positionKey] || 0) + 1;
+
+  let finalStatus: GameStatus = status;
+  if (finalStatus !== "checkmate" && positionCounts[positionKey] >= 3) {
+    finalStatus = "drawRepetition";
+  }
+
   return {
     ...state,
     board: boardAfter,
     currentTurn: nextTurn,
-    status,
+    status: finalStatus,
     selected: null,
     possibleMoves: [],
     lastMove: {
@@ -487,6 +695,7 @@ function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
       movedPieceType: movingPiece ? movingPiece.type : "pawn",
       promotion: promotionOccurred || undefined,
     },
+    positionCounts,
   };
 }
 
@@ -570,7 +779,7 @@ function negamax(
     const mateScore = 100000;
     return losing ? -mateScore : mateScore;
   }
-  if (status === "stalemate") {
+  if (status === "stalemate" || status === "drawInsufficient") {
     return 0;
   }
 
@@ -680,7 +889,12 @@ export function handleSquareClick(
   col: number
 ): ChessState {
   // Ignore clicks if game is over
-  if (state.status === "checkmate" || state.status === "stalemate") {
+  if (
+    state.status === "checkmate" ||
+    state.status === "stalemate" ||
+    state.status === "drawRepetition" ||
+    state.status === "drawInsufficient"
+  ) {
     return state;
   }
 
@@ -690,11 +904,53 @@ export function handleSquareClick(
   if (!state.selected) {
     if (clicked && clicked.color === state.currentTurn) {
       const from: Position = { row, col };
-      const legalMoves = generateLegalMovesForPiece(
+      let legalMoves = generateLegalMovesForPiece(
         state.board,
         from,
         state.currentTurn
       );
+
+      // En passant: add capture squares for pawns based on the last move
+      const piece = state.board[row][col];
+      const last = state.lastMove;
+      if (
+        piece &&
+        piece.type === "pawn" &&
+        last &&
+        last.movedPieceType === "pawn"
+      ) {
+        const fromRow = last.from.row;
+        const toRow = last.to.row;
+        const fromCol = last.from.col;
+        const toCol = last.to.col;
+
+        // Opponent just moved a pawn two squares forward next to our pawn
+        const movedPawn = state.board[toRow][toCol];
+        if (
+          movedPawn &&
+          movedPawn.color !== piece.color &&
+          fromCol === toCol &&
+          Math.abs(toRow - fromRow) === 2 &&
+          row === toRow &&
+          Math.abs(col - toCol) === 1
+        ) {
+          const dir = piece.color === "white" ? -1 : 1;
+          const targetRow = row + dir;
+          const targetCol = toCol;
+          if (
+            inBounds(targetRow, targetCol) &&
+            !state.board[targetRow][targetCol]
+          ) {
+            const testBoard = applyMoveOnBoard(state.board, {
+              from,
+              to: { row: targetRow, col: targetCol },
+            });
+            if (!isKingInCheck(testBoard, piece.color)) {
+              legalMoves = [...legalMoves, { row: targetRow, col: targetCol }];
+            }
+          }
+        }
+      }
       return {
         ...state,
         selected: from,
@@ -709,11 +965,52 @@ export function handleSquareClick(
   // Clicking another friendly piece changes selection
   if (clicked && clicked.color === state.currentTurn) {
     const from: Position = { row, col };
-    const legalMoves = generateLegalMovesForPiece(
+    let legalMoves = generateLegalMovesForPiece(
       state.board,
       from,
       state.currentTurn
     );
+
+    // En passant possibilities when switching to a different pawn
+    const piece = state.board[row][col];
+    const last = state.lastMove;
+    if (
+      piece &&
+      piece.type === "pawn" &&
+      last &&
+      last.movedPieceType === "pawn"
+    ) {
+      const fromRow = last.from.row;
+      const toRow = last.to.row;
+      const fromCol = last.from.col;
+      const toCol = last.to.col;
+
+      const movedPawn = state.board[toRow][toCol];
+      if (
+        movedPawn &&
+        movedPawn.color !== piece.color &&
+        fromCol === toCol &&
+        Math.abs(toRow - fromRow) === 2 &&
+        row === toRow &&
+        Math.abs(col - toCol) === 1
+      ) {
+        const dir = piece.color === "white" ? -1 : 1;
+        const targetRow = row + dir;
+        const targetCol = toCol;
+        if (
+          inBounds(targetRow, targetCol) &&
+          !state.board[targetRow][targetCol]
+        ) {
+          const testBoard = applyMoveOnBoard(state.board, {
+            from,
+            to: { row: targetRow, col: targetCol },
+          });
+          if (!isKingInCheck(testBoard, piece.color)) {
+            legalMoves = [...legalMoves, { row: targetRow, col: targetCol }];
+          }
+        }
+      }
+    }
     return {
       ...state,
       selected: from,
@@ -748,7 +1045,12 @@ export function makeComputerMove(
   state: ChessState,
   difficulty: ChessDifficulty = 1
 ): ChessState {
-  if (state.status === "checkmate" || state.status === "stalemate") {
+  if (
+    state.status === "checkmate" ||
+    state.status === "stalemate" ||
+    state.status === "drawRepetition" ||
+    state.status === "drawInsufficient"
+  ) {
     return state;
   }
 

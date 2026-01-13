@@ -280,6 +280,12 @@ export const ChessGame: React.FC<ChessGameProps> = ({
     if (state.status === "stalemate") {
       return "Stalemate – game drawn.";
     }
+    if (state.status === "drawRepetition") {
+      return "Draw by repetition.";
+    }
+    if (state.status === "drawInsufficient") {
+      return "Draw  insufficient material.";
+    }
     if (state.status === "check") {
       return `${turnLabel} is in check.`;
     }
