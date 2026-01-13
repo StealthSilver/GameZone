@@ -24,14 +24,11 @@ export const ChessGame: React.FC<ChessGameProps> = ({
 }) => {
   const [state, setState] = useState<ChessState>(() => createInitialState());
 
-  const [pendingPromotion, setPendingPromotion] = useState<
-    | {
-        row: number;
-        col: number;
-        color: ChessColor;
-      }
-    | null
-  >(null);
+  const [pendingPromotion, setPendingPromotion] = useState<{
+    row: number;
+    col: number;
+    color: ChessColor;
+  } | null>(null);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
 
