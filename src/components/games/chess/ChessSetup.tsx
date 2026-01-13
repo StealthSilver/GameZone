@@ -8,10 +8,15 @@ export const ChessSetup: React.FC = () => {
   const router = useRouter();
   const [mode, setMode] = useState<ChessMode | null>(null);
   const [color, setColor] = useState<ChessColor>("white");
+  const [level, setLevel] = useState<number>(1);
 
   const handleStart = () => {
     if (!mode) return;
     const params = new URLSearchParams({ mode, color });
+
+    if (mode === "computer") {
+      params.set("level", String(level));
+    }
     router.push(`/games/chess/play?${params.toString()}`);
   };
 
@@ -114,7 +119,7 @@ export const ChessSetup: React.FC = () => {
                 <div className="text-left">
                   <h3 className="font-bold text-lg">VS Computer</h3>
                   <p className="text-sm text-gray-400">
-                    Challenge the chess AI (coming soon)
+                    Challenge the chess AI at your chosen level
                   </p>
                 </div>
               </div>
@@ -137,6 +142,31 @@ export const ChessSetup: React.FC = () => {
               )}
             </div>
           </button>
+        </div>
+
+        {/* Difficulty (only for vs computer) */}
+        <div className="w-full max-w-md mb-8">
+          <h3 className="text-lg font-semibold mb-3 text-gray-300">
+            Difficulty Level
+          </h3>
+          <p className="text-xs text-gray-500 mb-3">
+            Choose a level from 1 (easy) to 10 (hard). Only used when playing vs
+            computer.
+          </p>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-400 w-10 text-right">
+              {level}
+            </span>
+            <input
+              type="range"
+              min={1}
+              max={10}
+              value={level}
+              onChange={(e) => setLevel(Number(e.target.value))}
+              disabled={mode !== "computer"}
+              className="flex-1 accent-[#8CECF7] disabled:opacity-40"
+            />
+          </div>
         </div>
 
         {/* Color Selection */}

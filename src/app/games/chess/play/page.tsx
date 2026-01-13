@@ -9,8 +9,12 @@ function ChessPlayContent() {
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") as ChessMode) || "player";
   const color = (searchParams.get("color") as ChessColor) || "white";
+  const levelParam = searchParams.get("level");
+  const difficulty = levelParam
+    ? Math.min(10, Math.max(1, Number(levelParam)))
+    : 1;
 
-  return <ChessGame mode={mode} playerColor={color} />;
+  return <ChessGame mode={mode} playerColor={color} difficulty={difficulty} />;
 }
 
 export default function ChessPlayPage() {

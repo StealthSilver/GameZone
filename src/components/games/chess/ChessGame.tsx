@@ -13,9 +13,14 @@ import {
 interface ChessGameProps {
   mode: ChessMode;
   playerColor: ChessColor;
+  difficulty?: number; // 1 (easy) - 10 (hard)
 }
 
-export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
+export const ChessGame: React.FC<ChessGameProps> = ({
+  mode,
+  playerColor,
+  difficulty = 1,
+}) => {
   const [state, setState] = useState<ChessState>(() => createInitialState());
 
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -44,7 +49,7 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
           prev.currentTurn !== playerColor &&
           (prev.status === "ongoing" || prev.status === "check");
         if (!computerTurn) return prev;
-        return makeComputerMove(prev);
+        return makeComputerMove(prev, difficulty);
       });
     }, 400);
 
@@ -256,6 +261,12 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
         </span>{" "}
         · You play as{" "}
         <span className="text-[#AAFDBB] capitalize">{playerColor}</span>
+        {mode === "computer" && (
+          <>
+            {" "}
+            · Level <span className="text-[#8CECF7]">{difficulty}</span>
+          </>
+        )}
       </p>
 
       <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-4 shadow-xl">

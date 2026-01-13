@@ -35,6 +35,9 @@ export interface ChessState {
   };
 }
 
+// Difficulty: 1 (easiest) to 10 (hardest)
+export type ChessDifficulty = number;
+
 type Position = { row: number; col: number };
 
 type Move = {
@@ -470,6 +473,145 @@ function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
   };
 }
 
+// --- Evaluation and search for computer moves ---
+
+function evaluateBoard(board: ChessBoard, perspective: ChessColor): number {
+  // Simple material + tiny mobility evaluation.
+  const pieceValues: Record<PieceType, number> = {
+    pawn: 100,
+    knight: 320,
+    bishop: 330,
+    rook: 500,
+    queen: 900,
+    king: 20000,
+  };
+
+  let score = 0;
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const p = board[row][col];
+      if (!p) continue;
+      const value = pieceValues[p.type];
+      score += p.color === perspective ? value : -value;
+    }
+  }
+
+  // Mobility (number of legal moves) as a small term.
+  const myMoves = getAllLegalMoves(board, perspective).length;
+  const oppMoves = getAllLegalMoves(board, oppositeColor(perspective)).length;
+  score += (myMoves - oppMoves) * 5;
+
+  return score;
+}
+
+function negamax(
+  board: ChessBoard,
+  depth: number,
+  colorToMove: ChessColor,
+  perspective: ChessColor,
+  alpha: number,
+  beta: number
+): number {
+  if (depth === 0) {
+    return evaluateBoard(board, perspective);
+  }
+
+  const status = getGameStatus(board, colorToMove);
+  if (status === "checkmate") {
+    // If it's checkmate and it's our turn, we lost; if it's opponent's turn, we won.
+    const losing = colorToMove === perspective;
+    const mateScore = 100000;
+    return losing ? -mateScore : mateScore;
+  }
+  if (status === "stalemate") {
+    return 0;
+  }
+
+  const moves = getAllLegalMoves(board, colorToMove);
+  if (moves.length === 0) {
+    return 0;
+  }
+
+  let best = -Infinity;
+
+  for (const move of moves) {
+    const newBoard = applyMoveOnBoard(board, move);
+    const value = -negamax(
+      newBoard,
+      depth - 1,
+      oppositeColor(colorToMove),
+      perspective,
+      -beta,
+      -alpha
+    );
+    if (value > best) {
+      best = value;
+    }
+    if (best > alpha) {
+      alpha = best;
+    }
+    if (alpha >= beta) {
+      break; // alpha-beta cutoff
+    }
+  }
+
+  return best;
+}
+
+function pickComputerMove(
+  board: ChessBoard,
+  color: ChessColor,
+  difficulty: ChessDifficulty
+): Move | null {
+  const moves = getAllLegalMoves(board, color);
+  if (moves.length === 0) return null;
+
+  // Map difficulty (1-10) to search depth (1-4) and randomness.
+  const clamped = Math.max(1, Math.min(10, difficulty));
+  let depth: number;
+  if (clamped <= 3) depth = 1;
+  else if (clamped <= 6) depth = 2;
+  else if (clamped <= 8) depth = 3;
+  else depth = 4;
+
+  // Randomness factor: higher on easy, lower on hard.
+  const randomness = (11 - clamped) / 10; // 1.0 at level 1 -> 0.1 at level 10
+
+  // Occasionally pick a random move on easier levels.
+  if (Math.random() < randomness * 0.4) {
+    const randomIndex = Math.floor(Math.random() * moves.length);
+    return moves[randomIndex];
+  }
+
+  // Search for best move using negamax.
+  let bestScore = -Infinity;
+  let bestMoves: Move[] = [];
+
+  for (const move of moves) {
+    const newBoard = applyMoveOnBoard(board, move);
+    const score = -negamax(
+      newBoard,
+      depth - 1,
+      oppositeColor(color),
+      color,
+      -Infinity,
+      Infinity
+    );
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMoves = [move];
+    } else if (score === bestScore) {
+      bestMoves.push(move);
+    }
+  }
+
+  // If multiple moves tie, choose one at random for variety.
+  const idx = Math.floor(Math.random() * bestMoves.length);
+  return bestMoves[idx];
+}
+
 // --- Public API used by components ---
 
 export function handleSquareClick(
@@ -541,21 +683,21 @@ export function handleSquareClick(
   return applyMoveAndUpdateState(state, move);
 }
 
-// Simple computer player: choose a random legal move for the side to move.
-export function makeComputerMove(state: ChessState): ChessState {
+// Computer player using a simple engine with difficulty.
+export function makeComputerMove(
+  state: ChessState,
+  difficulty: ChessDifficulty = 1
+): ChessState {
   if (state.status === "checkmate" || state.status === "stalemate") {
     return state;
   }
 
   const color = state.currentTurn;
-  const moves = getAllLegalMoves(state.board, color);
-  if (moves.length === 0) {
+  const move = pickComputerMove(state.board, color, difficulty);
+  if (!move) {
     // No moves: update status to reflect checkmate/stalemate if not already
     const status = getGameStatus(state.board, color);
     return { ...state, status };
   }
-
-  const randomIndex = Math.floor(Math.random() * moves.length);
-  const move = moves[randomIndex];
   return applyMoveAndUpdateState(state, move);
 }
