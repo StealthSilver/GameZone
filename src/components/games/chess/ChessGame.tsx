@@ -198,17 +198,18 @@ export const ChessGame: React.FC<ChessGameProps> = ({
     const isWhite = piece.color === "white";
     switch (piece.type) {
       case "king":
-        return isWhite ? "♔" : "♚";
+        // Swapped visual colors: engine "white" pieces use black glyphs and vice versa
+        return isWhite ? "♚" : "♔";
       case "queen":
-        return isWhite ? "♕" : "♛";
+        return isWhite ? "♛" : "♕";
       case "rook":
-        return isWhite ? "♖" : "♜";
+        return isWhite ? "♜" : "♖";
       case "bishop":
-        return isWhite ? "♗" : "♝";
+        return isWhite ? "♝" : "♗";
       case "knight":
-        return isWhite ? "♘" : "♞";
+        return isWhite ? "♞" : "♘";
       case "pawn":
-        return isWhite ? "♙" : "♟︎";
+        return isWhite ? "♟︎" : "♙";
       default:
         return null;
     }
@@ -250,27 +251,28 @@ export const ChessGame: React.FC<ChessGameProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-[family-name:var(--font-oxanium)] px-4 py-8">
-      <h1 className="text-3xl md:text-5xl font-bold mb-2 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
-        Chess
-      </h1>
-      <p className="text-gray-400 mb-6 text-sm md:text-base">
-        Mode:{" "}
-        <span className="text-[#8CECF7]">
-          {mode === "player" ? "VS Player" : "VS Computer"}
-        </span>{" "}
-        · You play as{" "}
-        <span className="text-[#AAFDBB] capitalize">{playerColor}</span>
-        {mode === "computer" && (
-          <>
-            {" "}
-            · Level <span className="text-[#8CECF7]">{difficulty}</span>
-          </>
-        )}
-      </p>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start font-[family-name:var(--font-oxanium)] px-4 py-8">
+      <div className="w-full max-w-4xl flex flex-col items-center gap-4">
+        <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+          Chess
+        </h1>
+        <p className="text-gray-400 text-sm md:text-base text-center">
+          Mode: {" "}
+          <span className="text-[#8CECF7]">
+            {mode === "player" ? "VS Player" : "VS Computer"}
+          </span>{" "}
+          · You play as{" "}
+          <span className="text-[#AAFDBB] capitalize">{playerColor}</span>
+          {mode === "computer" && (
+            <>
+              {" "}
+              · Level <span className="text-[#8CECF7]">{difficulty}</span>
+            </>
+          )}
+        </p>
 
-      <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-4 shadow-xl">
-        <div className="grid grid-cols-8 gap-1 md:gap-1.5">
+        <div className="mt-4 bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 shadow-lg w-full flex flex-col items-center">
+          <div className="grid grid-cols-8 gap-1 md:gap-1.5">
           {Array.from({ length: 8 }, (_, vr) => vr).map((viewRow) =>
             Array.from({ length: 8 }, (_, vc) => vc).map((viewCol) => {
               const boardRow = playerColor === "white" ? viewRow : 7 - viewRow;
@@ -297,7 +299,7 @@ export const ChessGame: React.FC<ChessGameProps> = ({
                 <button
                   key={`${viewRow}-${viewCol}`}
                   onClick={() => handleClick(boardRow, boardCol)}
-                  className={`relative w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
+                  className={`relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
                     isLight ? "bg-[#1f2933]" : "bg-[#111827]"
                   } ${
                     isSelected
@@ -321,38 +323,41 @@ export const ChessGame: React.FC<ChessGameProps> = ({
                   <span
                     className={`transition-transform duration-150 ease-out ${
                       isLastTo ? "scale-110" : "scale-100"
-                    }`}
-                  >
-                    {renderPiece(pieceToSymbol(square))}
+                    </button>
+                  );
+                })
+              )}
+              </div>
+
+              <div className="mt-4 flex items-center justify-between w-full text-xs md:text-sm text-gray-400">
+                <span>
+                  Turn: {" "}
+                  <span className="text-[#8CECF7] capitalize">
+                    {state.currentTurn}
                   </span>
-                </button>
-              );
-            })
-          )}
-        </div>
+                </span>
+                <span className="text-[10px] md:text-xs text-gray-500 text-right max-w-[10rem] md:max-w-xs">
+                  {renderStatusText()}
+                </span>
+              </div>
+            </div>
 
-        <div className="mt-4 flex items-center justify-between text-xs md:text-sm text-gray-400">
-          <span>
-            Turn:{" "}
-            <span className="text-[#8CECF7] capitalize">
-              {state.currentTurn}
-            </span>
-          </span>
-          <span className="text-[10px] md:text-xs text-gray-500 text-right max-w-[10rem] md:max-w-xs">
-            {renderStatusText()}
-          </span>
-        </div>
-      </div>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setState(createInitialState())}
+                className="px-5 py-2.5 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-200 text-sm"
+              >
+                Reset Board
+              </button>
 
-      <button
-        onClick={() => setState(createInitialState())}
-        className="mt-6 px-5 py-2.5 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-200 text-sm"
-      >
-        Reset Board
-      </button>
-
-      <button
-        onClick={() => (window.location.href = "/games")}
+              <button
+                onClick={() => (window.location.href = "/games")}
+                className="px-5 py-2.5 rounded-lg border border-gray-800 text-gray-500 hover:border-gray-600 hover:text-gray-300 transition-all duration-200 text-xs md:text-sm"
+              >
+                Back to Games
+              </button>
+            </div>
+          </div>
         className="mt-3 px-5 py-2.5 rounded-lg border border-gray-800 text-gray-500 hover:border-gray-600 hover:text-gray-300 transition-all duration-200 text-xs md:text-sm"
       >
         Back to Games

@@ -43,6 +43,18 @@ const games = [
     available: false,
     route: "/games/snake-and-ladder",
   },
+  {
+    name: "Pong",
+    image: "/pong.png",
+    available: false,
+    route: "/games/pong",
+  },
+  {
+    name: "Space Shooter",
+    image: "/spaceshooter.png",
+    available: false,
+    route: "/games/space-shooter",
+  },
 ];
 
 export default function GamesPage() {

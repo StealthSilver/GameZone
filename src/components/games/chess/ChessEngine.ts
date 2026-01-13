@@ -513,10 +513,6 @@ function negamax(
   alpha: number,
   beta: number
 ): number {
-  if (depth === 0) {
-    return evaluateBoard(board, perspective);
-  }
-
   const status = getGameStatus(board, colorToMove);
   if (status === "checkmate") {
     // If it's checkmate and it's our turn, we lost; if it's opponent's turn, we won.
@@ -526,6 +522,10 @@ function negamax(
   }
   if (status === "stalemate") {
     return 0;
+  }
+
+  if (depth === 0) {
+    return evaluateBoard(board, perspective);
   }
 
   const moves = getAllLegalMoves(board, colorToMove);
@@ -566,6 +566,16 @@ function pickComputerMove(
 ): Move | null {
   const moves = getAllLegalMoves(board, color);
   if (moves.length === 0) return null;
+
+  // Always take an immediate checkmate in one move if available.
+  const opponentColor = oppositeColor(color);
+  for (const move of moves) {
+    const newBoard = applyMoveOnBoard(board, move);
+    const statusAfter = getGameStatus(newBoard, opponentColor);
+    if (statusAfter === "checkmate") {
+      return move;
+    }
+  }
 
   // Map difficulty (1-10) to search depth (1-4) and randomness.
   const clamped = Math.max(1, Math.min(10, difficulty));
