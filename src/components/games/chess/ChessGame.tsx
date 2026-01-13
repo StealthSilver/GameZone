@@ -257,7 +257,7 @@ export const ChessGame: React.FC<ChessGameProps> = ({
           Chess
         </h1>
         <p className="text-gray-400 text-sm md:text-base text-center">
-          Mode: {" "}
+          Mode:{" "}
           <span className="text-[#8CECF7]">
             {mode === "player" ? "VS Player" : "VS Computer"}
           </span>{" "}
@@ -273,95 +273,100 @@ export const ChessGame: React.FC<ChessGameProps> = ({
 
         <div className="mt-4 bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 shadow-lg w-full flex flex-col items-center">
           <div className="grid grid-cols-8 gap-1 md:gap-1.5">
-          {Array.from({ length: 8 }, (_, vr) => vr).map((viewRow) =>
-            Array.from({ length: 8 }, (_, vc) => vc).map((viewCol) => {
-              const boardRow = playerColor === "white" ? viewRow : 7 - viewRow;
-              const boardCol = playerColor === "white" ? viewCol : 7 - viewCol;
+            {Array.from({ length: 8 }, (_, vr) => vr).map((viewRow) =>
+              Array.from({ length: 8 }, (_, vc) => vc).map((viewCol) => {
+                const boardRow =
+                  playerColor === "white" ? viewRow : 7 - viewRow;
+                const boardCol =
+                  playerColor === "white" ? viewCol : 7 - viewCol;
 
-              const square = state.board[boardRow][boardCol];
+                const square = state.board[boardRow][boardCol];
 
-              const isLight = (boardRow + boardCol) % 2 === 0;
-              const isSelected =
-                state.selected?.row === boardRow &&
-                state.selected?.col === boardCol;
-              const isMoveTarget = state.possibleMoves.some(
-                (m) => m.row === boardRow && m.col === boardCol
-              );
-              const isCheckedKing =
-                checkedKing?.row === boardRow && checkedKing?.col === boardCol;
-              const isLastFrom =
-                lastMoveFrom?.row === boardRow &&
-                lastMoveFrom?.col === boardCol;
-              const isLastTo =
-                lastMoveTo?.row === boardRow && lastMoveTo?.col === boardCol;
+                const isLight = (boardRow + boardCol) % 2 === 0;
+                const isSelected =
+                  state.selected?.row === boardRow &&
+                  state.selected?.col === boardCol;
+                const isMoveTarget = state.possibleMoves.some(
+                  (m) => m.row === boardRow && m.col === boardCol
+                );
+                const isCheckedKing =
+                  checkedKing?.row === boardRow &&
+                  checkedKing?.col === boardCol;
+                const isLastFrom =
+                  lastMoveFrom?.row === boardRow &&
+                  lastMoveFrom?.col === boardCol;
+                const isLastTo =
+                  lastMoveTo?.row === boardRow && lastMoveTo?.col === boardCol;
 
-              return (
-                <button
-                  key={`${viewRow}-${viewCol}`}
-                  onClick={() => handleClick(boardRow, boardCol)}
-                  className={`relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
-                    isLight ? "bg-[#1f2933]" : "bg-[#111827]"
-                  } ${
-                    isSelected
-                      ? "ring-2 ring-[#8CECF7] ring-offset-2 ring-offset-gray-900"
-                      : ""
-                  } ${isMoveTarget ? "bg-[#0f172a] border-[#8CECF7]/60" : ""} ${
-                    isCheckedKing
-                      ? "bg-red-900/70 border-red-500 shadow-[0_0_15px_rgba(248,113,113,0.7)]"
-                      : ""
-                  } ${
-                    isLastFrom
-                      ? "chess-last-move-from"
-                      : isLastTo
-                      ? "chess-last-move-to"
-                      : ""
-                  } hover:border-[#8CECF7]/70`}
-                >
-                  {isMoveTarget && !square && (
-                    <span className="absolute w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#8CECF7]/80" />
-                  )}
-                  <span
-                    className={`transition-transform duration-150 ease-out ${
-                      isLastTo ? "scale-110" : "scale-100"
-                    </button>
-                  );
-                })
-              )}
-              </div>
-
-              <div className="mt-4 flex items-center justify-between w-full text-xs md:text-sm text-gray-400">
-                <span>
-                  Turn: {" "}
-                  <span className="text-[#8CECF7] capitalize">
-                    {state.currentTurn}
-                  </span>
-                </span>
-                <span className="text-[10px] md:text-xs text-gray-500 text-right max-w-[10rem] md:max-w-xs">
-                  {renderStatusText()}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => setState(createInitialState())}
-                className="px-5 py-2.5 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-200 text-sm"
-              >
-                Reset Board
-              </button>
-
-              <button
-                onClick={() => (window.location.href = "/games")}
-                className="px-5 py-2.5 rounded-lg border border-gray-800 text-gray-500 hover:border-gray-600 hover:text-gray-300 transition-all duration-200 text-xs md:text-sm"
-              >
-                Back to Games
-              </button>
-            </div>
+                return (
+                  <button
+                    key={`${viewRow}-${viewCol}`}
+                    onClick={() => handleClick(boardRow, boardCol)}
+                    className={`relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
+                      isLight ? "bg-[#1f2933]" : "bg-[#111827]"
+                    } ${
+                      isSelected
+                        ? "ring-2 ring-[#8CECF7] ring-offset-2 ring-offset-gray-900"
+                        : ""
+                    } ${
+                      isMoveTarget ? "bg-[#0f172a] border-[#8CECF7]/60" : ""
+                    } ${
+                      isCheckedKing
+                        ? "bg-red-900/70 border-red-500 shadow-[0_0_15px_rgba(248,113,113,0.7)]"
+                        : ""
+                    } ${
+                      isLastFrom
+                        ? "chess-last-move-from"
+                        : isLastTo
+                        ? "chess-last-move-to"
+                        : ""
+                    } hover:border-[#8CECF7]/70`}
+                  >
+                    {isMoveTarget && !square && (
+                      <span className="absolute w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#8CECF7]/80" />
+                    )}
+                    <span
+                      className={`transition-transform duration-150 ease-out ${
+                        isLastTo ? "scale-110" : "scale-100"
+                      }`}
+                    >
+                      {renderPiece(pieceToSymbol(square))}
+                    </span>
+                  </button>
+                );
+              })
+            )}
           </div>
-        className="mt-3 px-5 py-2.5 rounded-lg border border-gray-800 text-gray-500 hover:border-gray-600 hover:text-gray-300 transition-all duration-200 text-xs md:text-sm"
-      >
-        Back to Games
-      </button>
+
+          <div className="mt-4 flex items-center justify-between w-full text-xs md:text-sm text-gray-400">
+            <span>
+              Turn:{" "}
+              <span className="text-[#8CECF7] capitalize">
+                {state.currentTurn}
+              </span>
+            </span>
+            <span className="text-[10px] md:text-xs text-gray-500 text-right max-w-[10rem] md:max-w-xs">
+              {renderStatusText()}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => setState(createInitialState())}
+            className="px-5 py-2.5 rounded-lg border border-gray-700 text-gray-300 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-all duration-200 text-sm"
+          >
+            Reset Board
+          </button>
+
+          <button
+            onClick={() => (window.location.href = "/games")}
+            className="px-5 py-2.5 rounded-lg border border-gray-800 text-gray-500 hover:border-gray-600 hover:text-gray-300 transition-all duration-200 text-xs md:text-sm"
+          >
+            Back to Games
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
