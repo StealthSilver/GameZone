@@ -406,50 +406,38 @@ export class CarromGameEngine {
     const player = this.state.currentPlayer;
     const opponent: PlayerId = player === 1 ? 2 : 1;
 
-    const scoredOwn =
-      player === 1 ? this.turnPocketedWhite > 0 : this.turnPocketedBlack > 0;
-    const scoredOpponent =
-      player === 1 ? this.turnPocketedBlack > 0 : this.turnPocketedWhite > 0;
+    const WHITE_VALUE = 20;
+    const BLACK_VALUE = 10;
+    const QUEEN_VALUE = 50;
+    const STRIKER_PENALTY = 10;
 
-    if (this.turnPocketedWhite > 0)
-      this.state.scores[1] += this.turnPocketedWhite;
-    if (this.turnPocketedBlack > 0)
-      this.state.scores[2] += this.turnPocketedBlack;
+    // All players can pocket any coin/queen; points go to
+    // whoever took the shot this turn (currentPlayer).
+    let delta = 0;
 
-    let foul = false;
-
-    if (this.turnPocketedStriker) {
-      foul = true;
-      this.state.fouls = "Striker pocketed";
-      this.state.scores[player] = Math.max(0, this.state.scores[player] - 1);
+    if (this.turnPocketedWhite > 0) {
+      delta += this.turnPocketedWhite * WHITE_VALUE;
     }
 
-    if (scoredOpponent && !scoredOwn) {
-      foul = true;
-      this.state.scores[opponent] += scoredOpponent
-        ? player === 1
-          ? this.turnPocketedBlack
-          : this.turnPocketedWhite
-        : 0;
-      if (!this.state.fouls) this.state.fouls = "Opponent coins pocketed";
+    if (this.turnPocketedBlack > 0) {
+      delta += this.turnPocketedBlack * BLACK_VALUE;
     }
+
+    this.state.message = null;
 
     if (this.turnPocketedQueen) {
-      const queenPiece = this.state.pieces.find((p) => p.kind === "queen");
-      const ownCountThisTurn =
-        player === 1 ? this.turnPocketedWhite : this.turnPocketedBlack;
-      if (ownCountThisTurn > 0 || this.state.scores[player] > 0) {
-        this.state.scores[player] += 3;
-        this.state.queenOwner = player;
-        this.state.message = "Queen secured";
-      } else if (queenPiece) {
-        queenPiece.pocketed = false;
-        queenPiece.position = { x: this.size / 2, y: this.size / 2 };
-        queenPiece.velocity = { x: 0, y: 0 };
-        queenPiece.isMoving = false;
-        this.state.message = "Queen returned";
-      }
+      delta += QUEEN_VALUE;
+      this.state.message = "Queen pocketed!";
     }
+
+    this.state.fouls = null;
+
+    if (this.turnPocketedStriker) {
+      delta -= STRIKER_PENALTY;
+      this.state.fouls = `Striker pocketed (-${STRIKER_PENALTY})`;
+    }
+
+    this.state.scores[player] = Math.max(0, this.state.scores[player] + delta);
 
     const remainingCoins = this.state.pieces.filter(
       (p) => (p.kind === "coin" || p.kind === "queen") && !p.pocketed
@@ -468,7 +456,12 @@ export class CarromGameEngine {
       return;
     }
 
-    const keepTurn = scoredOwn && !foul;
+    const pocketedScoringPiece =
+      this.turnPocketedWhite > 0 ||
+      this.turnPocketedBlack > 0 ||
+      this.turnPocketedQueen;
+
+    const keepTurn = pocketedScoringPiece && !this.turnPocketedStriker;
 
     if (!keepTurn) {
       this.state.currentPlayer = opponent;
@@ -506,8 +499,9 @@ export class CarromGameEngine {
     const striker = this.getStriker();
     if (!striker || striker.pocketed) return;
 
+    // In the new rules, the computer can target any coin or the queen.
     const targets = this.state.pieces.filter(
-      (p) => p.kind === "coin" && p.color === "black" && !p.pocketed
+      (p) => (p.kind === "coin" || p.kind === "queen") && !p.pocketed
     );
 
     let best: Piece | null = null;
@@ -524,11 +518,11 @@ export class CarromGameEngine {
     }
 
     if (!best) {
-      const anyCoin = this.state.pieces.find(
-        (p) => p.kind === "coin" && !p.pocketed
+      const anyPiece = this.state.pieces.find(
+        (p) => (p.kind === "coin" || p.kind === "queen") && !p.pocketed
       );
-      if (!anyCoin) return;
-      best = anyCoin;
+      if (!anyPiece) return;
+      best = anyPiece;
     }
 
     const dx = best.position.x - striker.position.x;

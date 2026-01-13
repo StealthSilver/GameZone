@@ -18,12 +18,70 @@ export const CarromGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<CarromGameEngine | null>(null);
   const stateRef = useRef<CarromGameState | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const [state, setState] = useState<CarromGameState | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isAiming, setIsAiming] = useState(false);
   const [aimStart, setAimStart] = useState<{ x: number; y: number } | null>(
     null
   );
+
+  const getAudioContext = useCallback(() => {
+    if (typeof window === "undefined") return null;
+    if (audioContextRef.current) return audioContextRef.current;
+
+    const Ctx =
+      (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (!Ctx) return null;
+
+    const ctx = new Ctx();
+    audioContextRef.current = ctx;
+    return ctx;
+  }, []);
+
+  const playTone = useCallback(
+    (
+      frequency: number,
+      duration: number,
+      type: OscillatorType,
+      gain = 0.25
+    ) => {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.value = frequency;
+
+      gainNode.gain.value = gain;
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      const now = ctx.currentTime;
+      oscillator.start(now);
+      gainNode.gain.setValueAtTime(gain, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      oscillator.stop(now + duration + 0.02);
+    },
+    [getAudioContext]
+  );
+
+  const playStrikeSound = useCallback(() => {
+    playTone(260, 0.09, "square", 0.3);
+  }, [playTone]);
+
+  const playPocketSound = useCallback(() => {
+    playTone(520, 0.08, "triangle", 0.22);
+    playTone(880, 0.1, "sine", 0.15);
+  }, [playTone]);
+
+  const playGameOverSound = useCallback(() => {
+    playTone(440, 0.18, "sine", 0.22);
+    playTone(330, 0.2, "sine", 0.18);
+  }, [playTone]);
 
   useEffect(() => {
     let cancelled = false;
@@ -33,14 +91,13 @@ export const CarromGame: React.FC = () => {
 
       const canvas = canvasRef.current;
       if (!canvas) {
-        // Try again on next animation frame until the canvas ref is ready
         requestAnimationFrame(initialize);
         return;
       }
 
       const rect = canvas.getBoundingClientRect();
       const baseSize = rect.width || 600;
-      const size = Math.max(320, Math.min(700, baseSize));
+      const size = Math.max(320, Math.min(620, baseSize));
       canvas.width = size;
       canvas.height = size;
       canvas.style.width = "100%";
@@ -50,6 +107,26 @@ export const CarromGame: React.FC = () => {
       engineRef.current = engine;
 
       engine.setStateChangeCallback((s) => {
+        const prev = stateRef.current;
+
+        if (prev) {
+          if (prev.gameStatus === "aiming" && s.gameStatus === "shooting") {
+            playStrikeSound();
+          }
+
+          const hadNewPocket = s.pieces.some((piece) => {
+            const prevPiece = prev.pieces.find((p) => p.id === piece.id);
+            return !prevPiece?.pocketed && piece.pocketed;
+          });
+          if (hadNewPocket) {
+            playPocketSound();
+          }
+
+          if (prev.gameStatus !== "gameOver" && s.gameStatus === "gameOver") {
+            playGameOverSound();
+          }
+        }
+
         stateRef.current = s;
         setState(s);
       });
@@ -68,8 +145,12 @@ export const CarromGame: React.FC = () => {
         engineRef.current.cleanup();
         engineRef.current = null;
       }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
     };
-  }, [mode]);
+  }, [mode, playStrikeSound, playPocketSound, playGameOverSound]);
 
   const drawPieces = useCallback(
     (ctx: CanvasRenderingContext2D, pieces: Piece[]) => {
@@ -473,7 +554,7 @@ export const CarromGame: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-sm md:text-lg">Player 1</h3>
-                <p className="text-xs md:text-sm text-gray-400">White coins</p>
+                <p className="text-xs md:text-sm text-gray-400">Total score</p>
               </div>
               <div className="text-xl md:text-3xl font-bold text-[#AAFDBB]">
                 {state?.scores[1] ?? 0}
@@ -497,7 +578,7 @@ export const CarromGame: React.FC = () => {
                 <h3 className="font-bold text-sm md:text-lg">
                   {mode === "computer" ? "Computer" : "Player 2"}
                 </h3>
-                <p className="text-xs md:text-sm text-gray-400">Black coins</p>
+                <p className="text-xs md:text-sm text-gray-400">Total score</p>
               </div>
               <div className="text-xl md:text-3xl font-bold text-[#6C85EA]">
                 {state?.scores[2] ?? 0}
@@ -506,7 +587,7 @@ export const CarromGame: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full max-w-[700px] relative">
+        <div className="w-full max-w-[620px] relative">
           {state?.fouls && state?.gameStatus === "aiming" && (
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-gradient-to-r from-red-500 via-red-400 to-orange-400 text-white text-xs md:text-sm font-semibold shadow-lg">
               Foul: {state.fouls}
