@@ -371,8 +371,8 @@ export const ChessGame: React.FC<ChessGameProps> = ({
           )}
         </p>
 
-        <div className="mt-4 bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 shadow-lg w-full flex flex-col items-center">
-          <div className="grid grid-cols-8 gap-1 md:gap-1.5">
+        <div className="mt-4 bg-gray-900/50 border border-gray-800/80 rounded-2xl p-3 sm:p-4 shadow-lg w-full flex flex-col items-center">
+          <div className="grid grid-cols-8 auto-rows-fr gap-[2px] sm:gap-1 md:gap-1.5 w-full max-w-[min(100vw-2rem,26rem)] aspect-square">
             {Array.from({ length: 8 }, (_, vr) => vr).map((viewRow) =>
               Array.from({ length: 8 }, (_, vc) => vc).map((viewCol) => {
                 const boardRow =
@@ -402,7 +402,7 @@ export const ChessGame: React.FC<ChessGameProps> = ({
                   <button
                     key={`${viewRow}-${viewCol}`}
                     onClick={() => handleClick(boardRow, boardCol)}
-                    className={`relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
+                    className={`relative w-full h-full flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
                       isLight ? "bg-[#1f2933]" : "bg-[#111827]"
                     } ${
                       isSelected
