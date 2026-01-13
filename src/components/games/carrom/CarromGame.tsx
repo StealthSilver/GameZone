@@ -515,26 +515,26 @@ export const CarromGame: React.FC = () => {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="bg-black border-b border-gray-800/50 py-4 z-10">
-        <div className="max-w-5xl mx-auto px-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+      <div className="bg-black/90 border-b border-gray-800/50 py-3 z-10 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-4 flex justify-between items-center gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text truncate">
               Carrom
             </h1>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-xs sm:text-sm">
               {mode === "player" ? "Player vs Player" : "Player vs Computer"}
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3 items-center">
             <button
               onClick={handleRestart}
-              className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-xs sm:text-sm whitespace-nowrap"
             >
               Restart
             </button>
             <button
               onClick={handleQuit}
-              className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-xs sm:text-sm whitespace-nowrap"
             >
               Quit
             </button>
@@ -542,7 +542,7 @@ export const CarromGame: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-3 sm:px-4 pb-6 pt-3 sm:pt-4">
         <div className="w-full max-w-3xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div
             className={`flex-1 p-3 md:p-4 rounded-lg border ${
@@ -562,7 +562,7 @@ export const CarromGame: React.FC = () => {
             </div>
           </div>
 
-          <div className="px-4 text-center text-gray-500 font-semibold text-sm md:text-base">
+          <div className="px-4 text-center text-gray-500 font-semibold text-xs sm:text-sm md:text-base">
             VS
           </div>
 
@@ -616,24 +616,26 @@ export const CarromGame: React.FC = () => {
             </div>
           )}
 
-          <canvas
-            ref={canvasRef}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            onTouchCancel={onTouchEnd}
-            className="w-full border border-[#a66b35] rounded-2xl shadow-2xl shadow-black/80 bg-black cursor-crosshair touch-none"
-          />
+          <div className="relative w-full max-w-full mx-auto aspect-square">
+            <canvas
+              ref={canvasRef}
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+              onMouseLeave={onMouseUp}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onTouchCancel={onTouchEnd}
+              className="absolute inset-0 w-full h-full border border-[#a66b35] rounded-2xl shadow-2xl shadow-black/80 bg-black cursor-crosshair touch-none"
+            />
+          </div>
         </div>
 
         {state?.gameStatus === "aiming" &&
           state?.canShoot &&
           !(mode === "computer" && state?.currentPlayer === 2) && (
-            <div className="mt-4 text-gray-400 text-sm text-center max-w-md">
+            <div className="mt-4 text-gray-400 text-xs sm:text-sm text-center max-w-md px-4">
               Tap or click near the striker and drag back to aim. Release to
               strike.
             </div>
