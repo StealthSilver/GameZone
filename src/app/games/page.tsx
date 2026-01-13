@@ -21,7 +21,7 @@ const games = [
   {
     name: "Chess",
     image: "/chess.png",
-    available: false,
+    available: true,
     route: "/games/chess",
   },
   {
