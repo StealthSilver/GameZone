@@ -27,6 +27,12 @@ export interface ChessState {
   status: GameStatus;
   selected: { row: number; col: number } | null;
   possibleMoves: { row: number; col: number }[];
+  lastMove?: {
+    from: Position;
+    to: Position;
+    captured: Piece | null;
+    gaveCheck: boolean;
+  };
 }
 
 type Position = { row: number; col: number };
@@ -440,11 +446,13 @@ function getGameStatus(board: ChessBoard, colorToMove: ChessColor): GameStatus {
 }
 
 function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
+  const captured = state.board[move.to.row][move.to.col] || null;
   const boardAfter = applyMoveOnBoard(state.board, move);
   if (boardAfter === state.board) return state;
 
   const nextTurn = oppositeColor(state.currentTurn);
   const status = getGameStatus(boardAfter, nextTurn);
+  const gaveCheck = status === "check" || status === "checkmate";
 
   return {
     ...state,
@@ -453,6 +461,12 @@ function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
     status,
     selected: null,
     possibleMoves: [],
+    lastMove: {
+      from: move.from,
+      to: move.to,
+      captured,
+      gaveCheck,
+    },
   };
 }
 

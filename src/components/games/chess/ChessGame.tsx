@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ChessColor,
   ChessMode,
@@ -17,6 +17,8 @@ interface ChessGameProps {
 
 export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
   const [state, setState] = useState<ChessState>(() => createInitialState());
+
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
   const isComputerGame = mode === "computer";
   const isComputerTurn =
@@ -49,6 +51,60 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
     return () => clearTimeout(timeout);
   }, [isComputerTurn, mode, playerColor]);
 
+  // --- Simple sound effects using Web Audio ---
+  const ensureAudioContext = () => {
+    if (typeof window === "undefined") return null;
+    if (!audioCtxRef.current) {
+      const AudioCtx =
+        (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return null;
+      audioCtxRef.current = new AudioCtx();
+    }
+    return audioCtxRef.current;
+  };
+
+  const playTone = (frequency: number, duration = 0.15) => {
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = frequency;
+
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.2, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    osc.start(now);
+    osc.stop(now + duration + 0.05);
+  };
+
+  const playCaptureSound = () => {
+    // Slightly lower, fuller tone for captures
+    playTone(320, 0.18);
+  };
+
+  const playCheckSound = () => {
+    // Sharper, higher tone for check
+    playTone(880, 0.18);
+  };
+
+  // Play sounds when lastMove changes
+  useEffect(() => {
+    const last = state.lastMove;
+    if (!last) return;
+
+    if (last.captured) {
+      playCaptureSound();
+    }
+    if (last.gaveCheck) {
+      playCheckSound();
+    }
+  }, [state.lastMove]);
+
   const renderPiece = (pieceSymbol: string | null) => {
     if (!pieceSymbol) return null;
     return <span className="text-xl md:text-2xl">{pieceSymbol}</span>;
@@ -74,6 +130,22 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
         return null;
     }
   };
+
+  // Position of the king that is currently in check (for highlighting)
+  let checkedKing: { row: number; col: number } | null = null;
+  if (state.status === "check" || state.status === "checkmate") {
+    const colorInCheck = state.currentTurn;
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = state.board[r][c];
+        if (p && p.type === "king" && p.color === colorInCheck) {
+          checkedKing = { row: r, col: c };
+          break;
+        }
+      }
+      if (checkedKing) break;
+    }
+  }
 
   const renderStatusText = () => {
     const turnLabel = state.currentTurn === "white" ? "White" : "Black";
@@ -116,20 +188,27 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
               const isMoveTarget = state.possibleMoves.some(
                 (m) => m.row === rIndex && m.col === cIndex
               );
+              const isCheckedKing =
+                checkedKing?.row === rIndex && checkedKing?.col === cIndex;
               return (
                 <button
                   key={`${rIndex}-${cIndex}`}
                   onClick={() => handleClick(rIndex, cIndex)}
-                  className={`w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
+                  className={`relative w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
                     isLight ? "bg-[#1f2933]" : "bg-[#111827]"
                   } ${
                     isSelected
                       ? "ring-2 ring-[#8CECF7] ring-offset-2 ring-offset-gray-900"
                       : ""
-                  } ${
-                    isMoveTarget ? "bg-[#0f172a] border-[#8CECF7]/60" : ""
+                  } ${isMoveTarget ? "bg-[#0f172a] border-[#8CECF7]/60" : ""} ${
+                    isCheckedKing
+                      ? "bg-red-900/70 border-red-500 shadow-[0_0_15px_rgba(248,113,113,0.7)]"
+                      : ""
                   } hover:border-[#8CECF7]/70`}
                 >
+                  {isMoveTarget && !square && (
+                    <span className="absolute w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#8CECF7]/80" />
+                  )}
                   {renderPiece(pieceToSymbol(square))}
                 </button>
               );
