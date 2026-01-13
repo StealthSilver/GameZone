@@ -183,7 +183,7 @@ export const PoolSetup = () => {
               <span className="text-[#AAFDBB] mt-1">•</span>
               <span>
                 <strong>Fouls:</strong> Scratching the cue ball or pocketing
-                opponent's balls results in a foul
+                opponent&apos;s balls results in a foul
               </span>
             </li>
             <li className="flex items-start gap-2">

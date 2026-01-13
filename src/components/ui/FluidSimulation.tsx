@@ -242,39 +242,45 @@ const FluidSimulationScene = ({ fluidColor }: { fluidColor: THREE.Color }) => {
       pointer.current.z = 1;
     }
 
-    // Update velocity field (reduced to 2 passes for performance)
+    // Update velocity and dye fields
+    /* eslint-disable react-hooks/immutability */
     for (let i = 0; i < 2; i++) {
       const readVelocity = velocityFBOs.current[velocityIndex.current];
       const writeVelocity =
         velocityFBOs.current[(velocityIndex.current + 1) % 2];
 
-      fluidMaterial.uniforms.velocityField.value = readVelocity.texture;
-      fluidMaterial.uniforms.mouse.value.copy(pointer.current);
-      fluidMaterial.uniforms.prevMouse.value.copy(prevPointer.current);
-      quad.material = fluidMaterial;
+      const localFluidMaterial = fluidMaterial;
+      const localQuad = quad;
+
+      localFluidMaterial.uniforms.velocityField.value = readVelocity.texture;
+      localFluidMaterial.uniforms.mouse.value.copy(pointer.current);
+      localFluidMaterial.uniforms.prevMouse.value.copy(prevPointer.current);
+      localQuad.material = localFluidMaterial;
       gl.setRenderTarget(writeVelocity);
-      gl.render(quad, camera);
+      gl.render(localQuad, camera);
 
       velocityIndex.current = (velocityIndex.current + 1) % 2;
     }
 
-    // Update dye field
     const readDye = dyeFBOs.current[dyeIndex.current];
     const writeDye = dyeFBOs.current[(dyeIndex.current + 1) % 2];
     const currentVelocity = velocityFBOs.current[velocityIndex.current];
 
-    dyeMaterial.uniforms.velocityField.value = currentVelocity.texture;
-    dyeMaterial.uniforms.dyeField.value = readDye.texture;
-    dyeMaterial.uniforms.mouse.value.copy(pointer.current);
-    dyeMaterial.uniforms.prevMouse.value.copy(prevPointer.current);
-    dyeMaterial.uniforms.fluidColor.value.set(
+    const localDyeMaterial = dyeMaterial;
+    const localQuadForDye = quad;
+
+    localDyeMaterial.uniforms.velocityField.value = currentVelocity.texture;
+    localDyeMaterial.uniforms.dyeField.value = readDye.texture;
+    localDyeMaterial.uniforms.mouse.value.copy(pointer.current);
+    localDyeMaterial.uniforms.prevMouse.value.copy(prevPointer.current);
+    localDyeMaterial.uniforms.fluidColor.value.set(
       fluidColor.r,
       fluidColor.g,
       fluidColor.b
     );
-    quad.material = dyeMaterial;
+    localQuadForDye.material = localDyeMaterial;
     gl.setRenderTarget(writeDye);
-    gl.render(quad, camera);
+    gl.render(localQuadForDye, camera);
 
     dyeIndex.current = (dyeIndex.current + 1) % 2;
 
@@ -292,6 +298,7 @@ const FluidSimulationScene = ({ fluidColor }: { fluidColor: THREE.Color }) => {
     }
 
     gl.setRenderTarget(null);
+    /* eslint-enable react-hooks/immutability */
   });
 
   return (

@@ -19,6 +19,7 @@ export const CarromGame: React.FC = () => {
   const engineRef = useRef<CarromGameEngine | null>(null);
   const stateRef = useRef<CarromGameState | null>(null);
   const [state, setState] = useState<CarromGameState | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [isAiming, setIsAiming] = useState(false);
   const [aimStart, setAimStart] = useState<{ x: number; y: number } | null>(
     null
@@ -56,6 +57,7 @@ export const CarromGame: React.FC = () => {
       const initialState = engine.getState();
       stateRef.current = initialState;
       setState(initialState);
+      setIsInitialized(true);
     };
 
     initialize();
@@ -68,6 +70,93 @@ export const CarromGame: React.FC = () => {
       }
     };
   }, [mode]);
+
+  const drawPieces = useCallback(
+    (ctx: CanvasRenderingContext2D, pieces: Piece[]) => {
+      for (const piece of pieces) {
+        if (piece.pocketed) continue;
+
+        const { position, radius, kind, color } = piece;
+
+        ctx.beginPath();
+        ctx.arc(position.x + 2, position.y + 2, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.fill();
+
+        let fill = "#f5f5f5";
+        if (kind === "queen") fill = "#e53935";
+        else if (kind === "striker") fill = "#fdd835";
+        else if (color === "black") fill = "#222222";
+
+        ctx.beginPath();
+        ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = fill;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(position.x, position.y, radius * 0.7, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(0,0,0,0.65)";
+        ctx.lineWidth = radius * 0.16;
+        ctx.stroke();
+
+        if (kind === "queen") {
+          ctx.beginPath();
+          ctx.arc(position.x, position.y, radius * 0.3, 0, Math.PI * 2);
+          ctx.fillStyle = "#fce4ec";
+          ctx.fill();
+        }
+
+        if (kind === "striker") {
+          ctx.beginPath();
+          ctx.arc(position.x, position.y, radius * 0.4, 0, Math.PI * 2);
+          ctx.strokeStyle = "#ff6f00";
+          ctx.lineWidth = radius * 0.16;
+          ctx.stroke();
+        }
+      }
+    },
+    []
+  );
+
+  const drawPockets = useCallback(
+    (ctx: CanvasRenderingContext2D, pockets: Pocket[]) => {
+      for (const pocket of pockets) {
+        ctx.beginPath();
+        ctx.arc(
+          pocket.position.x,
+          pocket.position.y,
+          pocket.radius + 4,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(
+          pocket.position.x,
+          pocket.position.y,
+          pocket.radius,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = "#000000";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(
+          pocket.position.x - pocket.radius * 0.35,
+          pocket.position.y - pocket.radius * 0.35,
+          pocket.radius * 0.35,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.fill();
+      }
+    },
+    []
+  );
 
   const drawBoard = useCallback(
     (ctx: CanvasRenderingContext2D, gameState: CarromGameState) => {
@@ -153,94 +242,7 @@ export const CarromGame: React.FC = () => {
       drawPockets(ctx, gameState.pockets);
       drawPieces(ctx, gameState.pieces);
     },
-    []
-  );
-
-  const drawPockets = useCallback(
-    (ctx: CanvasRenderingContext2D, pockets: Pocket[]) => {
-      for (const pocket of pockets) {
-        ctx.beginPath();
-        ctx.arc(
-          pocket.position.x,
-          pocket.position.y,
-          pocket.radius + 4,
-          0,
-          Math.PI * 2
-        );
-        ctx.fillStyle = "rgba(0,0,0,0.55)";
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(
-          pocket.position.x,
-          pocket.position.y,
-          pocket.radius,
-          0,
-          Math.PI * 2
-        );
-        ctx.fillStyle = "#000000";
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(
-          pocket.position.x - pocket.radius * 0.35,
-          pocket.position.y - pocket.radius * 0.35,
-          pocket.radius * 0.35,
-          0,
-          Math.PI * 2
-        );
-        ctx.fillStyle = "rgba(255,255,255,0.12)";
-        ctx.fill();
-      }
-    },
-    []
-  );
-
-  const drawPieces = useCallback(
-    (ctx: CanvasRenderingContext2D, pieces: Piece[]) => {
-      for (const piece of pieces) {
-        if (piece.pocketed) continue;
-
-        const { position, radius, kind, color } = piece;
-
-        ctx.beginPath();
-        ctx.arc(position.x + 2, position.y + 2, radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.25)";
-        ctx.fill();
-
-        let fill = "#f5f5f5";
-        if (kind === "queen") fill = "#e53935";
-        else if (kind === "striker") fill = "#fdd835";
-        else if (color === "black") fill = "#222222";
-
-        ctx.beginPath();
-        ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = fill;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(position.x, position.y, radius * 0.7, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(0,0,0,0.65)";
-        ctx.lineWidth = radius * 0.16;
-        ctx.stroke();
-
-        if (kind === "queen") {
-          ctx.beginPath();
-          ctx.arc(position.x, position.y, radius * 0.3, 0, Math.PI * 2);
-          ctx.fillStyle = "#fce4ec";
-          ctx.fill();
-        }
-
-        if (kind === "striker") {
-          ctx.beginPath();
-          ctx.arc(position.x, position.y, radius * 0.4, 0, Math.PI * 2);
-          ctx.strokeStyle = "#ff6f00";
-          ctx.lineWidth = radius * 0.16;
-          ctx.stroke();
-        }
-      }
-    },
-    []
+    [drawPockets, drawPieces]
   );
 
   const drawAimingGuide = useCallback(
@@ -425,14 +427,6 @@ export const CarromGame: React.FC = () => {
     router.push("/games/carrom");
   };
 
-  if (!state) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white text-xl">
-        Initializing carrom board...
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -471,7 +465,7 @@ export const CarromGame: React.FC = () => {
         <div className="w-full max-w-3xl mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div
             className={`flex-1 p-3 md:p-4 rounded-lg border ${
-              state.currentPlayer === 1
+              state?.currentPlayer === 1
                 ? "border-[#8CECF7] bg-[#8CECF7]/10"
                 : "border-gray-800 bg-gray-900/60"
             }`}
@@ -482,7 +476,7 @@ export const CarromGame: React.FC = () => {
                 <p className="text-xs md:text-sm text-gray-400">White coins</p>
               </div>
               <div className="text-xl md:text-3xl font-bold text-[#AAFDBB]">
-                {state.scores[1]}
+                {state?.scores[1] ?? 0}
               </div>
             </div>
           </div>
@@ -493,7 +487,7 @@ export const CarromGame: React.FC = () => {
 
           <div
             className={`flex-1 p-3 md:p-4 rounded-lg border ${
-              state.currentPlayer === 2
+              state?.currentPlayer === 2
                 ? "border-[#8CECF7] bg-[#8CECF7]/10"
                 : "border-gray-800 bg-gray-900/60"
             }`}
@@ -506,32 +500,40 @@ export const CarromGame: React.FC = () => {
                 <p className="text-xs md:text-sm text-gray-400">Black coins</p>
               </div>
               <div className="text-xl md:text-3xl font-bold text-[#6C85EA]">
-                {state.scores[2]}
+                {state?.scores[2] ?? 0}
               </div>
             </div>
           </div>
         </div>
 
         <div className="w-full max-w-[700px] relative">
-          {state.fouls && state.gameStatus === "aiming" && (
+          {state?.fouls && state?.gameStatus === "aiming" && (
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-gradient-to-r from-red-500 via-red-400 to-orange-400 text-white text-xs md:text-sm font-semibold shadow-lg">
               Foul: {state.fouls}
             </div>
           )}
 
-          {state.message && state.gameStatus === "aiming" && !state.fouls && (
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-gray-900/90 text-gray-100 text-xs md:text-sm font-semibold shadow-lg border border-gray-700/70">
-              {state.message}
-            </div>
-          )}
+          {state?.message &&
+            state?.gameStatus === "aiming" &&
+            !state?.fouls && (
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-gray-900/90 text-gray-100 text-xs md:text-sm font-semibold shadow-lg border border-gray-700/70">
+                {state.message}
+              </div>
+            )}
 
           {mode === "computer" &&
-            state.currentPlayer === 2 &&
-            state.gameStatus === "aiming" && (
+            state?.currentPlayer === 2 &&
+            state?.gameStatus === "aiming" && (
               <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black text-xs md:text-sm font-semibold shadow-lg animate-pulse">
                 Computer is aiming...
               </div>
             )}
+
+          {!isInitialized && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white text-sm md:text-base z-10">
+              Initializing carrom board...
+            </div>
+          )}
 
           <canvas
             ref={canvasRef}
@@ -547,9 +549,9 @@ export const CarromGame: React.FC = () => {
           />
         </div>
 
-        {state.gameStatus === "aiming" &&
-          state.canShoot &&
-          !(mode === "computer" && state.currentPlayer === 2) && (
+        {state?.gameStatus === "aiming" &&
+          state?.canShoot &&
+          !(mode === "computer" && state?.currentPlayer === 2) && (
             <div className="mt-4 text-gray-400 text-sm text-center max-w-md">
               Tap or click near the striker and drag back to aim. Release to
               strike.
@@ -557,7 +559,7 @@ export const CarromGame: React.FC = () => {
           )}
       </div>
 
-      {state.gameStatus === "gameOver" && (
+      {state?.gameStatus === "gameOver" && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-gray-900 rounded-xl p-8 border-2 border-[#8CECF7] max-w-md w-full mx-4">
             <h2 className="text-3xl font-bold text-center mb-6 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
@@ -565,16 +567,16 @@ export const CarromGame: React.FC = () => {
             </h2>
             <div className="text-center mb-6">
               <p className="text-xl mb-2">
-                {state.winner === 1
+                {state?.winner === 1
                   ? "Player 1 wins!"
-                  : state.winner === 2
+                  : state?.winner === 2
                   ? mode === "computer"
                     ? "Computer wins!"
                     : "Player 2 wins!"
                   : "Draw"}
               </p>
               <p className="text-gray-400">
-                Final score: {state.scores[1]} - {state.scores[2]}
+                Final score: {state?.scores[1] ?? 0} - {state?.scores[2] ?? 0}
               </p>
             </div>
             <div className="flex gap-4">

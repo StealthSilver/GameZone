@@ -70,8 +70,12 @@ export const ChessGame: React.FC<ChessGameProps> = ({
   const ensureAudioContext = () => {
     if (typeof window === "undefined") return null;
     if (!audioCtxRef.current) {
+      type ExtendedWindow = typeof window & {
+        webkitAudioContext?: typeof AudioContext;
+      };
+      const extendedWindow = window as ExtendedWindow;
       const AudioCtx =
-        (window as any).AudioContext || (window as any).webkitAudioContext;
+        extendedWindow.AudioContext || extendedWindow.webkitAudioContext;
       if (!AudioCtx) return null;
       audioCtxRef.current = new AudioCtx();
     }
@@ -176,6 +180,7 @@ export const ChessGame: React.FC<ChessGameProps> = ({
   };
 
   // Play sounds when lastMove changes
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const last = state.lastMove;
     if (!last) return;
@@ -199,6 +204,7 @@ export const ChessGame: React.FC<ChessGameProps> = ({
   }, [state.status]);
 
   // Detect when a pawn promotion has just occurred and open the chooser.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const last = state.lastMove;
     if (!last || !last.promotion) {
@@ -209,7 +215,9 @@ export const ChessGame: React.FC<ChessGameProps> = ({
     const piece = state.board[to.row][to.col];
     if (!piece) return;
 
-    setPendingPromotion({ row: to.row, col: to.col, color: piece.color });
+    setTimeout(() => {
+      setPendingPromotion({ row: to.row, col: to.col, color: piece.color });
+    }, 0);
   }, [state.lastMove, state.board]);
 
   const handlePromotionSelect = (

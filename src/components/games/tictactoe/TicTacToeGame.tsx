@@ -18,14 +18,22 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
   const audioXRef = useRef<HTMLAudioElement | null>(null);
   const audioORef = useRef<HTMLAudioElement | null>(null);
 
+  type ExtendedWindow = typeof window & {
+    webkitAudioContext?: typeof AudioContext;
+  };
+
   // Initialize audio on mount
   useEffect(() => {
     audioXRef.current = new Audio();
     audioORef.current = new Audio();
 
+    const extendedWindow = window as ExtendedWindow;
+    const AudioContextClass =
+      window.AudioContext || extendedWindow.webkitAudioContext;
+    if (!AudioContextClass) return;
+
     // Create sound for X (higher pitched beep)
-    const audioContextX = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+    const audioContextX = new AudioContextClass();
     const oscillatorX = audioContextX.createOscillator();
     const gainNodeX = audioContextX.createGain();
 
@@ -41,8 +49,7 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
     );
 
     // Create sound for O (lower pitched beep)
-    const audioContextO = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+    const audioContextO = new AudioContextClass();
     const oscillatorO = audioContextO.createOscillator();
     const gainNodeO = audioContextO.createGain();
 
@@ -60,8 +67,12 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
 
   const playSound = useCallback((player: "X" | "O") => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const extendedWindow = window as ExtendedWindow;
+      const AudioContextClass =
+        window.AudioContext || extendedWindow.webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const audioContext = new AudioContextClass();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -130,7 +141,9 @@ export const TicTacToeGame: React.FC<TicTacToeGameProps> = ({ mode }) => {
       !gameState.winner &&
       !gameState.isDraw
     ) {
-      setIsComputerThinking(true);
+      setTimeout(() => {
+        setIsComputerThinking(true);
+      }, 0);
       const timer = setTimeout(() => {
         const computerMove = gameEngine.getComputerMove();
         gameEngine.makeMove(computerMove);

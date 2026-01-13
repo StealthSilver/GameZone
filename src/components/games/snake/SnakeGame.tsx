@@ -70,11 +70,19 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
   const previousScoreRef = useRef<number>(0);
   const previousStatusRef = useRef<GameStatus>("idle");
 
+  type ExtendedWindow = typeof window & {
+    webkitAudioContext?: typeof AudioContext;
+  };
+
   // Initialize audio context
   useEffect(() => {
     if (typeof window !== "undefined") {
-      audioContextRef.current = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const extendedWindow = window as ExtendedWindow;
+      const AudioContextClass =
+        window.AudioContext || extendedWindow.webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      }
     }
     return () => {
       if (audioContextRef.current) {
@@ -217,24 +225,6 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
     }
   }, []);
 
-  // Handle game status changes
-  useEffect(() => {
-    if (!gameState) return;
-
-    if (gameState.status === "playing") {
-      startGameLoop();
-    } else {
-      stopGameLoop();
-    }
-
-    // Save score when game is over
-    if (gameState.status === "gameOver" && gameState.score > 0) {
-      saveScore(gameState.score);
-    }
-
-    return () => stopGameLoop();
-  }, [gameState?.status, startGameLoop, stopGameLoop]);
-
   const saveScore = async (score: number) => {
     try {
       const gameMode = engineRef.current?.getState().gameMode || "medium";
@@ -260,6 +250,24 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
       console.error("Error saving score:", error);
     }
   };
+
+  // Handle game status changes
+  useEffect(() => {
+    if (!gameState) return;
+
+    if (gameState.status === "playing") {
+      startGameLoop();
+    } else {
+      stopGameLoop();
+    }
+
+    // Save score when game is over
+    if (gameState.status === "gameOver" && gameState.score > 0) {
+      void saveScore(gameState.score);
+    }
+
+    return () => stopGameLoop();
+  }, [gameState, startGameLoop, stopGameLoop]);
 
   // Handle keyboard controls
   useEffect(() => {
@@ -503,7 +511,9 @@ export const SnakeGame: React.FC<SnakeGameProps> = ({
       // Countdown finished, start the game
       if (engineRef.current) {
         engineRef.current.start();
-        setCountdown(null);
+        setTimeout(() => {
+          setCountdown(null);
+        }, 0);
       }
     }
   }, [countdown]);

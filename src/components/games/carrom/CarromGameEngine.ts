@@ -482,14 +482,18 @@ export class CarromGameEngine {
       striker.position = this.getStrikerStartPosition(this.state.currentPlayer);
     }
 
-    this.state.gameStatus = "aiming";
-    this.state.canShoot = true;
-    this.state.strikerPower = 0;
+    if (this.state.winner === null) {
+      this.state.gameStatus = "aiming";
+      this.state.canShoot = true;
+      this.state.strikerPower = 0;
+    }
+
+    const { gameMode, currentPlayer, gameStatus } = this.state;
 
     if (
-      this.state.gameMode === "computer" &&
-      this.state.currentPlayer === 2 &&
-      this.state.gameStatus !== "gameOver"
+      gameMode === "computer" &&
+      currentPlayer === 2 &&
+      gameStatus === "aiming"
     ) {
       setTimeout(() => this.makeComputerMove(), 700);
     }
