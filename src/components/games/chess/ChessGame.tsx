@@ -82,14 +82,101 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
     osc.stop(now + duration + 0.05);
   };
 
+  const playMoveSound = () => {
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    osc.frequency.setValueAtTime(520, now);
+    osc.frequency.linearRampToValueAtTime(560, now + 0.08);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.25, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+
+    osc.start(now);
+    osc.stop(now + 0.25);
+  };
+
   const playCaptureSound = () => {
     // Slightly lower, fuller tone for captures
-    playTone(320, 0.18);
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = "sawtooth";
+    osc2.type = "triangle";
+
+    osc1.frequency.value = 260;
+    osc2.frequency.value = 390;
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.3, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.25);
+    osc2.stop(now + 0.25);
   };
 
   const playCheckSound = () => {
     // Sharper, higher tone for check
-    playTone(880, 0.18);
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.linearRampToValueAtTime(960, now + 0.12);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.22, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+    osc.start(now);
+    osc.stop(now + 0.25);
+  };
+
+  const playCheckmateSound = () => {
+    const ctx = ensureAudioContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    osc.frequency.setValueAtTime(660, now);
+    osc.frequency.linearRampToValueAtTime(440, now + 0.4);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+
+    osc.start(now);
+    osc.stop(now + 0.5);
   };
 
   // Play sounds when lastMove changes
@@ -97,13 +184,23 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
     const last = state.lastMove;
     if (!last) return;
 
+    // Base move sound for any move
+    playMoveSound();
+
     if (last.captured) {
       playCaptureSound();
     }
-    if (last.gaveCheck) {
+    if (last.gaveCheck && state.status !== "checkmate") {
       playCheckSound();
     }
-  }, [state.lastMove]);
+  }, [state.lastMove, state.status]);
+
+  // Dedicated sound when a checkmate occurs
+  useEffect(() => {
+    if (state.status === "checkmate") {
+      playCheckmateSound();
+    }
+  }, [state.status]);
 
   const renderPiece = (pieceSymbol: string | null) => {
     if (!pieceSymbol) return null;
@@ -146,6 +243,9 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
       if (checkedKing) break;
     }
   }
+
+  const lastMoveFrom = state.lastMove?.from;
+  const lastMoveTo = state.lastMove?.to;
 
   const renderStatusText = () => {
     const turnLabel = state.currentTurn === "white" ? "White" : "Black";
@@ -190,6 +290,10 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
               );
               const isCheckedKing =
                 checkedKing?.row === rIndex && checkedKing?.col === cIndex;
+              const isLastFrom =
+                lastMoveFrom?.row === rIndex && lastMoveFrom?.col === cIndex;
+              const isLastTo =
+                lastMoveTo?.row === rIndex && lastMoveTo?.col === cIndex;
               return (
                 <button
                   key={`${rIndex}-${cIndex}`}
@@ -204,12 +308,24 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
                     isCheckedKing
                       ? "bg-red-900/70 border-red-500 shadow-[0_0_15px_rgba(248,113,113,0.7)]"
                       : ""
+                  } ${
+                    isLastFrom
+                      ? "chess-last-move-from"
+                      : isLastTo
+                      ? "chess-last-move-to"
+                      : ""
                   } hover:border-[#8CECF7]/70`}
                 >
                   {isMoveTarget && !square && (
                     <span className="absolute w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#8CECF7]/80" />
                   )}
-                  {renderPiece(pieceToSymbol(square))}
+                  <span
+                    className={`transition-transform duration-150 ease-out ${
+                      isLastTo ? "scale-110" : "scale-100"
+                    }`}
+                  >
+                    {renderPiece(pieceToSymbol(square))}
+                  </span>
                 </button>
               );
             })

@@ -117,11 +117,11 @@ function isSquareAttacked(
 
   // Pawn attacks
   const pawnDir = enemy === "white" ? -1 : 1;
-  const pawnRows = row + pawnDir;
+  const pawnRow = row - pawnDir; // pawns stand one step behind the attacked square
   for (const dc of [-1, 1]) {
     const c = col + dc;
-    if (inBounds(pawnRows, c)) {
-      const p = board[pawnRows][c];
+    if (inBounds(pawnRow, c)) {
+      const p = board[pawnRow][c];
       if (p && p.color === enemy && p.type === "pawn") return true;
     }
   }
