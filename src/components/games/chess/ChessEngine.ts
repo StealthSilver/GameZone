@@ -32,6 +32,8 @@ export interface ChessState {
     to: Position;
     captured: Piece | null;
     gaveCheck: boolean;
+    movedPieceType: PieceType;
+    promotion?: boolean;
   };
 }
 
@@ -449,13 +451,26 @@ function getGameStatus(board: ChessBoard, colorToMove: ChessColor): GameStatus {
 }
 
 function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
+  const movingPiece = state.board[move.from.row][move.from.col] || null;
   const captured = state.board[move.to.row][move.to.col] || null;
   const boardAfter = applyMoveOnBoard(state.board, move);
   if (boardAfter === state.board) return state;
 
   const nextTurn = oppositeColor(state.currentTurn);
-  const status = getGameStatus(boardAfter, nextTurn);
-  const gaveCheck = status === "check" || status === "checkmate";
+  // If a king was captured, treat this as an immediate checkmate.
+  let status: GameStatus;
+  let gaveCheck = false;
+
+  if (captured && captured.type === "king") {
+    status = "checkmate";
+    gaveCheck = true;
+  } else {
+    status = getGameStatus(boardAfter, nextTurn);
+    gaveCheck = status === "check" || status === "checkmate";
+  }
+
+  const promotionOccurred =
+    movingPiece?.type === "pawn" && (move.to.row === 0 || move.to.row === 7);
 
   return {
     ...state,
@@ -469,6 +484,41 @@ function applyMoveAndUpdateState(state: ChessState, move: Move): ChessState {
       to: move.to,
       captured,
       gaveCheck,
+      movedPieceType: movingPiece ? movingPiece.type : "pawn",
+      promotion: promotionOccurred || undefined,
+    },
+  };
+}
+
+// Allow the UI to change the piece type of a just-promoted pawn
+// (e.g. queen, rook, bishop, knight) after the move has been made.
+export function applyPromotionChoice(
+  state: ChessState,
+  newType: Exclude<PieceType, "pawn" | "king">
+): ChessState {
+  const last = state.lastMove;
+  if (!last || !last.promotion) return state;
+
+  const { row, col } = last.to;
+  const piece = state.board[row][col];
+  if (!piece) return state;
+
+  // Update the board with the chosen promotion piece while preserving color.
+  const newBoard: ChessBoard = state.board.map((r, rIdx) =>
+    r.map((sq, cIdx) => {
+      if (rIdx === row && cIdx === col && sq) {
+        return { ...sq, type: newType };
+      }
+      return sq;
+    })
+  );
+
+  return {
+    ...state,
+    board: newBoard,
+    lastMove: {
+      ...state.lastMove!,
+      movedPieceType: newType,
     },
   };
 }

@@ -8,6 +8,7 @@ import {
   createInitialState,
   handleSquareClick,
   makeComputerMove,
+  applyPromotionChoice,
 } from "./ChessEngine";
 
 interface ChessGameProps {
@@ -23,6 +24,15 @@ export const ChessGame: React.FC<ChessGameProps> = ({
 }) => {
   const [state, setState] = useState<ChessState>(() => createInitialState());
 
+  const [pendingPromotion, setPendingPromotion] = useState<
+    | {
+        row: number;
+        col: number;
+        color: ChessColor;
+      }
+    | null
+  >(null);
+
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   const isComputerGame = mode === "computer";
@@ -32,6 +42,8 @@ export const ChessGame: React.FC<ChessGameProps> = ({
     (state.status === "ongoing" || state.status === "check");
 
   const handleClick = (row: number, col: number) => {
+    // If we're waiting for a promotion choice, ignore board clicks
+    if (pendingPromotion) return;
     // Prevent the human from moving when it's the computer's turn
     if (isComputerTurn) return;
     setState((prev) => handleSquareClick(prev, row, col));
@@ -187,6 +199,33 @@ export const ChessGame: React.FC<ChessGameProps> = ({
       playCheckmateSound();
     }
   }, [state.status]);
+
+  // Detect when a pawn promotion has just occurred and open the chooser.
+  useEffect(() => {
+    const last = state.lastMove;
+    if (!last || !last.promotion) {
+      return;
+    }
+
+    const { to } = last;
+    const piece = state.board[to.row][to.col];
+    if (!piece) return;
+
+    setPendingPromotion({ row: to.row, col: to.col, color: piece.color });
+  }, [state.lastMove, state.board]);
+
+  const handlePromotionSelect = (
+    choice: "queen" | "rook" | "bishop" | "knight"
+  ) => {
+    setState((prev) => applyPromotionChoice(prev, choice));
+    setPendingPromotion(null);
+  };
+
+  const handleCancelPromotion = () => {
+    // Default to queen if user dismisses the dialog for any reason.
+    setState((prev) => applyPromotionChoice(prev, "queen"));
+    setPendingPromotion(null);
+  };
 
   const renderPiece = (pieceSymbol: string | null) => {
     if (!pieceSymbol) return null;
@@ -366,6 +405,51 @@ export const ChessGame: React.FC<ChessGameProps> = ({
             Back to Games
           </button>
         </div>
+
+        {pendingPromotion && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl px-6 py-5 w-full max-w-sm shadow-xl">
+              <h2 className="text-lg md:text-xl font-semibold mb-2 text-center">
+                Pawn Promotion
+              </h2>
+              <p className="text-xs md:text-sm text-gray-400 mb-4 text-center">
+                Choose a piece to promote your pawn to.
+              </p>
+              <div className="grid grid-cols-4 gap-2 mb-4 text-sm">
+                <button
+                  onClick={() => handlePromotionSelect("queen")}
+                  className="px-2 py-2 rounded-lg border border-gray-700 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-colors"
+                >
+                  Queen
+                </button>
+                <button
+                  onClick={() => handlePromotionSelect("rook")}
+                  className="px-2 py-2 rounded-lg border border-gray-700 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-colors"
+                >
+                  Rook
+                </button>
+                <button
+                  onClick={() => handlePromotionSelect("bishop")}
+                  className="px-2 py-2 rounded-lg border border-gray-700 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-colors"
+                >
+                  Bishop
+                </button>
+                <button
+                  onClick={() => handlePromotionSelect("knight")}
+                  className="px-2 py-2 rounded-lg border border-gray-700 hover:border-[#8CECF7] hover:text-[#8CECF7] transition-colors"
+                >
+                  Knight
+                </button>
+              </div>
+              <button
+                onClick={handleCancelPromotion}
+                className="w-full px-3 py-2 rounded-lg text-xs md:text-sm border border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-200 transition-colors"
+              >
+                Cancel (keep as Queen)
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
