@@ -426,13 +426,8 @@ export const ChessGame: React.FC<ChessGameProps> = ({
     }
   })();
 
-  const {
-    whiteMaterial,
-    blackMaterial,
-    materialDiff,
-    whiteCapturedSymbols,
-    blackCapturedSymbols,
-  } = computeMaterialAndCaptures(state.board);
+  const { materialDiff, whiteCapturedSymbols, blackCapturedSymbols } =
+    computeMaterialAndCaptures(state.board);
 
   const formatAdvantage = (adv: number) => {
     if (adv === 0) return "0";
@@ -470,6 +465,54 @@ export const ChessGame: React.FC<ChessGameProps> = ({
                   playerColor === "white" ? viewCol : 7 - viewCol;
 
                 const square = state.board[boardRow][boardCol];
+
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-xs md:text-sm">
+                  <div className="bg-gray-900/70 border border-gray-800 rounded-xl px-3 py-2 flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-100">White</span>
+                      <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                        Material {formatAdvantage(materialDiff)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-gray-400">Captured</span>
+                      <div className="flex gap-1 flex-wrap justify-end text-base md:text-lg">
+                        {whiteCapturedSymbols.length > 0 ? (
+                          whiteCapturedSymbols.map((sym, idx) => (
+                            <span key={idx}>{sym}</span>
+                          ))
+                        ) : (
+                          <span className="text-[10px] text-gray-600">
+                            None
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-900/70 border border-gray-800 rounded-xl px-3 py-2 flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-100">Black</span>
+                      <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                        Material {formatAdvantage(-materialDiff)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-gray-400">Captured</span>
+                      <div className="flex gap-1 flex-wrap justify-end text-base md:text-lg">
+                        {blackCapturedSymbols.length > 0 ? (
+                          blackCapturedSymbols.map((sym, idx) => (
+                            <span key={idx}>{sym}</span>
+                          ))
+                        ) : (
+                          <span className="text-[10px] text-gray-600">
+                            None
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>;
 
                 const isLight = (boardRow + boardCol) % 2 === 0;
                 const isSelected =
