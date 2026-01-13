@@ -278,7 +278,7 @@ export const ChessGame: React.FC<ChessGameProps> = ({
       return `Checkmate! ${opponentLabel} wins.`;
     }
     if (state.status === "stalemate") {
-      return "Stalemate – game drawn.";
+      return "Stalemate  game drawn.";
     }
     if (state.status === "drawRepetition") {
       return "Draw by repetition.";
@@ -291,6 +291,64 @@ export const ChessGame: React.FC<ChessGameProps> = ({
     }
     return "Game in progress.";
   };
+
+  const isGameOver =
+    state.status === "checkmate" ||
+    state.status === "stalemate" ||
+    state.status === "drawRepetition" ||
+    state.status === "drawInsufficient";
+
+  const winningColor: ChessColor | null =
+    state.status === "checkmate"
+      ? state.currentTurn === "white"
+        ? "black"
+        : "white"
+      : null;
+
+  const isDraw =
+    state.status === "stalemate" ||
+    state.status === "drawRepetition" ||
+    state.status === "drawInsufficient";
+
+  const playerWon =
+    winningColor !== null &&
+    mode === "computer" &&
+    winningColor === playerColor;
+
+  const resultTitle = (() => {
+    if (state.status === "checkmate") {
+      if (mode === "computer") {
+        return playerWon ? "You Win!" : "You Lose";
+      }
+      return winningColor === "white" ? "White Wins" : "Black Wins";
+    }
+    if (isDraw) {
+      return "Draw";
+    }
+    return "";
+  })();
+
+  const resultSubtitle = (() => {
+    switch (state.status) {
+      case "checkmate":
+        if (mode === "computer") {
+          return playerWon
+            ? "You delivered checkmate."
+            : "You were checkmated.";
+        }
+        return `${
+          winningColor === "white" ? "White" : "Black"
+        } delivered checkmate.`;
+      case "stalemate":
+        return "Stalemate  no legal moves and king is not in check.";
+      case "drawRepetition":
+        return "The same position occurred three times.";
+      case "drawInsufficient":
+        return "Neither side has enough material to force checkmate.";
+      default:
+        return "";
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start font-[family-name:var(--font-oxanium)] px-4 py-8">
@@ -408,6 +466,35 @@ export const ChessGame: React.FC<ChessGameProps> = ({
             Back to Games
           </button>
         </div>
+
+        {isGameOver && resultTitle && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-3xl px-6 py-6 md:px-8 md:py-7 w-full max-w-md shadow-[0_0_40px_rgba(148,163,184,0.6)]">
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-2 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                {resultTitle}
+              </h2>
+              {resultSubtitle && (
+                <p className="text-xs md:text-sm text-gray-300 text-center mb-5">
+                  {resultSubtitle}
+                </p>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                <button
+                  onClick={() => setState(createInitialState())}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-semibold text-sm md:text-base hover:shadow-lg hover:shadow-[#8CECF7]/40 transition-all"
+                >
+                  Play Again
+                </button>
+                <button
+                  onClick={() => (window.location.href = "/games")}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-700 text-gray-300 text-sm md:text-base hover:border-gray-500 hover:text-white transition-all"
+                >
+                  Back to Games
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {pendingPromotion && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
