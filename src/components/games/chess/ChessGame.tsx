@@ -63,25 +63,6 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
     return audioCtxRef.current;
   };
 
-  const playTone = (frequency: number, duration = 0.15) => {
-    const ctx = ensureAudioContext();
-    if (!ctx) return;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = frequency;
-
-    const now = ctx.currentTime;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.2, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-    osc.start(now);
-    osc.stop(now + duration + 0.05);
-  };
-
   const playMoveSound = () => {
     const ctx = ensureAudioContext();
     if (!ctx) return;
