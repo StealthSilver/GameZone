@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ChessColor,
   ChessMode,
   ChessState,
   createInitialState,
   handleSquareClick,
+  makeComputerMove,
 } from "./ChessEngine";
 
 interface ChessGameProps {
@@ -17,9 +18,36 @@ interface ChessGameProps {
 export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
   const [state, setState] = useState<ChessState>(() => createInitialState());
 
+  const isComputerGame = mode === "computer";
+  const isComputerTurn =
+    isComputerGame &&
+    state.currentTurn !== playerColor &&
+    (state.status === "ongoing" || state.status === "check");
+
   const handleClick = (row: number, col: number) => {
+    // Prevent the human from moving when it's the computer's turn
+    if (isComputerTurn) return;
     setState((prev) => handleSquareClick(prev, row, col));
   };
+
+  // Trigger a simple computer move whenever it's the computer's turn
+  useEffect(() => {
+    if (!isComputerTurn) return;
+
+    const timeout = setTimeout(() => {
+      setState((prev) => {
+        // Re-check inside to avoid race conditions
+        const computerTurn =
+          mode === "computer" &&
+          prev.currentTurn !== playerColor &&
+          (prev.status === "ongoing" || prev.status === "check");
+        if (!computerTurn) return prev;
+        return makeComputerMove(prev);
+      });
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [isComputerTurn, mode, playerColor]);
 
   const renderPiece = (pieceSymbol: string | null) => {
     if (!pieceSymbol) return null;
@@ -47,6 +75,22 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
     }
   };
 
+  const renderStatusText = () => {
+    const turnLabel = state.currentTurn === "white" ? "White" : "Black";
+    const opponentLabel = state.currentTurn === "white" ? "Black" : "White";
+
+    if (state.status === "checkmate") {
+      return `Checkmate! ${opponentLabel} wins.`;
+    }
+    if (state.status === "stalemate") {
+      return "Stalemate – game drawn.";
+    }
+    if (state.status === "check") {
+      return `${turnLabel} is in check.`;
+    }
+    return "Game in progress.";
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-[family-name:var(--font-oxanium)] px-4 py-8">
       <h1 className="text-3xl md:text-5xl font-bold mb-2 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
@@ -66,12 +110,24 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
           {state.board.map((row, rIndex) =>
             row.map((square, cIndex) => {
               const isLight = (rIndex + cIndex) % 2 === 0;
+              const isSelected =
+                state.selected?.row === rIndex &&
+                state.selected?.col === cIndex;
+              const isMoveTarget = state.possibleMoves.some(
+                (m) => m.row === rIndex && m.col === cIndex
+              );
               return (
                 <button
                   key={`${rIndex}-${cIndex}`}
                   onClick={() => handleClick(rIndex, cIndex)}
                   className={`w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
                     isLight ? "bg-[#1f2933]" : "bg-[#111827]"
+                  } ${
+                    isSelected
+                      ? "ring-2 ring-[#8CECF7] ring-offset-2 ring-offset-gray-900"
+                      : ""
+                  } ${
+                    isMoveTarget ? "bg-[#0f172a] border-[#8CECF7]/60" : ""
                   } hover:border-[#8CECF7]/70`}
                 >
                   {renderPiece(pieceToSymbol(square))}
@@ -88,8 +144,8 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
               {state.currentTurn}
             </span>
           </span>
-          <span className="uppercase tracking-wide text-[10px] md:text-xs">
-            Basic demo rules – full chess logic coming soon
+          <span className="text-[10px] md:text-xs text-gray-500 text-right max-w-[10rem] md:max-w-xs">
+            {renderStatusText()}
           </span>
         </div>
       </div>
