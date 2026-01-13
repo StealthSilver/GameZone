@@ -260,25 +260,32 @@ export const ChessGame: React.FC<ChessGameProps> = ({ mode, playerColor }) => {
 
       <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-4 shadow-xl">
         <div className="grid grid-cols-8 gap-1 md:gap-1.5">
-          {state.board.map((row, rIndex) =>
-            row.map((square, cIndex) => {
-              const isLight = (rIndex + cIndex) % 2 === 0;
+          {Array.from({ length: 8 }, (_, vr) => vr).map((viewRow) =>
+            Array.from({ length: 8 }, (_, vc) => vc).map((viewCol) => {
+              const boardRow = playerColor === "white" ? viewRow : 7 - viewRow;
+              const boardCol = playerColor === "white" ? viewCol : 7 - viewCol;
+
+              const square = state.board[boardRow][boardCol];
+
+              const isLight = (boardRow + boardCol) % 2 === 0;
               const isSelected =
-                state.selected?.row === rIndex &&
-                state.selected?.col === cIndex;
+                state.selected?.row === boardRow &&
+                state.selected?.col === boardCol;
               const isMoveTarget = state.possibleMoves.some(
-                (m) => m.row === rIndex && m.col === cIndex
+                (m) => m.row === boardRow && m.col === boardCol
               );
               const isCheckedKing =
-                checkedKing?.row === rIndex && checkedKing?.col === cIndex;
+                checkedKing?.row === boardRow && checkedKing?.col === boardCol;
               const isLastFrom =
-                lastMoveFrom?.row === rIndex && lastMoveFrom?.col === cIndex;
+                lastMoveFrom?.row === boardRow &&
+                lastMoveFrom?.col === boardCol;
               const isLastTo =
-                lastMoveTo?.row === rIndex && lastMoveTo?.col === cIndex;
+                lastMoveTo?.row === boardRow && lastMoveTo?.col === boardCol;
+
               return (
                 <button
-                  key={`${rIndex}-${cIndex}`}
-                  onClick={() => handleClick(rIndex, cIndex)}
+                  key={`${viewRow}-${viewCol}`}
+                  onClick={() => handleClick(boardRow, boardCol)}
                   className={`relative w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-sm border border-gray-800/40 transition-colors duration-150 ${
                     isLight ? "bg-[#1f2933]" : "bg-[#111827]"
                   } ${
