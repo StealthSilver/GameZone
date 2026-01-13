@@ -9,6 +9,7 @@ import {
   handleSquareClick,
   makeComputerMove,
   applyPromotionChoice,
+  PieceType,
 } from "./ChessEngine";
 
 interface ChessGameProps {
@@ -229,10 +230,9 @@ export const ChessGame: React.FC<ChessGameProps> = ({
     return <span className="text-xl md:text-2xl">{pieceSymbol}</span>;
   };
 
-  const pieceToSymbol = (piece: ChessState["board"][number][number]) => {
-    if (!piece) return null;
-    const isWhite = piece.color === "white";
-    switch (piece.type) {
+  const pieceTypeToSymbol = (type: PieceType, color: ChessColor) => {
+    const isWhite = color === "white";
+    switch (type) {
       case "king":
         // Swapped visual colors: engine "white" pieces use black glyphs and vice versa
         return isWhite ? "♚" : "♔";
@@ -249,6 +249,82 @@ export const ChessGame: React.FC<ChessGameProps> = ({
       default:
         return null;
     }
+  };
+
+  const pieceToSymbol = (piece: ChessState["board"][number][number]) => {
+    if (!piece) return null;
+    return pieceTypeToSymbol(piece.type, piece.color);
+  };
+
+  const computeMaterialAndCaptures = (board: ChessState["board"]) => {
+    const valueByType: Record<PieceType, number> = {
+      pawn: 1,
+      knight: 3,
+      bishop: 3,
+      rook: 5,
+      queen: 9,
+      king: 0,
+    };
+
+    const initialCounts = {
+      white: { pawn: 8, knight: 2, bishop: 2, rook: 2, queen: 1, king: 1 },
+      black: { pawn: 8, knight: 2, bishop: 2, rook: 2, queen: 1, king: 1 },
+    } as const;
+
+    const currentCounts = {
+      white: { pawn: 0, knight: 0, bishop: 0, rook: 0, queen: 0, king: 0 },
+      black: { pawn: 0, knight: 0, bishop: 0, rook: 0, queen: 0, king: 0 },
+    };
+
+    let whiteMaterial = 0;
+    let blackMaterial = 0;
+
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const piece = board[r][c];
+        if (!piece) continue;
+        const { color, type } = piece;
+        currentCounts[color][type]++;
+        const value = valueByType[type];
+        if (color === "white") whiteMaterial += value;
+        else blackMaterial += value;
+      }
+    }
+
+    const order: PieceType[] = ["queen", "rook", "bishop", "knight", "pawn"];
+
+    const whiteCapturedSymbols: string[] = [];
+    const blackCapturedSymbols: string[] = [];
+
+    for (const type of order) {
+      const capturedByWhite = Math.max(
+        0,
+        initialCounts.black[type] - currentCounts.black[type]
+      );
+      const capturedByBlack = Math.max(
+        0,
+        initialCounts.white[type] - currentCounts.white[type]
+      );
+
+      for (let i = 0; i < capturedByWhite; i++) {
+        const sym = pieceTypeToSymbol(type, "black");
+        if (sym) whiteCapturedSymbols.push(sym);
+      }
+      for (let i = 0; i < capturedByBlack; i++) {
+        const sym = pieceTypeToSymbol(type, "white");
+        if (sym) blackCapturedSymbols.push(sym);
+      }
+    }
+
+    const materialDiff = whiteMaterial - blackMaterial;
+
+    return {
+      whiteMaterial,
+      blackMaterial,
+      materialDiff,
+      whiteCapturedSymbols,
+      blackCapturedSymbols,
+    };
   };
 
   // Position of the king that is currently in check (for highlighting)
@@ -349,6 +425,19 @@ export const ChessGame: React.FC<ChessGameProps> = ({
         return "";
     }
   })();
+
+  const {
+    whiteMaterial,
+    blackMaterial,
+    materialDiff,
+    whiteCapturedSymbols,
+    blackCapturedSymbols,
+  } = computeMaterialAndCaptures(state.board);
+
+  const formatAdvantage = (adv: number) => {
+    if (adv === 0) return "0";
+    return adv > 0 ? `+${adv}` : `${adv}`;
+  };
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start font-[family-name:var(--font-oxanium)] px-4 py-8">
