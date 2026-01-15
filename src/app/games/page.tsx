@@ -33,7 +33,7 @@ const games = [
   {
     name: "Tetris",
     image: "/tetris.png",
-    available: false,
+    available: true,
     route: "/games/tetris",
   },
   { name: "Go", image: "/go.png", available: false, route: "/games/go" },
