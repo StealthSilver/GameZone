@@ -78,6 +78,14 @@ export const TetrisSetup: React.FC = () => {
           Start Game
         </button>
 
+        {/* Back Button */}
+        <button
+          onClick={() => router.push("/games")}
+          className="mt-6 px-6 py-3 rounded-lg border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300 transition-all duration-300"
+        >
+          Back to Games
+        </button>
+
         {/* How to Play */}
         <div className="mt-12 max-w-md bg-gray-900/50 rounded-xl p-6 border border-gray-800">
           <h3 className="text-xl font-semibold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
