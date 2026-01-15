@@ -41,22 +41,6 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Fixed logical game board size
-    const width = 300;
-    const height = 600;
-
-    // Setup canvas for proper rendering on high DPI displays
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr, dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-
     // Load high score from localStorage
     const savedHighScore = localStorage.getItem("tetrisHighScore");
     if (savedHighScore) {
@@ -66,6 +50,39 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     // Initialize game engine
     const engine = new TetrisGameEngine(canvas, mode);
     gameEngineRef.current = engine;
+
+    const applyResponsiveSize = () => {
+      // Target a taller board on large screens; still constrain to available space.
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      // Leave room for panels and padding so we don't overflow horizontally.
+      const reservedWidth = isDesktop ? 560 : 48;
+      const maxBoardWidth = Math.max(240, viewportWidth - reservedWidth);
+
+      const minBoardHeight = isDesktop ? 640 : 440;
+      const maxBoardHeight = isDesktop ? 1080 : 760;
+
+      // Prefer using most of the viewport height.
+      const reservedHeight = isDesktop ? 160 : 260;
+      let targetBoardHeight = viewportHeight - reservedHeight;
+      targetBoardHeight = Math.max(
+        minBoardHeight,
+        Math.min(targetBoardHeight, maxBoardHeight)
+      );
+
+      // Board is 10x20 => width is height/2.
+      if (targetBoardHeight / 2 > maxBoardWidth) {
+        targetBoardHeight = Math.floor(maxBoardWidth * 2);
+      }
+
+      // Convert board height to a block size (20 rows).
+      const blockSize = Math.floor(targetBoardHeight / 20);
+      engine.resize(blockSize);
+    };
+
+    applyResponsiveSize();
 
     // Set up callbacks
     engine.onScoreUpdate = (newScore) => {
@@ -80,14 +97,24 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     };
     engine.onLevelUpdate = (newLevel) => setLevel(newLevel);
     engine.onLinesUpdate = (newLines) => setLines(newLines);
-    engine.onGameStateChange = (state) => setGameState(state);
+    engine.onGameStateChange = (state) => {
+      setGameState(state);
+      if (state === "paused") {
+        setIsPaused(true);
+      } else if (state === "playing") {
+        setIsPaused(false);
+      }
+    };
     engine.onComboUpdate = (comboCount) => setCombo(comboCount);
 
     // Start game
     engine.start();
 
+    window.addEventListener("resize", applyResponsiveSize);
+
     // Cleanup
     return () => {
+      window.removeEventListener("resize", applyResponsiveSize);
       engine.stop();
     };
   }, [mode]);
@@ -95,37 +122,37 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!gameEngineRef.current) return;
+      if (!gameEngineRef.current || gameState === "gameOver") return;
+
+      // Prevent default for game controls to avoid page scrolling
+      if (
+        ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", " "].includes(e.key)
+      ) {
+        e.preventDefault();
+      }
 
       switch (e.key) {
         case "ArrowLeft":
-          e.preventDefault();
           gameEngineRef.current.moveLeft();
           break;
         case "ArrowRight":
-          e.preventDefault();
           gameEngineRef.current.moveRight();
           break;
         case "ArrowDown":
-          e.preventDefault();
           gameEngineRef.current.moveDown();
           break;
         case "ArrowUp":
-          e.preventDefault();
           gameEngineRef.current.rotate();
           break;
         case " ":
-          e.preventDefault();
           gameEngineRef.current.hardDrop();
           break;
         case "c":
         case "C":
-          e.preventDefault();
           gameEngineRef.current.holdPiece();
           break;
         case "p":
         case "P":
-          e.preventDefault();
           handlePause();
           break;
       }
@@ -133,23 +160,25 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPaused]);
+  }, [gameState]);
 
   const handlePause = () => {
-    if (!gameEngineRef.current) return;
+    if (!gameEngineRef.current || gameState === "gameOver") return;
 
-    if (isPaused) {
+    if (gameState === "paused") {
       gameEngineRef.current.resume();
-    } else {
+      setIsPaused(false);
+    } else if (gameState === "playing") {
       gameEngineRef.current.pause();
+      setIsPaused(true);
     }
-    setIsPaused(!isPaused);
   };
 
   const handleRestart = () => {
     if (gameEngineRef.current) {
       gameEngineRef.current.restart();
       setIsPaused(false);
+      setGameState("playing");
     }
   };
 
@@ -188,7 +217,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
 
   // Touch controls for mobile
   const handleTouchMove = (direction: "left" | "right" | "down") => {
-    if (!gameEngineRef.current) return;
+    if (!gameEngineRef.current || gameState !== "playing") return;
 
     switch (direction) {
       case "left":
@@ -204,7 +233,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
   };
 
   const handleTouchAction = (action: "rotate" | "drop" | "hold") => {
-    if (!gameEngineRef.current) return;
+    if (!gameEngineRef.current || gameState !== "playing") return;
 
     switch (action) {
       case "rotate":

@@ -4,6 +4,7 @@ export type GameState = "playing" | "paused" | "gameOver";
 // Sound effects (safe no-op on unsupported environments)
 class SoundEffects {
   private isSupported: boolean;
+  private audioContext: AudioContext | null = null;
 
   constructor() {
     if (typeof window === "undefined") {
@@ -14,22 +15,21 @@ class SoundEffects {
     const AudioContextClass =
       (window as any).AudioContext || (window as any).webkitAudioContext;
     this.isSupported = Boolean(AudioContextClass);
+
+    if (this.isSupported && AudioContextClass) {
+      this.audioContext = new AudioContextClass();
+    }
   }
 
   play(name: string): void {
-    if (!this.isSupported) return;
+    if (!this.isSupported || !this.audioContext) return;
 
     try {
-      const AudioContextClass =
-        (window as any).AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContextClass) return;
-
-      const audioContext = new AudioContextClass();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
 
       oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      gainNode.connect(this.audioContext.destination);
 
       const frequencies: { [key: string]: number } = {
         move: 300,
@@ -44,17 +44,16 @@ class SoundEffects {
       oscillator.frequency.value = frequencies[name] || 300;
       oscillator.type = "sine";
 
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(
         0.01,
-        audioContext.currentTime + 0.1
+        this.audioContext.currentTime + 0.1
       );
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
     } catch (e) {
       // Silently fail if audio doesn't work
-      console.warn("Could not play sound:", name);
     }
   }
 }
@@ -139,7 +138,9 @@ export class TetrisGameEngine {
   // Game board
   private readonly COLS = 10;
   private readonly ROWS = 20;
-  private readonly BLOCK_SIZE = 30;
+  private blockSize = 30;
+  private logicalWidth = this.COLS * this.blockSize;
+  private logicalHeight = this.ROWS * this.blockSize;
   private board: (string | null)[][];
 
   // Current piece
@@ -174,6 +175,9 @@ export class TetrisGameEngine {
     this.mode = mode;
     this.soundEffects = new SoundEffects();
 
+    // Ensure the canvas has a sensible initial size (can be overridden by resize()).
+    this.resize(this.blockSize);
+
     // Set drop interval based on mode
     this.dropInterval = this.getDropInterval();
 
@@ -181,6 +185,24 @@ export class TetrisGameEngine {
     this.board = Array.from({ length: this.ROWS }, () =>
       Array(this.COLS).fill(null)
     );
+  }
+
+  public resize(blockSize: number): void {
+    const nextBlockSize = Math.max(16, Math.min(60, Math.floor(blockSize)));
+    this.blockSize = nextBlockSize;
+    this.logicalWidth = this.COLS * this.blockSize;
+    this.logicalHeight = this.ROWS * this.blockSize;
+
+    const dpr =
+      typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+
+    this.canvas.style.width = `${this.logicalWidth}px`;
+    this.canvas.style.height = `${this.logicalHeight}px`;
+    this.canvas.width = Math.floor(this.logicalWidth * dpr);
+    this.canvas.height = Math.floor(this.logicalHeight * dpr);
+
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.scale(dpr, dpr);
   }
 
   private getDropInterval(): number {
@@ -258,11 +280,12 @@ export class TetrisGameEngine {
   }
 
   private gameLoop = (): void => {
+    const now = Date.now();
+
     if (this.gameState === "playing") {
-      const now = Date.now();
       const deltaTime = now - this.lastDropTime;
 
-      if (deltaTime > this.dropInterval) {
+      if (deltaTime >= this.dropInterval) {
         this.moveDown();
         this.lastDropTime = now;
       }
@@ -275,7 +298,7 @@ export class TetrisGameEngine {
   private draw(): void {
     // Clear canvas
     this.ctx.fillStyle = "#000000";
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
 
     // Draw board
     this.drawBoard();
@@ -295,25 +318,19 @@ export class TetrisGameEngine {
   }
 
   private drawBoard(): void {
+    this.ctx.strokeStyle = "#000000";
+    this.ctx.lineWidth = 2;
+    
     for (let row = 0; row < this.ROWS; row++) {
       for (let col = 0; col < this.COLS; col++) {
-        if (this.board[row][col]) {
-          this.ctx.fillStyle = this.board[row][col] as string;
-          this.ctx.fillRect(
-            col * this.BLOCK_SIZE,
-            row * this.BLOCK_SIZE,
-            this.BLOCK_SIZE,
-            this.BLOCK_SIZE
-          );
-          // Add border
-          this.ctx.strokeStyle = "#000000";
-          this.ctx.lineWidth = 2;
-          this.ctx.strokeRect(
-            col * this.BLOCK_SIZE,
-            row * this.BLOCK_SIZE,
-            this.BLOCK_SIZE,
-            this.BLOCK_SIZE
-          );
+        const cell = this.board[row][col];
+        if (cell) {
+          const x = col * this.blockSize;
+          const y = row * this.blockSize;
+          
+          this.ctx.fillStyle = cell;
+          this.ctx.fillRect(x, y, this.blockSize, this.blockSize);
+          this.ctx.strokeRect(x, y, this.blockSize, this.blockSize);
         }
       }
     }
@@ -321,24 +338,20 @@ export class TetrisGameEngine {
 
   private drawPiece(piece: Piece): void {
     this.ctx.fillStyle = piece.color;
+    this.ctx.strokeStyle = "#000000";
+    this.ctx.lineWidth = 2;
+    
     for (let row = 0; row < piece.shape.length; row++) {
       for (let col = 0; col < piece.shape[row].length; col++) {
         if (piece.shape[row][col]) {
-          this.ctx.fillRect(
-            (piece.x + col) * this.BLOCK_SIZE,
-            (piece.y + row) * this.BLOCK_SIZE,
-            this.BLOCK_SIZE,
-            this.BLOCK_SIZE
-          );
-          // Add border
-          this.ctx.strokeStyle = "#000000";
-          this.ctx.lineWidth = 2;
-          this.ctx.strokeRect(
-            (piece.x + col) * this.BLOCK_SIZE,
-            (piece.y + row) * this.BLOCK_SIZE,
-            this.BLOCK_SIZE,
-            this.BLOCK_SIZE
-          );
+          const x = (piece.x + col) * this.blockSize;
+          const y = (piece.y + row) * this.blockSize;
+          
+          // Only draw if within visible board area
+          if (piece.y + row >= 0) {
+            this.ctx.fillRect(x, y, this.blockSize, this.blockSize);
+            this.ctx.strokeRect(x, y, this.blockSize, this.blockSize);
+          }
         }
       }
     }
@@ -351,30 +364,28 @@ export class TetrisGameEngine {
       ghostY++;
     }
 
+    // Only draw ghost if it's different from current position
+    if (ghostY === piece.y) return;
+
     // Draw semi-transparent ghost
-    this.ctx.globalAlpha = 0.2;
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.3;
     this.ctx.fillStyle = piece.color;
+    this.ctx.strokeStyle = piece.color;
+    this.ctx.lineWidth = 2;
+    
     for (let row = 0; row < piece.shape.length; row++) {
       for (let col = 0; col < piece.shape[row].length; col++) {
         if (piece.shape[row][col]) {
-          this.ctx.fillRect(
-            (piece.x + col) * this.BLOCK_SIZE,
-            (ghostY + row) * this.BLOCK_SIZE,
-            this.BLOCK_SIZE,
-            this.BLOCK_SIZE
-          );
-          this.ctx.strokeStyle = piece.color;
-          this.ctx.lineWidth = 2;
-          this.ctx.strokeRect(
-            (piece.x + col) * this.BLOCK_SIZE,
-            (ghostY + row) * this.BLOCK_SIZE,
-            this.BLOCK_SIZE,
-            this.BLOCK_SIZE
-          );
+          const x = (piece.x + col) * this.blockSize;
+          const y = (ghostY + row) * this.blockSize;
+          
+          this.ctx.strokeRect(x, y, this.blockSize, this.blockSize);
         }
       }
     }
-    this.ctx.globalAlpha = 1.0;
+    
+    this.ctx.restore();
   }
 
   private drawGrid(): void {
@@ -384,16 +395,16 @@ export class TetrisGameEngine {
     // Vertical lines
     for (let col = 0; col <= this.COLS; col++) {
       this.ctx.beginPath();
-      this.ctx.moveTo(col * this.BLOCK_SIZE, 0);
-      this.ctx.lineTo(col * this.BLOCK_SIZE, this.canvas.height);
+      this.ctx.moveTo(col * this.blockSize, 0);
+      this.ctx.lineTo(col * this.blockSize, this.logicalHeight);
       this.ctx.stroke();
     }
 
     // Horizontal lines
     for (let row = 0; row <= this.ROWS; row++) {
       this.ctx.beginPath();
-      this.ctx.moveTo(0, row * this.BLOCK_SIZE);
-      this.ctx.lineTo(this.canvas.width, row * this.BLOCK_SIZE);
+      this.ctx.moveTo(0, row * this.blockSize);
+      this.ctx.lineTo(this.logicalWidth, row * this.blockSize);
       this.ctx.stroke();
     }
   }
@@ -414,9 +425,14 @@ export class TetrisGameEngine {
           const newX = piece.x + col + offsetX;
           const newY = piece.y + row + offsetY;
 
-          // Check boundaries - left, right, top, and bottom
-          if (newX < 0 || newX >= this.COLS || newY < 0 || newY >= this.ROWS) {
+          // Check boundaries
+          if (newX < 0 || newX >= this.COLS || newY >= this.ROWS) {
             return true;
+          }
+
+          // Allow pieces to be above the board during spawn
+          if (newY < 0) {
+            continue;
           }
 
           // Check collision with board
@@ -462,7 +478,13 @@ export class TetrisGameEngine {
   public rotate(): void {
     if (!this.currentPiece || this.gameState !== "playing") return;
 
-    // Create rotated shape
+    // Don't rotate O piece (it's symmetrical)
+    if (this.currentPiece.type === "O") {
+      this.soundEffects.play("rotate");
+      return;
+    }
+
+    // Create rotated shape (90 degrees clockwise)
     const rotated = this.currentPiece.shape[0].map((_, i) =>
       this.currentPiece!.shape.map((row) => row[i]).reverse()
     );
@@ -470,41 +492,52 @@ export class TetrisGameEngine {
     const previousShape = this.currentPiece.shape;
     this.currentPiece.shape = rotated;
 
-    // Check if rotation is valid
+    // Check if rotation is valid with wall kicks
     if (this.collides(this.currentPiece, 0, 0)) {
-      // Try wall kicks
+      // Try wall kicks (SRS - Super Rotation System inspired)
       const kicks = [
-        { x: -1, y: 0 },
-        { x: 1, y: 0 },
-        { x: 0, y: -1 },
+        { x: -1, y: 0 }, // Left
+        { x: 1, y: 0 }, // Right
+        { x: -2, y: 0 }, // Far left (for I piece)
+        { x: 2, y: 0 }, // Far right (for I piece)
+        { x: 0, y: -1 }, // Up
+        { x: -1, y: -1 }, // Left-up
+        { x: 1, y: -1 }, // Right-up
       ];
 
-      let valid = false;
+      let rotationSuccessful = false;
       for (const kick of kicks) {
         if (!this.collides(this.currentPiece, kick.x, kick.y)) {
           this.currentPiece.x += kick.x;
           this.currentPiece.y += kick.y;
-          valid = true;
+          rotationSuccessful = true;
           break;
         }
       }
 
       // If no valid position, revert rotation
-      if (!valid) {
+      if (!rotationSuccessful) {
         this.currentPiece.shape = previousShape;
-      } else {
-        this.soundEffects.play("rotate");
+        return;
       }
-    } else {
-      this.soundEffects.play("rotate");
     }
+
+    this.soundEffects.play("rotate");
   }
 
   public hardDrop(): void {
     if (!this.currentPiece || this.gameState !== "playing") return;
 
+    let dropDistance = 0;
     while (!this.collides(this.currentPiece, 0, 1)) {
       this.currentPiece.y++;
+      dropDistance++;
+    }
+
+    // Award bonus points for hard drop
+    if (dropDistance > 0) {
+      this.score += dropDistance * 2;
+      this.onScoreUpdate?.(this.score);
     }
 
     this.soundEffects.play("hardDrop");
@@ -517,32 +550,25 @@ export class TetrisGameEngine {
     if (!this.currentPiece || this.gameState !== "playing" || !this.canHold)
       return;
 
-    if (this.heldPiece === null) {
-      // First time holding
-      this.heldPiece = {
-        ...this.currentPiece,
-        x:
-          Math.floor(this.COLS / 2) -
-          Math.floor(this.currentPiece.shape[0].length / 2),
+    const resetPiece = (piece: Piece): Piece => {
+      return {
+        ...piece,
+        shape: TETROMINOS[piece.type].shape.map((row) => [...row]),
+        x: Math.floor(this.COLS / 2) - Math.floor(piece.shape[0].length / 2),
         y: 0,
       };
+    };
+
+    if (this.heldPiece === null) {
+      // First time holding - store current and spawn next
+      this.heldPiece = resetPiece(this.currentPiece);
       this.currentPiece = this.nextPiece;
       this.nextPiece = this.getRandomTetromino();
     } else {
       // Swap current and held
-      const temp = this.heldPiece;
-      this.heldPiece = {
-        ...this.currentPiece,
-        x:
-          Math.floor(this.COLS / 2) -
-          Math.floor(this.currentPiece.shape[0].length / 2),
-        y: 0,
-      };
-      this.currentPiece = {
-        ...temp,
-        x: Math.floor(this.COLS / 2) - Math.floor(temp.shape[0].length / 2),
-        y: 0,
-      };
+      const temp = resetPiece(this.heldPiece);
+      this.heldPiece = resetPiece(this.currentPiece);
+      this.currentPiece = temp;
     }
 
     this.soundEffects.play("hold");
@@ -568,7 +594,6 @@ export class TetrisGameEngine {
   }
 
   private clearLines(): void {
-    let linesCleared = 0;
     const rowsToClear: number[] = [];
 
     // Find all completed rows
@@ -578,29 +603,35 @@ export class TetrisGameEngine {
       }
     }
 
-    // Clear completed rows from bottom to top
-    for (const row of rowsToClear) {
-      this.board.splice(row, 1);
-      this.board.unshift(Array(this.COLS).fill(null));
-      linesCleared++;
-    }
+    const linesCleared = rowsToClear.length;
 
     if (linesCleared > 0) {
+      // Clear completed rows
+      for (const row of rowsToClear.sort((a, b) => b - a)) {
+        this.board.splice(row, 1);
+        this.board.unshift(Array(this.COLS).fill(null));
+      }
+
       this.soundEffects.play("lineClear");
+      
       // Update combo
       this.combo++;
       this.onComboUpdate?.(this.combo);
 
-      // Update score with combo multiplier
-      const points = [0, 100, 300, 500, 800];
-      const comboBonus = Math.min(this.combo * 50, 500);
-      this.score += (points[linesCleared] + comboBonus) * this.level;
+      // Calculate score with combo multiplier
+      const basePoints = [0, 100, 300, 500, 800];
+      const comboBonus = Math.min((this.combo - 1) * 50, 500);
+      const linePoints = basePoints[linesCleared] || 0;
+      this.score += (linePoints + comboBonus) * this.level;
+      
+      // Update lines
       this.lines += linesCleared;
 
-      // Update level
+      // Check for level up (every 10 lines)
       const newLevel = Math.floor(this.lines / 10) + 1;
       if (newLevel > this.level) {
         this.level = newLevel;
+        // Increase drop speed with level
         this.dropInterval = Math.max(
           100,
           this.getDropInterval() - (this.level - 1) * 50
@@ -620,15 +651,20 @@ export class TetrisGameEngine {
   }
 
   private spawnNewPiece(): void {
+    if (!this.nextPiece) {
+      this.nextPiece = this.getRandomTetromino();
+    }
+
     this.currentPiece = this.nextPiece;
     this.nextPiece = this.getRandomTetromino();
     this.canHold = true; // Reset hold ability
 
-    // Check if game over
+    // Check if game over - piece spawns in collision
     if (this.currentPiece && this.collides(this.currentPiece, 0, 0)) {
       this.gameState = "gameOver";
       this.soundEffects.play("gameOver");
       this.onGameStateChange?.(this.gameState);
+      this.stop();
     }
   }
 }
