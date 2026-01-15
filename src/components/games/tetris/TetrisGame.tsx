@@ -147,9 +147,9 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
 
     return (
       <div
-        className="grid gap-1"
+        className="grid gap-0.5 sm:gap-1"
         style={{
-          gridTemplateColumns: `repeat(${piece.shape[0].length}, 20px)`,
+          gridTemplateColumns: `repeat(${piece.shape[0].length}, 12px)`,
           margin: "0 auto",
           width: "fit-content",
         }}
@@ -158,7 +158,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           row.map((cell: number, colIdx: number) => (
             <div
               key={`${rowIdx}-${colIdx}`}
-              className="w-5 h-5 rounded-sm"
+              className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm"
               style={{
                 backgroundColor: cell ? piece.color : "transparent",
                 border: cell ? "1px solid rgba(0,0,0,0.3)" : "none",
@@ -170,189 +170,396 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     );
   };
 
+  // Touch controls for mobile
+  const handleTouchMove = (direction: "left" | "right" | "down") => {
+    if (!gameEngineRef.current) return;
+
+    switch (direction) {
+      case "left":
+        gameEngineRef.current.moveLeft();
+        break;
+      case "right":
+        gameEngineRef.current.moveRight();
+        break;
+      case "down":
+        gameEngineRef.current.moveDown();
+        break;
+    }
+  };
+
+  const handleTouchAction = (action: "rotate" | "drop" | "hold") => {
+    if (!gameEngineRef.current) return;
+
+    switch (action) {
+      case "rotate":
+        gameEngineRef.current.rotate();
+        break;
+      case "drop":
+        gameEngineRef.current.hardDrop();
+        break;
+      case "hold":
+        gameEngineRef.current.holdPiece();
+        break;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex items-center justify-center p-2 sm:p-4 overflow-x-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#8CECF7]/10 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-32 h-32 sm:w-64 sm:h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-48 h-48 sm:w-96 sm:h-96 bg-[#8CECF7]/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
-        {/* Left Panel - Stats */}
-        <div className="flex flex-col gap-4">
-          {/* Score */}
-          <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800 min-w-[200px]">
-            <h3 className="text-sm text-gray-400 mb-2">Score</h3>
-            <p className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
-              {score}
-            </p>
-          </div>
-
-          {/* High Score */}
-          <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-            <h3 className="text-sm text-gray-400 mb-2">High Score</h3>
-            <p className="text-2xl font-bold text-yellow-400">{highScore}</p>
-          </div>
-
-          {/* Level */}
-          <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-            <h3 className="text-sm text-gray-400 mb-2">Level</h3>
-            <p className="text-3xl font-bold text-[#8CECF7]">{level}</p>
-          </div>
-
-          {/* Lines */}
-          <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-            <h3 className="text-sm text-gray-400 mb-2">Lines</h3>
-            <p className="text-3xl font-bold text-[#6C85EA]">{lines}</p>
-          </div>
-
-          {/* Combo */}
-          {combo > 1 && (
-            <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl p-6 border border-orange-500 animate-pulse">
-              <h3 className="text-sm text-orange-400 mb-2">Combo!</h3>
-              <p className="text-3xl font-bold text-orange-300">{combo}x</p>
+      <div className="relative z-10 w-full max-w-6xl">
+        {/* Desktop layout - horizontal */}
+        <div className="hidden lg:flex flex-row items-start justify-center gap-8">
+          {/* Left Panel - Stats */}
+          <div className="flex flex-col gap-3">
+            {/* Score */}
+            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800 min-w-[200px]">
+              <h3 className="text-sm text-gray-400 mb-2">Score</h3>
+              <p className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                {score}
+              </p>
             </div>
-          )}
-        </div>
 
-        {/* Center - Canvas */}
-        <div className="relative">
-          <canvas
-            ref={canvasRef}
-            width={300}
-            height={600}
-            className="border-4 border-gray-800 rounded-xl shadow-2xl bg-black"
-          />
+            {/* High Score */}
+            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+              <h3 className="text-sm text-gray-400 mb-2">High Score</h3>
+              <p className="text-2xl font-bold text-yellow-400">{highScore}</p>
+            </div>
 
-          {/* Pause Overlay */}
-          {isPaused && gameState === "playing" && (
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-4xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
-                  PAUSED
-                </h2>
-                <p className="text-gray-400">Press P to continue</p>
+            {/* Level */}
+            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+              <h3 className="text-sm text-gray-400 mb-2">Level</h3>
+              <p className="text-3xl font-bold text-[#8CECF7]">{level}</p>
+            </div>
+
+            {/* Lines */}
+            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+              <h3 className="text-sm text-gray-400 mb-2">Lines</h3>
+              <p className="text-3xl font-bold text-[#6C85EA]">{lines}</p>
+            </div>
+
+            {/* Combo */}
+            {combo > 1 && (
+              <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl p-6 border border-orange-500 animate-pulse">
+                <h3 className="text-sm text-orange-400 mb-2">Combo!</h3>
+                <p className="text-3xl font-bold text-orange-300">{combo}x</p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Game Over Overlay */}
-          {gameState === "gameOver" && (
-            <div className="absolute inset-0 bg-black/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <div className="text-center p-8">
-                <h2 className="text-5xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
-                  Game Over
-                </h2>
-                <p className="text-2xl text-gray-300 mb-2">Score: {score}</p>
-                <p className="text-lg text-gray-400 mb-6">
-                  Level {level} • {lines} Lines
-                </p>
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={handleRestart}
-                    className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
-                  >
-                    Play Again
-                  </button>
-                  <button
-                    onClick={handleExit}
-                    className="px-6 py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-all duration-300"
-                  >
-                    Exit
-                  </button>
+          {/* Center - Canvas */}
+          <div className="relative flex flex-col items-center gap-3">
+            <canvas
+              ref={canvasRef}
+              width={240}
+              height={480}
+              className="border-4 border-gray-800 rounded-xl shadow-2xl bg-black w-[300px] h-[600px]"
+              style={{
+                maxWidth: "100%",
+                height: "auto",
+                aspectRatio: "1/2",
+              }}
+            />
+
+            {/* Pause Overlay */}
+            {isPaused && gameState === "playing" && (
+              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="text-center px-4">
+                  <h2 className="text-4xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                    PAUSED
+                  </h2>
+                  <p className="text-base text-gray-400">
+                    Press P or Resume button
+                  </p>
                 </div>
               </div>
+            )}
+
+            {/* Game Over Overlay */}
+            {gameState === "gameOver" && (
+              <div className="absolute inset-0 bg-black/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="text-center p-8">
+                  <h2 className="text-5xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                    Game Over
+                  </h2>
+                  <p className="text-2xl text-gray-300 mb-2">Score: {score}</p>
+                  <p className="text-lg text-gray-400 mb-6">
+                    Level {level} • {lines} Lines
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={handleRestart}
+                      className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
+                    >
+                      Play Again
+                    </button>
+                    <button
+                      onClick={handleExit}
+                      className="px-6 py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-all duration-300"
+                    >
+                      Exit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Panel - Preview & Controls */}
+          <div className="flex flex-col gap-4">
+            {/* Next Piece Preview */}
+            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800 min-w-[200px]">
+              <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                Next Piece
+              </h3>
+              <div className="bg-black/50 rounded-lg p-4 min-h-[100px] flex items-center justify-center">
+                {renderPiecePreview(nextPiece)}
+              </div>
             </div>
-          )}
+
+            {/* Held Piece Preview */}
+            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+              <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                Hold (C)
+              </h3>
+              <div className="bg-black/50 rounded-lg p-4 min-h-[100px] flex items-center justify-center">
+                {heldPiece ? (
+                  renderPiecePreview(heldPiece)
+                ) : (
+                  <span className="text-gray-600 text-sm">Empty</span>
+                )}
+              </div>
+            </div>
+
+            {/* Game Controls */}
+            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+              <div className="space-y-2">
+                <button
+                  onClick={handlePause}
+                  className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                >
+                  {isPaused ? "Resume" : "Pause"}
+                </button>
+                <button
+                  onClick={handleRestart}
+                  className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                >
+                  Restart
+                </button>
+                <button
+                  onClick={handleExit}
+                  className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                >
+                  Exit
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Right Panel - Controls */}
-        <div className="flex flex-col gap-4">
-          {/* Next Piece Preview */}
-          <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800 min-w-[200px]">
-            <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
-              Next Piece
-            </h3>
-            <div className="bg-black/50 rounded-lg p-4 min-h-[100px] flex items-center justify-center">
-              {renderPiecePreview(nextPiece)}
+        {/* Mobile layout - vertical stacking */}
+        <div className="flex flex-col lg:hidden items-center gap-2 w-full max-w-[360px] mx-auto">
+          {/* Top Stats - Single Row */}
+          <div className="flex gap-1.5 w-full">
+            {/* Score */}
+            <div className="bg-gray-900/50 rounded-lg p-1.5 border border-gray-800 flex-1 text-center">
+              <h3 className="text-[9px] text-gray-400">Score</h3>
+              <p className="text-sm font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                {score}
+              </p>
+            </div>
+
+            {/* High Score */}
+            <div className="bg-gray-900/50 rounded-lg p-1.5 border border-gray-800 flex-1 text-center">
+              <h3 className="text-[9px] text-gray-400">High</h3>
+              <p className="text-sm font-bold text-yellow-400">{highScore}</p>
+            </div>
+
+            {/* Level */}
+            <div className="bg-gray-900/50 rounded-lg p-1.5 border border-gray-800 flex-1 text-center">
+              <h3 className="text-[9px] text-gray-400">Level</h3>
+              <p className="text-sm font-bold text-[#8CECF7]">{level}</p>
+            </div>
+
+            {/* Lines */}
+            <div className="bg-gray-900/50 rounded-lg p-1.5 border border-gray-800 flex-1 text-center">
+              <h3 className="text-[9px] text-gray-400">Lines</h3>
+              <p className="text-sm font-bold text-[#6C85EA]">{lines}</p>
             </div>
           </div>
 
-          {/* Held Piece Preview */}
-          <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-            <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
-              Hold (C)
-            </h3>
-            <div className="bg-black/50 rounded-lg p-4 min-h-[100px] flex items-center justify-center">
-              {heldPiece ? (
-                renderPiecePreview(heldPiece)
-              ) : (
-                <span className="text-gray-600 text-sm">Empty</span>
-              )}
+          {/* Combo - Full width when active */}
+          {combo > 1 && (
+            <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-lg p-2 border border-orange-500 animate-pulse w-full">
+              <h3 className="text-[10px] text-orange-400 mb-0.5">Combo!</h3>
+              <p className="text-base font-bold text-orange-300">{combo}x</p>
+            </div>
+          )}
+
+          {/* Preview Pieces - Side by side */}
+          <div className="flex gap-2 w-full">
+            {/* Next Piece Preview */}
+            <div className="bg-gray-900/50 rounded-lg p-2 border border-gray-800 flex-1">
+              <h3 className="text-xs font-semibold mb-1 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                Next
+              </h3>
+              <div className="bg-black/50 rounded p-1.5 min-h-[50px] flex items-center justify-center">
+                {renderPiecePreview(nextPiece)}
+              </div>
+            </div>
+
+            {/* Held Piece Preview */}
+            <div className="bg-gray-900/50 rounded-lg p-2 border border-gray-800 flex-1">
+              <h3 className="text-xs font-semibold mb-1 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                Hold
+              </h3>
+              <div className="bg-black/50 rounded p-1.5 min-h-[50px] flex items-center justify-center">
+                {heldPiece ? (
+                  renderPiecePreview(heldPiece)
+                ) : (
+                  <span className="text-gray-600 text-[10px]">Empty</span>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-            <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
-              Controls
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
-                  ←→
-                </kbd>
-                <span className="text-gray-300">Move</span>
+          {/* Canvas - Game Board */}
+          <div className="relative flex flex-col items-center">
+            <canvas
+              ref={canvasRef}
+              width={240}
+              height={480}
+              className="border-2 border-gray-800 rounded-lg shadow-2xl bg-black w-full max-w-[320px]"
+              style={{
+                height: "auto",
+                aspectRatio: "1/2",
+              }}
+            />
+
+            {/* Pause Overlay */}
+            {isPaused && gameState === "playing" && (
+              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                <div className="text-center px-4">
+                  <h2 className="text-2xl font-bold mb-2 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                    PAUSED
+                  </h2>
+                  <p className="text-xs text-gray-400">
+                    Press P or Resume button
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
-                  ↓
-                </kbd>
-                <span className="text-gray-300">Soft Drop</span>
+            )}
+
+            {/* Game Over Overlay */}
+            {gameState === "gameOver" && (
+              <div className="absolute inset-0 bg-black/90 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                <div className="text-center p-4">
+                  <h2 className="text-2xl font-bold mb-2 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                    Game Over
+                  </h2>
+                  <p className="text-base text-gray-300 mb-1">Score: {score}</p>
+                  <p className="text-xs text-gray-400 mb-3">
+                    Level {level} • {lines} Lines
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <button
+                      onClick={handleRestart}
+                      className="px-4 py-2 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300 text-sm"
+                    >
+                      Play Again
+                    </button>
+                    <button
+                      onClick={handleExit}
+                      className="px-4 py-2 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-all duration-300 text-sm"
+                    >
+                      Exit
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
-                  ↑
-                </kbd>
-                <span className="text-gray-300">Rotate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-3 py-1 bg-gray-800 rounded border border-gray-700">
-                  Space
-                </kbd>
-                <span className="text-gray-300">Hard Drop</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
-                  C
-                </kbd>
-                <span className="text-gray-300">Hold</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <kbd className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
-                  P
-                </kbd>
-                <span className="text-gray-300">Pause</span>
-              </div>
+            )}
+          </div>
+
+          {/* Mobile Touch Controls */}
+          <div className="w-full space-y-2">
+            {/* Action buttons row */}
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={() => handleTouchAction("hold")}
+                className="flex-1 px-3 py-2 bg-[#8CECF7] text-black font-bold rounded-lg active:scale-95 transition-transform touch-none text-sm"
+              >
+                Hold
+              </button>
+              <button
+                onClick={() => handleTouchAction("rotate")}
+                className="flex-1 px-3 py-2 bg-[#8CECF7] text-black font-bold rounded-lg active:scale-95 transition-transform touch-none text-sm"
+              >
+                Rotate
+              </button>
+              <button
+                onClick={() => handleTouchAction("drop")}
+                className="flex-1 px-3 py-2 bg-[#8CECF7] text-black font-bold rounded-lg active:scale-95 transition-transform touch-none text-sm"
+              >
+                Drop
+              </button>
             </div>
 
-            <div className="mt-6 space-y-2">
+            {/* D-pad controls */}
+            <div className="grid grid-cols-3 gap-2 max-w-[180px] mx-auto">
+              <div></div>
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  handleTouchMove("down");
+                }}
+                className="aspect-square bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg flex items-center justify-center text-xl font-bold touch-none"
+              >
+                ↓
+              </button>
+              <div></div>
+
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  handleTouchMove("left");
+                }}
+                className="aspect-square bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg flex items-center justify-center text-xl font-bold touch-none"
+              >
+                ←
+              </button>
+              <div></div>
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  handleTouchMove("right");
+                }}
+                className="aspect-square bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg flex items-center justify-center text-xl font-bold touch-none"
+              >
+                →
+              </button>
+            </div>
+
+            {/* Game control buttons */}
+            <div className="flex gap-2">
               <button
                 onClick={handlePause}
-                className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                className="flex-1 px-3 py-2 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 text-white font-semibold rounded-lg transition-all text-sm"
               >
                 {isPaused ? "Resume" : "Pause"}
               </button>
               <button
                 onClick={handleRestart}
-                className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                className="flex-1 px-3 py-2 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 text-white font-semibold rounded-lg transition-all text-sm"
               >
                 Restart
               </button>
               <button
                 onClick={handleExit}
-                className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                className="flex-1 px-3 py-2 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 text-white font-semibold rounded-lg transition-all text-sm"
               >
                 Exit
               </button>

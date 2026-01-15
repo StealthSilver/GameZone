@@ -13,6 +13,12 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Disable Tailwind CSS v4 migration warnings for v3 projects
+      "@next/next/no-unknown-class": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
