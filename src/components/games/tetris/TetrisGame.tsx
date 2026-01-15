@@ -360,53 +360,79 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
               </div>
             </div>
 
-            <canvas
-              ref={canvasRef}
-              className="border-2 xl:border-4 border-gray-800 rounded-xl shadow-2xl bg-black"
-            />
+            <div className="relative">
+              <canvas
+                ref={canvasRef}
+                className="border-2 xl:border-4 border-gray-800 rounded-xl shadow-2xl bg-black"
+              />
 
-            {/* Pause Overlay */}
-            {isPaused && gameState === "playing" && (
-              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <div className="text-center px-4">
-                  <h2 className="text-4xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
-                    PAUSED
-                  </h2>
-                  <p className="text-base text-gray-400">
-                    Press P or Resume button
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Game Over Overlay */}
-            {gameState === "gameOver" && (
-              <div className="absolute inset-0 bg-black/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <div className="text-center p-8">
-                  <h2 className="text-5xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
-                    Game Over
-                  </h2>
-                  <p className="text-2xl text-gray-300 mb-2">Score: {score}</p>
-                  <p className="text-lg text-gray-400 mb-6">
-                    Level {level} • {lines} Lines
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={handleRestart}
-                      className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
-                    >
-                      Play Again
-                    </button>
-                    <button
-                      onClick={handleExit}
-                      className="px-6 py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-all duration-300"
-                    >
-                      Exit
-                    </button>
+              {/* Pause Overlay */}
+              {isPaused && gameState === "playing" && (
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <div className="text-center px-4">
+                    <h2 className="text-4xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                      PAUSED
+                    </h2>
+                    <p className="text-base text-gray-400">
+                      Press P or Resume button
+                    </p>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Game Over Overlay */}
+              {gameState === "gameOver" && (
+                <div className="absolute inset-0 bg-black/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <div className="text-center p-8">
+                    <h2 className="text-5xl font-bold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                      Game Over
+                    </h2>
+                    <p className="text-2xl text-gray-300 mb-2">
+                      Score: {score}
+                    </p>
+                    <p className="text-lg text-gray-400 mb-6">
+                      Level {level} • {lines} Lines
+                    </p>
+                    <div className="flex gap-4 justify-center">
+                      <button
+                        onClick={handleRestart}
+                        className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
+                      >
+                        Play Again
+                      </button>
+                      <button
+                        onClick={handleExit}
+                        className="px-6 py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-700 transition-all duration-300"
+                      >
+                        Exit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile (xs) primary actions under board */}
+            <div className="sm:hidden w-full grid grid-cols-3 gap-2">
+              <button
+                onClick={() => handleTouchAction("rotate")}
+                className="w-full px-2 py-2 bg-gray-900/70 border border-gray-700 rounded-xl text-xs font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+              >
+                Rotate
+              </button>
+              <button
+                onClick={() => handleTouchAction("drop")}
+                className="w-full px-2 py-2 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl text-xs font-semibold hover:shadow-lg hover:shadow-[#8CECF7]/40 active:scale-95 transition-all duration-200"
+              >
+                Hard Drop
+              </button>
+              <button
+                onClick={() => handleTouchAction("hold")}
+                className="w-full px-2 py-2 bg-gray-900/70 border border-gray-700 rounded-xl text-xs font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+              >
+                Hold
+              </button>
+            </div>
           </div>
 
           {/* Right Panel - Preview & Controls */}
@@ -475,7 +501,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
         {/* Mobile touch controls */}
         <div className="mt-4 w-full lg:hidden flex flex-col items-center gap-4">
           {/* Primary actions */}
-          <div className="flex flex-wrap justify-center gap-3 w-full max-w-sm">
+          <div className="hidden sm:flex flex-wrap justify-center gap-3 w-full max-w-sm">
             <button
               onClick={() => handleTouchAction("rotate")}
               className="flex-1 min-w-[90px] px-4 py-3 bg-gray-900/70 border border-gray-700 rounded-xl text-sm font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
@@ -514,7 +540,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
             </div>
             <button
               onClick={() => handleTouchMove("down")}
-              className="w-32 h-12 bg-gray-900/70 border border-gray-700 rounded-xl text-base font-semibold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+              className="hidden sm:block w-32 h-12 bg-gray-900/70 border border-gray-700 rounded-xl text-base font-semibold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
             >
               Soft Drop
             </button>
