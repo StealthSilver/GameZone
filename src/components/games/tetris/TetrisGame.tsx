@@ -269,61 +269,10 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
       </div>
 
       <div className="relative z-10 w-full max-w-7xl px-4">
-        {/* Mobile: compact stats & previews at the top */}
-        <div className="lg:hidden mb-3 space-y-2">
-          {/* Stats row */}
-          <div className="grid grid-cols-4 gap-1 text-[10px] sm:text-xs">
-            <div className="bg-gray-900/60 rounded-lg px-2 py-1 border border-gray-800 flex flex-col items-center">
-              <span className="text-[9px] text-gray-400">Score</span>
-              <span className="font-semibold text-[11px] text-[#AAFDBB]">{score}</span>
-            </div>
-            <div className="bg-gray-900/60 rounded-lg px-2 py-1 border border-gray-800 flex flex-col items-center">
-              <span className="text-[9px] text-gray-400">High</span>
-              <span className="font-semibold text-[11px] text-yellow-400">{highScore}</span>
-            </div>
-            <div className="bg-gray-900/60 rounded-lg px-2 py-1 border border-gray-800 flex flex-col items-center">
-              <span className="text-[9px] text-gray-400">Level</span>
-              <span className="font-semibold text-[11px] text-[#8CECF7]">{level}</span>
-            </div>
-            <div className="bg-gray-900/60 rounded-lg px-2 py-1 border border-gray-800 flex flex-col items-center">
-              <span className="text-[9px] text-gray-400">Lines</span>
-              <span className="font-semibold text-[11px] text-[#6C85EA]">{lines}</span>
-            </div>
-          </div>
-
-          {/* Next / Hold previews row */}
-          <div className="flex gap-2">
-            <div className="flex-1 bg-gray-900/60 rounded-lg p-2 border border-gray-800">
-              <h3 className="text-[10px] font-semibold mb-1 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
-                Next
-              </h3>
-              <div className="bg-black/50 rounded-md p-2 flex items-center justify-center min-h-[48px]">
-                <div className="scale-75 origin-top">
-                  {renderPiecePreview(nextPiece)}
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 bg-gray-900/60 rounded-lg p-2 border border-gray-800">
-              <h3 className="text-[10px] font-semibold mb-1 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
-                Hold
-              </h3>
-              <div className="bg-black/50 rounded-md p-2 flex items-center justify-center min-h-[48px]">
-                {heldPiece ? (
-                  <div className="scale-75 origin-top">
-                    {renderPiecePreview(heldPiece)}
-                  </div>
-                ) : (
-                  <span className="text-gray-600 text-[10px]">Empty</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Main layout - desktop horizontal, mobile stacked */}
         <div className="flex flex-col lg:flex-row items-center justify-center gap-2 lg:gap-4 xl:gap-8">
-          {/* Left Panel - Stats (desktop) */}
-          <div className="hidden lg:flex lg:flex-col gap-2 xl:gap-3 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:w-auto">
+          {/* Left Panel - Stats */}
+          <div className="flex flex-col gap-2 xl:gap-3 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:w-auto">
             {/* Score */}
             <div
               className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800"
@@ -431,8 +380,8 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
             )}
           </div>
 
-          {/* Right Panel - Preview & Controls (desktop) */}
-          <div className="hidden lg:flex lg:flex-col gap-2 xl:gap-4 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:w-auto">
+          {/* Right Panel - Preview & Controls */}
+          <div className="flex flex-col gap-2 xl:gap-4 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:w-auto">
             {/* Next Piece Preview */}
             <div
               className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800"
@@ -495,72 +444,50 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
         </div>
 
         {/* Mobile touch controls */}
-        <div className="mt-3 w-full lg:hidden flex flex-col items-center gap-3">
-          {/* Row 1: Rotate / Hold / Hard Drop (same color) */}
-          <div className="flex justify-center gap-2 w-full max-w-sm">
+        <div className="mt-4 w-full lg:hidden flex flex-col items-center gap-4">
+          {/* Primary actions */}
+          <div className="flex flex-wrap justify-center gap-3 w-full max-w-sm">
             <button
               onClick={() => handleTouchAction("rotate")}
-              className="flex-1 min-w-[80px] px-3 py-2 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl text-xs font-semibold hover:shadow-lg hover:shadow-[#8CECF7]/40 active:scale-95 transition-all duration-200"
+              className="flex-1 min-w-[90px] px-4 py-3 bg-gray-900/70 border border-gray-700 rounded-xl text-sm font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
             >
               Rotate
             </button>
             <button
-              onClick={() => handleTouchAction("hold")}
-              className="flex-1 min-w-[80px] px-3 py-2 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl text-xs font-semibold hover:shadow-lg hover:shadow-[#8CECF7]/40 active:scale-95 transition-all duration-200"
-            >
-              Hold
-            </button>
-            <button
               onClick={() => handleTouchAction("drop")}
-              className="flex-1 min-w-[80px] px-3 py-2 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl text-xs font-semibold hover:shadow-lg hover:shadow-[#8CECF7]/40 active:scale-95 transition-all duration-200"
+              className="flex-1 min-w-[90px] px-4 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-[#8CECF7]/40 active:scale-95 transition-all duration-200"
             >
               Hard Drop
             </button>
+            <button
+              onClick={() => handleTouchAction("hold")}
+              className="flex-1 min-w-[90px] px-4 py-3 bg-gray-900/70 border border-gray-700 rounded-xl text-sm font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+            >
+              Hold
+            </button>
           </div>
 
-          {/* Row 2: Movement controls */}
-          <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-            <div className="flex items-center justify-center gap-3 w-full">
+          {/* Movement pad */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => handleTouchMove("left")}
-                className="w-12 h-12 bg-gray-900/70 border border-gray-700 rounded-xl text-lg font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+                className="w-14 h-14 bg-gray-900/70 border border-gray-700 rounded-xl text-xl font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
               >
                 ←
               </button>
               <button
                 onClick={() => handleTouchMove("right")}
-                className="w-12 h-12 bg-gray-900/70 border border-gray-700 rounded-xl text-lg font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+                className="w-14 h-14 bg-gray-900/70 border border-gray-700 rounded-xl text-xl font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
               >
                 →
               </button>
             </div>
-            <p className="text-[10px] text-gray-400">
-              Move with 
-              <span className="mx-1">←</span>
-              and
-              <span className="ml-1">→</span>
-            </p>
-          </div>
-
-          {/* Row 3: Pause / Restart / Exit */}
-          <div className="flex justify-center gap-2 w-full max-w-sm mt-1">
             <button
-              onClick={handlePause}
-              className="flex-1 min-w-[80px] px-3 py-2 bg-gray-900/80 border border-gray-700 rounded-xl text-xs font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+              onClick={() => handleTouchMove("down")}
+              className="w-32 h-12 bg-gray-900/70 border border-gray-700 rounded-xl text-base font-semibold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
             >
-              {isPaused ? "Resume" : "Pause"}
-            </button>
-            <button
-              onClick={handleRestart}
-              className="flex-1 min-w-[80px] px-3 py-2 bg-gray-900/80 border border-gray-700 rounded-xl text-xs font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
-            >
-              Restart
-            </button>
-            <button
-              onClick={handleExit}
-              className="flex-1 min-w-[80px] px-3 py-2 bg-gray-900/80 border border-gray-700 rounded-xl text-xs font-semibold text-white hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
-            >
-              Exit
+              Soft Drop
             </button>
           </div>
         </div>
