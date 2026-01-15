@@ -196,14 +196,16 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
   };
 
   // Helper function to render piece preview
-  const renderPiecePreview = (piece: any) => {
+  const renderPiecePreview = (piece: any, compact = false) => {
     if (!piece) return null;
 
     return (
       <div
         className="grid gap-0.5 sm:gap-1"
         style={{
-          gridTemplateColumns: `repeat(${piece.shape[0].length}, 12px)`,
+          gridTemplateColumns: `repeat(${piece.shape[0].length}, ${
+            compact ? 10 : 12
+          }px)`,
           margin: "0 auto",
           width: "fit-content",
         }}
@@ -212,7 +214,9 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           row.map((cell: number, colIdx: number) => (
             <div
               key={`${rowIdx}-${colIdx}`}
-              className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm"
+              className={`${
+                compact ? "w-2.5 h-2.5" : "w-3 h-3"
+              } sm:w-4 sm:h-4 rounded-sm`}
               style={{
                 backgroundColor: cell ? piece.color : "transparent",
                 border: cell ? "1px solid rgba(0,0,0,0.3)" : "none",
@@ -331,6 +335,31 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
 
           {/* Center - Canvas */}
           <div className="relative flex flex-col items-center gap-3 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-none">
+            {/* Mobile (xs) previews above board */}
+            <div className="sm:hidden w-full grid grid-cols-2 gap-2">
+              <div className="bg-gray-900/50 rounded-xl p-2 border border-gray-800">
+                <h3 className="text-xs font-semibold mb-1 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                  Next
+                </h3>
+                <div className="bg-black/50 rounded-lg p-2 flex items-center justify-center">
+                  {renderPiecePreview(nextPiece, true)}
+                </div>
+              </div>
+
+              <div className="bg-gray-900/50 rounded-xl p-2 border border-gray-800">
+                <h3 className="text-xs font-semibold mb-1 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                  Hold
+                </h3>
+                <div className="bg-black/50 rounded-lg p-2 flex items-center justify-center">
+                  {heldPiece ? (
+                    renderPiecePreview(heldPiece, true)
+                  ) : (
+                    <span className="text-gray-600 text-[10px]">Empty</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <canvas
               ref={canvasRef}
               className="border-2 xl:border-4 border-gray-800 rounded-xl shadow-2xl bg-black"
@@ -384,7 +413,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           <div className="flex flex-col gap-2 xl:gap-4 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:w-auto">
             {/* Next Piece Preview */}
             <div
-              className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800"
+              className="hidden sm:block bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800"
               style={{ minWidth: "180px" }}
             >
               <h3 className="text-sm xl:text-lg font-semibold mb-2 xl:mb-4 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
@@ -399,7 +428,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
             </div>
 
             {/* Held Piece Preview */}
-            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
+            <div className="hidden sm:block bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
               <h3 className="text-sm xl:text-lg font-semibold mb-2 xl:mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
                 Hold (C)
               </h3>
@@ -418,7 +447,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
             </div>
 
             {/* Game Controls */}
-            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
+            <div className="hidden sm:block bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
               <div className="space-y-2">
                 <button
                   onClick={handlePause}
@@ -489,6 +518,32 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
             >
               Soft Drop
             </button>
+          </div>
+
+          {/* Bottom controls (xs only) */}
+          <div className="sm:hidden w-full max-w-sm">
+            <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+              <div className="space-y-2">
+                <button
+                  onClick={handlePause}
+                  className="w-full px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-all duration-300"
+                >
+                  {isPaused ? "Resume" : "Pause"}
+                </button>
+                <button
+                  onClick={handleRestart}
+                  className="w-full px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-all duration-300"
+                >
+                  Restart
+                </button>
+                <button
+                  onClick={handleExit}
+                  className="w-full px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-all duration-300"
+                >
+                  Exit
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
