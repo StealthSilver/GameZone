@@ -527,13 +527,13 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => handleTouchMove("left")}
-                className="w-14 h-14 bg-gray-900/70 border border-gray-700 rounded-xl text-xl font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-900/70 border border-gray-700 rounded-xl text-lg sm:text-xl font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
               >
                 ←
               </button>
               <button
                 onClick={() => handleTouchMove("right")}
-                className="w-14 h-14 bg-gray-900/70 border border-gray-700 rounded-xl text-xl font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
+                className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-900/70 border border-gray-700 rounded-xl text-lg sm:text-xl font-bold text-gray-100 hover:bg-gray-800 active:bg-gray-700 transition-all duration-200"
               >
                 →
               </button>
