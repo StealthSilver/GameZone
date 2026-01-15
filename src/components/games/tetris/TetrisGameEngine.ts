@@ -439,13 +439,13 @@ export class TetrisGameEngine {
           const newX = piece.x + col + offsetX;
           const newY = piece.y + row + offsetY;
 
-          // Check boundaries
-          if (newX < 0 || newX >= this.COLS || newY >= this.ROWS) {
+          // Check boundaries - left, right, top, and bottom
+          if (newX < 0 || newX >= this.COLS || newY < 0 || newY >= this.ROWS) {
             return true;
           }
 
           // Check collision with board
-          if (newY >= 0 && this.board[newY][newX]) {
+          if (this.board[newY][newX]) {
             return true;
           }
         }

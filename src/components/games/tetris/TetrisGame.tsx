@@ -44,6 +44,21 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Setup canvas for proper rendering on high DPI displays
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    // Set the actual size in memory (scaled to account for extra pixel density)
+    canvas.width = 300 * dpr;
+    canvas.height = 600 * dpr;
+
+    // Scale the drawing context to match
+    ctx.scale(dpr, dpr);
+
+    // Set the display size (css pixels)
+    canvas.style.width = "300px";
+    canvas.style.height = "600px";
+
     // Load high score from localStorage
     const savedHighScore = localStorage.getItem("tetrisHighScore");
     if (savedHighScore) {
@@ -204,20 +219,26 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex items-center justify-center p-2 sm:p-4 overflow-x-hidden">
+    <div
+      className="min-h-screen bg-black text-white flex items-center justify-center py-8"
+      style={{ fontFamily: "var(--font-oxanium)" }}
+    >
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 sm:w-64 sm:h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-48 h-48 sm:w-96 sm:h-96 bg-[#8CECF7]/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl">
+      <div className="relative z-10 w-full max-w-6xl px-4">
         {/* Desktop layout - horizontal */}
         <div className="hidden lg:flex flex-row items-start justify-center gap-8">
           {/* Left Panel - Stats */}
           <div className="flex flex-col gap-3">
             {/* Score */}
-            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800 min-w-[200px]">
+            <div
+              className="bg-gray-900/50 rounded-xl p-6 border border-gray-800"
+              style={{ minWidth: "200px" }}
+            >
               <h3 className="text-sm text-gray-400 mb-2">Score</h3>
               <p className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
                 {score}
@@ -255,14 +276,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           <div className="relative flex flex-col items-center gap-3">
             <canvas
               ref={canvasRef}
-              width={240}
-              height={480}
-              className="border-4 border-gray-800 rounded-xl shadow-2xl bg-black w-[300px] h-[600px]"
-              style={{
-                maxWidth: "100%",
-                height: "auto",
-                aspectRatio: "1/2",
-              }}
+              className="border-4 border-gray-800 rounded-xl shadow-2xl bg-black"
             />
 
             {/* Pause Overlay */}
@@ -312,11 +326,17 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           {/* Right Panel - Preview & Controls */}
           <div className="flex flex-col gap-4">
             {/* Next Piece Preview */}
-            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800 min-w-[200px]">
+            <div
+              className="bg-gray-900/50 rounded-xl p-6 border border-gray-800"
+              style={{ minWidth: "200px" }}
+            >
               <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
                 Next Piece
               </h3>
-              <div className="bg-black/50 rounded-lg p-4 min-h-[100px] flex items-center justify-center">
+              <div
+                className="bg-black/50 rounded-lg p-4 flex items-center justify-center"
+                style={{ minHeight: "100px" }}
+              >
                 {renderPiecePreview(nextPiece)}
               </div>
             </div>
@@ -326,7 +346,10 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
               <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
                 Hold (C)
               </h3>
-              <div className="bg-black/50 rounded-lg p-4 min-h-[100px] flex items-center justify-center">
+              <div
+                className="bg-black/50 rounded-lg p-4 flex items-center justify-center"
+                style={{ minHeight: "100px" }}
+              >
                 {heldPiece ? (
                   renderPiecePreview(heldPiece)
                 ) : (
@@ -362,7 +385,10 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
         </div>
 
         {/* Mobile layout - vertical stacking */}
-        <div className="flex flex-col lg:hidden items-center gap-2 w-full max-w-[360px] mx-auto">
+        <div
+          className="flex flex-col lg:hidden items-center gap-2 w-full"
+          style={{ maxWidth: "360px", margin: "0 auto" }}
+        >
           {/* Top Stats - Single Row */}
           <div className="flex gap-1.5 w-full">
             {/* Score */}
@@ -407,7 +433,10 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
               <h3 className="text-xs font-semibold mb-1 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
                 Next
               </h3>
-              <div className="bg-black/50 rounded p-1.5 min-h-[50px] flex items-center justify-center">
+              <div
+                className="bg-black/50 rounded p-1.5 flex items-center justify-center"
+                style={{ minHeight: "50px" }}
+              >
                 {renderPiecePreview(nextPiece)}
               </div>
             </div>
@@ -417,7 +446,10 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
               <h3 className="text-xs font-semibold mb-1 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
                 Hold
               </h3>
-              <div className="bg-black/50 rounded p-1.5 min-h-[50px] flex items-center justify-center">
+              <div
+                className="bg-black/50 rounded p-1.5 flex items-center justify-center"
+                style={{ minHeight: "50px" }}
+              >
                 {heldPiece ? (
                   renderPiecePreview(heldPiece)
                 ) : (
@@ -431,13 +463,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           <div className="relative flex flex-col items-center">
             <canvas
               ref={canvasRef}
-              width={240}
-              height={480}
               className="border-2 border-gray-800 rounded-lg shadow-2xl bg-black w-full max-w-[320px]"
-              style={{
-                height: "auto",
-                aspectRatio: "1/2",
-              }}
             />
 
             {/* Pause Overlay */}
@@ -509,7 +535,10 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
             </div>
 
             {/* D-pad controls */}
-            <div className="grid grid-cols-3 gap-2 max-w-[180px] mx-auto">
+            <div
+              className="grid grid-cols-3 gap-2"
+              style={{ maxWidth: "180px", margin: "0 auto" }}
+            >
               <div></div>
               <button
                 onTouchStart={(e) => {
