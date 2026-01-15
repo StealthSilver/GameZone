@@ -273,47 +273,47 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
         <div className="flex flex-col lg:flex-row items-center justify-center gap-2 lg:gap-4 xl:gap-8">
           {/* Left Panel - Stats */}
           <div className="flex flex-col gap-2 xl:gap-3 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:w-auto">
-            {/* Score */}
-            <div
-              className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800"
-              style={{ minWidth: "180px" }}
-            >
-              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
-                Score
-              </h3>
-              <p className="text-2xl xl:text-3xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
-                {score}
-              </p>
-            </div>
+            {/* Score / High Score / Level / Lines (single row on small screens) */}
+            <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-col">
+              {/* Score */}
+              <div className="bg-gray-900/50 rounded-xl p-2 sm:p-4 xl:p-6 border border-gray-800 sm:min-w-45">
+                <h3 className="text-[10px] sm:text-xs xl:text-sm text-gray-400 mb-0.5 sm:mb-1 xl:mb-2">
+                  Score
+                </h3>
+                <p className="text-base sm:text-2xl xl:text-3xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+                  {score}
+                </p>
+              </div>
 
-            {/* High Score */}
-            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
-              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
-                High Score
-              </h3>
-              <p className="text-xl xl:text-2xl font-bold text-yellow-400">
-                {highScore}
-              </p>
-            </div>
+              {/* High Score */}
+              <div className="bg-gray-900/50 rounded-xl p-2 sm:p-4 xl:p-6 border border-gray-800">
+                <h3 className="text-[10px] sm:text-xs xl:text-sm text-gray-400 mb-0.5 sm:mb-1 xl:mb-2">
+                  High Score
+                </h3>
+                <p className="text-sm sm:text-xl xl:text-2xl font-bold text-yellow-400">
+                  {highScore}
+                </p>
+              </div>
 
-            {/* Level */}
-            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
-              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
-                Level
-              </h3>
-              <p className="text-2xl xl:text-3xl font-bold text-[#8CECF7]">
-                {level}
-              </p>
-            </div>
+              {/* Level */}
+              <div className="bg-gray-900/50 rounded-xl p-2 sm:p-4 xl:p-6 border border-gray-800">
+                <h3 className="text-[10px] sm:text-xs xl:text-sm text-gray-400 mb-0.5 sm:mb-1 xl:mb-2">
+                  Level
+                </h3>
+                <p className="text-base sm:text-2xl xl:text-3xl font-bold text-[#8CECF7]">
+                  {level}
+                </p>
+              </div>
 
-            {/* Lines */}
-            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
-              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
-                Lines
-              </h3>
-              <p className="text-2xl xl:text-3xl font-bold text-[#6C85EA]">
-                {lines}
-              </p>
+              {/* Lines */}
+              <div className="bg-gray-900/50 rounded-xl p-2 sm:p-4 xl:p-6 border border-gray-800">
+                <h3 className="text-[10px] sm:text-xs xl:text-sm text-gray-400 mb-0.5 sm:mb-1 xl:mb-2">
+                  Lines
+                </h3>
+                <p className="text-base sm:text-2xl xl:text-3xl font-bold text-[#6C85EA]">
+                  {lines}
+                </p>
+              </div>
             </div>
 
             {/* Combo */}
