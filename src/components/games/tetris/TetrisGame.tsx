@@ -52,34 +52,43 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     gameEngineRef.current = engine;
 
     const applyResponsiveSize = () => {
-      // Target a taller board on large screens; still constrain to available space.
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      // Leave room for panels and padding so we don't overflow horizontally.
-      const reservedWidth = isDesktop ? 560 : 48;
-      const maxBoardWidth = Math.max(240, viewportWidth - reservedWidth);
+      if (isDesktop) {
+        // Desktop: Calculate board size that fits within viewport
+        // Leave room for header/footer padding
+        const maxAvailableHeight = viewportHeight - 120;
 
-      const minBoardHeight = isDesktop ? 640 : 440;
-      const maxBoardHeight = isDesktop ? 1080 : 760;
+        // Side panels take up space, so account for them
+        const sidePanelsWidth = 480; // ~240px each side
+        const maxAvailableWidth = Math.max(
+          240,
+          viewportWidth - sidePanelsWidth - 100
+        );
 
-      // Prefer using most of the viewport height.
-      const reservedHeight = isDesktop ? 160 : 260;
-      let targetBoardHeight = viewportHeight - reservedHeight;
-      targetBoardHeight = Math.max(
-        minBoardHeight,
-        Math.min(targetBoardHeight, maxBoardHeight)
-      );
+        // Calculate optimal block size based on available space
+        // Board is 10 blocks wide, 20 blocks tall (aspect ratio 1:2)
+        const blockSizeByHeight = Math.floor(maxAvailableHeight / 20);
+        const blockSizeByWidth = Math.floor(maxAvailableWidth / 10);
 
-      // Board is 10x20 => width is height/2.
-      if (targetBoardHeight / 2 > maxBoardWidth) {
-        targetBoardHeight = Math.floor(maxBoardWidth * 2);
+        // Use the smaller of the two to ensure board fits
+        const blockSize = Math.min(blockSizeByHeight, blockSizeByWidth, 32); // Cap at 32px per block
+
+        engine.resize(blockSize);
+      } else {
+        // Mobile: More conservative sizing
+        const maxAvailableHeight = viewportHeight - 280;
+        const maxAvailableWidth = Math.min(viewportWidth - 48, 320);
+
+        const blockSizeByHeight = Math.floor(maxAvailableHeight / 20);
+        const blockSizeByWidth = Math.floor(maxAvailableWidth / 10);
+
+        const blockSize = Math.min(blockSizeByHeight, blockSizeByWidth, 28);
+
+        engine.resize(blockSize);
       }
-
-      // Convert board height to a block size (20 rows).
-      const blockSize = Math.floor(targetBoardHeight / 20);
-      engine.resize(blockSize);
     };
 
     applyResponsiveSize();
@@ -250,7 +259,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
 
   return (
     <div
-      className="min-h-screen bg-black text-white flex items-center justify-center py-8"
+      className="min-h-screen bg-black text-white flex items-center justify-center py-4 lg:py-8"
       style={{ fontFamily: "var(--font-oxanium)" }}
     >
       {/* Background decoration */}
@@ -259,45 +268,63 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
         <div className="absolute bottom-20 right-10 w-48 h-48 sm:w-96 sm:h-96 bg-[#8CECF7]/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl px-4">
+      <div className="relative z-10 w-full max-w-7xl px-4">
         {/* Desktop layout - horizontal */}
-        <div className="hidden lg:flex flex-row items-start justify-center gap-8">
+        <div className="hidden lg:flex flex-row items-center justify-center gap-4 xl:gap-8">
           {/* Left Panel - Stats */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 xl:gap-3">
             {/* Score */}
             <div
-              className="bg-gray-900/50 rounded-xl p-6 border border-gray-800"
-              style={{ minWidth: "200px" }}
+              className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800"
+              style={{ minWidth: "180px" }}
             >
-              <h3 className="text-sm text-gray-400 mb-2">Score</h3>
-              <p className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
+                Score
+              </h3>
+              <p className="text-2xl xl:text-3xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
                 {score}
               </p>
             </div>
 
             {/* High Score */}
-            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-              <h3 className="text-sm text-gray-400 mb-2">High Score</h3>
-              <p className="text-2xl font-bold text-yellow-400">{highScore}</p>
+            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
+              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
+                High Score
+              </h3>
+              <p className="text-xl xl:text-2xl font-bold text-yellow-400">
+                {highScore}
+              </p>
             </div>
 
             {/* Level */}
-            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-              <h3 className="text-sm text-gray-400 mb-2">Level</h3>
-              <p className="text-3xl font-bold text-[#8CECF7]">{level}</p>
+            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
+              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
+                Level
+              </h3>
+              <p className="text-2xl xl:text-3xl font-bold text-[#8CECF7]">
+                {level}
+              </p>
             </div>
 
             {/* Lines */}
-            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-              <h3 className="text-sm text-gray-400 mb-2">Lines</h3>
-              <p className="text-3xl font-bold text-[#6C85EA]">{lines}</p>
+            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
+              <h3 className="text-xs xl:text-sm text-gray-400 mb-1 xl:mb-2">
+                Lines
+              </h3>
+              <p className="text-2xl xl:text-3xl font-bold text-[#6C85EA]">
+                {lines}
+              </p>
             </div>
 
             {/* Combo */}
             {combo > 1 && (
-              <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl p-6 border border-orange-500 animate-pulse">
-                <h3 className="text-sm text-orange-400 mb-2">Combo!</h3>
-                <p className="text-3xl font-bold text-orange-300">{combo}x</p>
+              <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl p-4 xl:p-6 border border-orange-500 animate-pulse">
+                <h3 className="text-xs xl:text-sm text-orange-400 mb-1 xl:mb-2">
+                  Combo!
+                </h3>
+                <p className="text-2xl xl:text-3xl font-bold text-orange-300">
+                  {combo}x
+                </p>
               </div>
             )}
           </div>
@@ -306,7 +333,8 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           <div className="relative flex flex-col items-center gap-3">
             <canvas
               ref={canvasRef}
-              className="border-4 border-gray-800 rounded-xl shadow-2xl bg-black"
+              className="border-2 xl:border-4 border-gray-800 rounded-xl shadow-2xl bg-black"
+              style={{ maxHeight: "calc(100vh - 120px)" }}
             />
 
             {/* Pause Overlay */}
@@ -354,58 +382,60 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           </div>
 
           {/* Right Panel - Preview & Controls */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2 xl:gap-4">
             {/* Next Piece Preview */}
             <div
-              className="bg-gray-900/50 rounded-xl p-6 border border-gray-800"
-              style={{ minWidth: "200px" }}
+              className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800"
+              style={{ minWidth: "180px" }}
             >
-              <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
+              <h3 className="text-sm xl:text-lg font-semibold mb-2 xl:mb-4 text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
                 Next Piece
               </h3>
               <div
-                className="bg-black/50 rounded-lg p-4 flex items-center justify-center"
-                style={{ minHeight: "100px" }}
+                className="bg-black/50 rounded-lg p-3 xl:p-4 flex items-center justify-center"
+                style={{ minHeight: "80px" }}
               >
                 {renderPiecePreview(nextPiece)}
               </div>
             </div>
 
             {/* Held Piece Preview */}
-            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-              <h3 className="text-lg font-semibold mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
+            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
+              <h3 className="text-sm xl:text-lg font-semibold mb-2 xl:mb-4 text-transparent bg-gradient-to-r from-[#AAFDBB] to-[#8CECF7] bg-clip-text">
                 Hold (C)
               </h3>
               <div
-                className="bg-black/50 rounded-lg p-4 flex items-center justify-center"
-                style={{ minHeight: "100px" }}
+                className="bg-black/50 rounded-lg p-3 xl:p-4 flex items-center justify-center"
+                style={{ minHeight: "80px" }}
               >
                 {heldPiece ? (
                   renderPiecePreview(heldPiece)
                 ) : (
-                  <span className="text-gray-600 text-sm">Empty</span>
+                  <span className="text-gray-600 text-xs xl:text-sm">
+                    Empty
+                  </span>
                 )}
               </div>
             </div>
 
             {/* Game Controls */}
-            <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+            <div className="bg-gray-900/50 rounded-xl p-4 xl:p-6 border border-gray-800">
               <div className="space-y-2">
                 <button
                   onClick={handlePause}
-                  className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                  className="w-full px-3 xl:px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm xl:text-base font-semibold rounded-lg transition-all duration-300"
                 >
                   {isPaused ? "Resume" : "Pause"}
                 </button>
                 <button
                   onClick={handleRestart}
-                  className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                  className="w-full px-3 xl:px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm xl:text-base font-semibold rounded-lg transition-all duration-300"
                 >
                   Restart
                 </button>
                 <button
                   onClick={handleExit}
-                  className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-all duration-300"
+                  className="w-full px-3 xl:px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm xl:text-base font-semibold rounded-lg transition-all duration-300"
                 >
                   Exit
                 </button>
