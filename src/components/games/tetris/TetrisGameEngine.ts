@@ -1,82 +1,57 @@
 export type GameMode = "easy" | "medium" | "hard";
 export type GameState = "playing" | "paused" | "gameOver";
 
-// Sound effects
+// Sound effects (safe no-op on unsupported environments)
 class SoundEffects {
-  private sounds: Map<string, HTMLAudioElement> = new Map();
+  private isSupported: boolean;
 
   constructor() {
-    // Create audio elements using data URLs (beep sounds)
-    this.createSound("move", 300, 50);
-    this.createSound("rotate", 400, 50);
-    this.createSound("lock", 200, 100);
-    this.createSound("lineClear", 600, 150);
-    this.createSound("hardDrop", 150, 80);
-    this.createSound("gameOver", 100, 500);
-    this.createSound("hold", 500, 80);
-  }
+    if (typeof window === "undefined") {
+      this.isSupported = false;
+      return;
+    }
 
-  private createSound(name: string, frequency: number, duration: number): void {
-    // Create a simple beep sound using Web Audio API data URL
-    const audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.value = frequency;
-    oscillator.type = "sine";
-
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + duration / 1000
-    );
-
-    // Create a buffer and encode as audio element
-    const audio = new Audio();
-    audio.volume = 0.3;
-    this.sounds.set(name, audio);
+    const AudioContextClass =
+      (window as any).AudioContext || (window as any).webkitAudioContext;
+    this.isSupported = Boolean(AudioContextClass);
   }
 
   play(name: string): void {
+    if (!this.isSupported) return;
+
     try {
-      const audio = this.sounds.get(name);
-      if (audio) {
-        // Create and play a simple beep using Web Audio API
-        const audioContext = new (window.AudioContext ||
-          (window as any).webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+      const AudioContextClass =
+        (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+      const audioContext = new AudioContextClass();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
 
-        // Different frequencies for different sounds
-        const frequencies: { [key: string]: number } = {
-          move: 300,
-          rotate: 400,
-          lock: 200,
-          lineClear: 600,
-          hardDrop: 150,
-          gameOver: 100,
-          hold: 500,
-        };
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
-        oscillator.frequency.value = frequencies[name] || 300;
-        oscillator.type = "sine";
+      const frequencies: { [key: string]: number } = {
+        move: 300,
+        rotate: 400,
+        lock: 200,
+        lineClear: 600,
+        hardDrop: 150,
+        gameOver: 100,
+        hold: 500,
+      };
 
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(
-          0.01,
-          audioContext.currentTime + 0.1
-        );
+      oscillator.frequency.value = frequencies[name] || 300;
+      oscillator.type = "sine";
 
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
-      }
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.1
+      );
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
     } catch (e) {
       // Silently fail if audio doesn't work
       console.warn("Could not play sound:", name);

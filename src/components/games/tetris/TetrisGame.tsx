@@ -44,20 +44,18 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Fixed logical game board size
+    const width = 300;
+    const height = 600;
+
     // Setup canvas for proper rendering on high DPI displays
     const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-
-    // Set the actual size in memory (scaled to account for extra pixel density)
-    canvas.width = 300 * dpr;
-    canvas.height = 600 * dpr;
-
-    // Scale the drawing context to match
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
-
-    // Set the display size (css pixels)
-    canvas.style.width = "300px";
-    canvas.style.height = "600px";
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
 
     // Load high score from localStorage
     const savedHighScore = localStorage.getItem("tetrisHighScore");
@@ -72,10 +70,13 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     // Set up callbacks
     engine.onScoreUpdate = (newScore) => {
       setScore(newScore);
-      if (newScore > highScore) {
-        setHighScore(newScore);
-        localStorage.setItem("tetrisHighScore", newScore.toString());
-      }
+      setHighScore((prev) => {
+        if (newScore > prev) {
+          localStorage.setItem("tetrisHighScore", newScore.toString());
+          return newScore;
+        }
+        return prev;
+      });
     };
     engine.onLevelUpdate = (newLevel) => setLevel(newLevel);
     engine.onLinesUpdate = (newLines) => setLines(newLines);
@@ -89,7 +90,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     return () => {
       engine.stop();
     };
-  }, [mode, highScore]);
+  }, [mode]);
 
   // Keyboard controls
   useEffect(() => {
