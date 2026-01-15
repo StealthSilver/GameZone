@@ -25,13 +25,12 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
 
   // Update preview pieces
   useEffect(() => {
-    if (!gameEngineRef.current) return;
-
     const interval = setInterval(() => {
-      if (gameEngineRef.current) {
-        setNextPiece(gameEngineRef.current.getNextPiece());
-        setHeldPiece(gameEngineRef.current.getHeldPiece());
-      }
+      const engine = gameEngineRef.current;
+      if (!engine) return;
+
+      setNextPiece(engine.getNextPiece());
+      setHeldPiece(engine.getHeldPiece());
     }, 100);
 
     return () => clearInterval(interval);
@@ -50,6 +49,10 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
     // Initialize game engine
     const engine = new TetrisGameEngine(canvas, mode);
     gameEngineRef.current = engine;
+
+    // Seed preview immediately (useful on initial mobile render)
+    setNextPiece(engine.getNextPiece());
+    setHeldPiece(engine.getHeldPiece());
 
     const applyResponsiveSize = () => {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
@@ -549,7 +552,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
           {/* Bottom controls (xs only) */}
           <div className="sm:hidden w-full max-w-sm">
             <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
-              <div className="space-y-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={handlePause}
                   className="w-full px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-all duration-300"
