@@ -502,7 +502,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
         </div>
 
         {/* Mobile touch controls */}
-        <div className="mt-4 w-full lg:hidden flex flex-col items-center gap-4">
+        <div className="mt-1 sm:mt-4 w-full lg:hidden flex flex-col items-center gap-2 sm:gap-4">
           {/* Primary actions */}
           <div className="hidden sm:flex flex-wrap justify-center gap-3 w-full max-w-sm">
             <button
