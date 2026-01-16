@@ -93,6 +93,7 @@ export class PongGameEngine {
   private maxScore: number = 11;
   private playerScore: number = 0;
   private aiScore: number = 0;
+  private isMobile: boolean = false;
 
   // Input handling
   private keys: { [key: string]: boolean } = {};
@@ -109,43 +110,62 @@ export class PongGameEngine {
     this.mode = mode;
     this.sounds = new SoundEffects();
 
-    // Set AI speed based on difficulty
+    // Detect if mobile
+    this.isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+
+    // Set responsive speeds based on screen size
+    const speedMultiplier = this.isMobile ? 0.6 : 1;
+    const aiSpeedMultiplier = this.isMobile ? 0.5 : 1;
+
+    // Set AI speed based on difficulty and screen size
     switch (mode) {
       case "easy":
-        this.aiSpeed = 2.5;
+        this.aiSpeed = 2.5 * aiSpeedMultiplier;
         break;
       case "medium":
-        this.aiSpeed = 4;
+        this.aiSpeed = 4 * aiSpeedMultiplier;
         break;
       case "hard":
-        this.aiSpeed = 5.5;
+        this.aiSpeed = 5.5 * aiSpeedMultiplier;
         break;
     }
 
+    // Responsive paddle dimensions
+    const paddleWidth = this.isMobile ? 8 : 10;
+    const paddleHeight = this.isMobile ? 70 : 100;
+    const paddleOffset = this.isMobile ? 15 : 20;
+
+    // Responsive ball properties
+    const ballRadius = this.isMobile ? 6 : 8;
+    const ballSpeed = this.isMobile ? 3.5 : 5;
+
+    // Set paddle speed
+    this.paddleSpeed = this.isMobile ? 5 : 8;
+
     // Initialize game objects
     this.playerPaddle = {
-      x: 20,
-      y: this.canvas.height / 2 - 50,
-      width: 10,
-      height: 100,
+      x: paddleOffset,
+      y: this.canvas.height / 2 - paddleHeight / 2,
+      width: paddleWidth,
+      height: paddleHeight,
       dy: 0,
     };
 
     this.aiPaddle = {
-      x: this.canvas.width - 30,
-      y: this.canvas.height / 2 - 50,
-      width: 10,
-      height: 100,
+      x: this.canvas.width - paddleOffset - paddleWidth,
+      y: this.canvas.height / 2 - paddleHeight / 2,
+      width: paddleWidth,
+      height: paddleHeight,
       dy: 0,
     };
 
     this.ball = {
       x: this.canvas.width / 2,
       y: this.canvas.height / 2,
-      radius: 8,
-      dx: 5,
-      dy: 3,
-      speed: 5,
+      radius: ballRadius,
+      dx: ballSpeed * speedMultiplier,
+      dy: 3 * speedMultiplier,
+      speed: ballSpeed * speedMultiplier,
     };
 
     this.setupEventListeners();
@@ -176,7 +196,10 @@ export class PongGameEngine {
   private resetBall(towardsPlayer: boolean = Math.random() > 0.5): void {
     this.ball.x = this.canvas.width / 2;
     this.ball.y = this.canvas.height / 2;
-    this.ball.speed = 5;
+
+    // Reset speed with mobile consideration
+    const baseSpeed = this.isMobile ? 3.5 : 5;
+    this.ball.speed = baseSpeed;
 
     // Random angle between -45 and 45 degrees
     const angle = (Math.random() * Math.PI) / 2 - Math.PI / 4;
@@ -246,7 +269,9 @@ export class PongGameEngine {
         (this.ball.y - this.playerPaddle.y) / this.playerPaddle.height;
       const angle = ((hitPos - 0.5) * Math.PI) / 3; // Max 60 degree angle
 
-      this.ball.speed += 0.5;
+      // Smaller speed increment on mobile
+      const speedIncrement = this.isMobile ? 0.3 : 0.5;
+      this.ball.speed += speedIncrement;
       this.ball.dx = this.ball.speed * Math.cos(angle);
       this.ball.dy = this.ball.speed * Math.sin(angle);
 
@@ -266,7 +291,9 @@ export class PongGameEngine {
       const hitPos = (this.ball.y - this.aiPaddle.y) / this.aiPaddle.height;
       const angle = ((hitPos - 0.5) * Math.PI) / 3;
 
-      this.ball.speed += 0.5;
+      // Smaller speed increment on mobile
+      const speedIncrement = this.isMobile ? 0.3 : 0.5;
+      this.ball.speed += speedIncrement;
       this.ball.dx = -this.ball.speed * Math.cos(angle);
       this.ball.dy = this.ball.speed * Math.sin(angle);
 
@@ -449,8 +476,8 @@ export class PongGameEngine {
     this.aiScore = 0;
     this.state = "playing";
     this.resetBall();
-    this.playerPaddle.y = this.canvas.height / 2 - 50;
-    this.aiPaddle.y = this.canvas.height / 2 - 50;
+    this.playerPaddle.y = this.canvas.height / 2 - this.playerPaddle.height / 2;
+    this.aiPaddle.y = this.canvas.height / 2 - this.aiPaddle.height / 2;
     this.onScoreUpdate(this.playerScore, this.aiScore);
     this.onStateChange(this.state);
     this.start();
@@ -460,12 +487,57 @@ export class PongGameEngine {
     this.canvas.width = width;
     this.canvas.height = height;
 
-    // Reposition paddles
+    // Update mobile status
+    const wasMobile = this.isMobile;
+    this.isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+
+    // If screen size category changed, update game properties
+    if (wasMobile !== this.isMobile) {
+      // Update paddle dimensions
+      const paddleWidth = this.isMobile ? 8 : 10;
+      const paddleHeight = this.isMobile ? 70 : 100;
+      const paddleOffset = this.isMobile ? 15 : 20;
+
+      this.playerPaddle.width = paddleWidth;
+      this.playerPaddle.height = paddleHeight;
+      this.playerPaddle.x = paddleOffset;
+
+      this.aiPaddle.width = paddleWidth;
+      this.aiPaddle.height = paddleHeight;
+      this.aiPaddle.x = this.canvas.width - paddleOffset - paddleWidth;
+
+      // Update ball size
+      this.ball.radius = this.isMobile ? 6 : 8;
+
+      // Update speeds
+      this.paddleSpeed = this.isMobile ? 5 : 8;
+
+      const speedMultiplier = this.isMobile ? 0.6 : 1;
+      const aiSpeedMultiplier = this.isMobile ? 0.5 : 1;
+
+      switch (this.mode) {
+        case "easy":
+          this.aiSpeed = 2.5 * aiSpeedMultiplier;
+          break;
+        case "medium":
+          this.aiSpeed = 4 * aiSpeedMultiplier;
+          break;
+        case "hard":
+          this.aiSpeed = 5.5 * aiSpeedMultiplier;
+          break;
+      }
+    } else {
+      // Just reposition with existing dimensions
+      const paddleOffset = this.isMobile ? 15 : 20;
+      this.playerPaddle.x = paddleOffset;
+      this.aiPaddle.x = this.canvas.width - paddleOffset - this.aiPaddle.width;
+    }
+
+    // Reposition paddles vertically
     this.playerPaddle.y = Math.min(
       this.playerPaddle.y,
       this.canvas.height - this.playerPaddle.height
     );
-    this.aiPaddle.x = this.canvas.width - 30;
     this.aiPaddle.y = Math.min(
       this.aiPaddle.y,
       this.canvas.height - this.aiPaddle.height
