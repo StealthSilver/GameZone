@@ -200,16 +200,16 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
             />
 
             {/* Mobile Control Buttons */}
-            <div className="flex lg:hidden gap-4 w-full max-w-sm justify-center">
+            <div className="flex lg:hidden gap-3 justify-center">
               <button
                 onTouchStart={handleMoveUp}
                 onTouchEnd={handleStopMove}
                 onMouseDown={handleMoveUp}
                 onMouseUp={handleStopMove}
                 onMouseLeave={handleStopMove}
-                className="flex-1 px-8 py-6 bg-gradient-to-r from-[#AAFDBB]/20 to-[#8CECF7]/20 text-[#AAFDBB] rounded-xl hover:from-[#AAFDBB]/30 hover:to-[#8CECF7]/30 active:from-[#AAFDBB]/40 active:to-[#8CECF7]/40 transition-all duration-150 border-2 border-[#AAFDBB]/30 font-bold text-xl select-none"
+                className="w-16 h-16 bg-gradient-to-r from-[#AAFDBB]/20 to-[#8CECF7]/20 text-[#AAFDBB] rounded-lg hover:from-[#AAFDBB]/30 hover:to-[#8CECF7]/30 active:from-[#AAFDBB]/40 active:to-[#8CECF7]/40 transition-all duration-150 border-2 border-[#AAFDBB]/30 font-bold text-2xl select-none flex items-center justify-center"
               >
-                ↑ UP
+                ↑
               </button>
               <button
                 onTouchStart={handleMoveDown}
@@ -217,9 +217,9 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
                 onMouseDown={handleMoveDown}
                 onMouseUp={handleStopMove}
                 onMouseLeave={handleStopMove}
-                className="flex-1 px-8 py-6 bg-gradient-to-r from-[#8CECF7]/20 to-[#6C85EA]/20 text-[#8CECF7] rounded-xl hover:from-[#8CECF7]/30 hover:to-[#6C85EA]/30 active:from-[#8CECF7]/40 active:to-[#6C85EA]/40 transition-all duration-150 border-2 border-[#8CECF7]/30 font-bold text-xl select-none"
+                className="w-16 h-16 bg-gradient-to-r from-[#8CECF7]/20 to-[#6C85EA]/20 text-[#8CECF7] rounded-lg hover:from-[#8CECF7]/30 hover:to-[#6C85EA]/30 active:from-[#8CECF7]/40 active:to-[#6C85EA]/40 transition-all duration-150 border-2 border-[#8CECF7]/30 font-bold text-2xl select-none flex items-center justify-center"
               >
-                ↓ DOWN
+                ↓
               </button>
             </div>
 
