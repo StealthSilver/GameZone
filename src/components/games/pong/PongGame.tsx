@@ -202,9 +202,9 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
             {/* Mobile Control Buttons */}
             <div className="flex lg:hidden gap-3 justify-center">
               <button
-                onTouchStart={handleMoveUp}
+                onTouchStart={handleMoveDown}
                 onTouchEnd={handleStopMove}
-                onMouseDown={handleMoveUp}
+                onMouseDown={handleMoveDown}
                 onMouseUp={handleStopMove}
                 onMouseLeave={handleStopMove}
                 className="w-16 h-16 bg-gradient-to-r from-[#AAFDBB]/20 to-[#8CECF7]/20 text-[#AAFDBB] rounded-lg hover:from-[#AAFDBB]/30 hover:to-[#8CECF7]/30 active:from-[#AAFDBB]/40 active:to-[#8CECF7]/40 transition-all duration-150 border-2 border-[#AAFDBB]/30 font-bold text-2xl select-none flex items-center justify-center"
@@ -212,9 +212,9 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
                 ↓
               </button>
               <button
-                onTouchStart={handleMoveDown}
+                onTouchStart={handleMoveUp}
                 onTouchEnd={handleStopMove}
-                onMouseDown={handleMoveDown}
+                onMouseDown={handleMoveUp}
                 onMouseUp={handleStopMove}
                 onMouseLeave={handleStopMove}
                 className="w-16 h-16 bg-gradient-to-r from-[#8CECF7]/20 to-[#6C85EA]/20 text-[#8CECF7] rounded-lg hover:from-[#8CECF7]/30 hover:to-[#6C85EA]/30 active:from-[#8CECF7]/40 active:to-[#6C85EA]/40 transition-all duration-150 border-2 border-[#8CECF7]/30 font-bold text-2xl select-none flex items-center justify-center"
