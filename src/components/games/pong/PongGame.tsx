@@ -38,9 +38,9 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
         const maxWidth = Math.min(viewportWidth - 600, 800);
         engine.resize(maxWidth, maxHeight);
       } else {
-        // Mobile sizing
-        const maxHeight = Math.min(viewportHeight - 300, 500);
-        const maxWidth = Math.min(viewportWidth - 48, 400);
+        // Mobile sizing - smaller to fit with controls
+        const maxHeight = Math.min(viewportHeight - 420, 380);
+        const maxWidth = Math.min(viewportWidth - 48, 340);
         engine.resize(maxWidth, maxHeight);
       }
     };
@@ -112,6 +112,24 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
     router.push("/games/pong");
   };
 
+  const handleMoveUp = () => {
+    const engine = gameEngineRef.current;
+    if (!engine) return;
+    engine.movePaddleUp();
+  };
+
+  const handleMoveDown = () => {
+    const engine = gameEngineRef.current;
+    if (!engine) return;
+    engine.movePaddleDown();
+  };
+
+  const handleStopMove = () => {
+    const engine = gameEngineRef.current;
+    if (!engine) return;
+    engine.stopPaddle();
+  };
+
   const getDifficultyLabel = (mode: GameMode) => {
     switch (mode) {
       case "easy":
@@ -171,7 +189,7 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
           </div>
 
           {/* Canvas Container */}
-          <div className="relative order-2 lg:order-2">
+          <div className="relative order-2 lg:order-2 flex flex-col items-center gap-4">
             <canvas
               ref={canvasRef}
               className="border-2 border-gray-800/50 rounded-lg shadow-2xl"
@@ -180,6 +198,30 @@ export const PongGame: React.FC<PongGameProps> = ({ mode }) => {
                 height: "auto",
               }}
             />
+
+            {/* Mobile Control Buttons */}
+            <div className="flex lg:hidden gap-4 w-full max-w-sm justify-center">
+              <button
+                onTouchStart={handleMoveUp}
+                onTouchEnd={handleStopMove}
+                onMouseDown={handleMoveUp}
+                onMouseUp={handleStopMove}
+                onMouseLeave={handleStopMove}
+                className="flex-1 px-8 py-6 bg-gradient-to-r from-[#AAFDBB]/20 to-[#8CECF7]/20 text-[#AAFDBB] rounded-xl hover:from-[#AAFDBB]/30 hover:to-[#8CECF7]/30 active:from-[#AAFDBB]/40 active:to-[#8CECF7]/40 transition-all duration-150 border-2 border-[#AAFDBB]/30 font-bold text-xl select-none"
+              >
+                ↑ UP
+              </button>
+              <button
+                onTouchStart={handleMoveDown}
+                onTouchEnd={handleStopMove}
+                onMouseDown={handleMoveDown}
+                onMouseUp={handleStopMove}
+                onMouseLeave={handleStopMove}
+                className="flex-1 px-8 py-6 bg-gradient-to-r from-[#8CECF7]/20 to-[#6C85EA]/20 text-[#8CECF7] rounded-xl hover:from-[#8CECF7]/30 hover:to-[#6C85EA]/30 active:from-[#8CECF7]/40 active:to-[#6C85EA]/40 transition-all duration-150 border-2 border-[#8CECF7]/30 font-bold text-xl select-none"
+              >
+                ↓ DOWN
+              </button>
+            </div>
 
             {/* Game Over Overlay */}
             {gameState === "gameOver" && (

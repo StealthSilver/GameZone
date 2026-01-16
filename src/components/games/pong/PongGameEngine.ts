@@ -563,6 +563,20 @@ export class PongGameEngine {
     return { player: this.playerScore, ai: this.aiScore };
   }
 
+  // Mobile control methods
+  public movePaddleUp(): void {
+    this.keys["ArrowUp"] = true;
+  }
+
+  public movePaddleDown(): void {
+    this.keys["ArrowDown"] = true;
+  }
+
+  public stopPaddle(): void {
+    this.keys["ArrowUp"] = false;
+    this.keys["ArrowDown"] = false;
+  }
+
   public destroy(): void {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
