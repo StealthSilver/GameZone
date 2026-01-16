@@ -36,18 +36,18 @@ const games = [
     available: true,
     route: "/games/tetris",
   },
+  {
+    name: "Pong",
+    image: "/pong.png",
+    available: true,
+    route: "/games/pong",
+  },
   { name: "Go", image: "/go.png", available: false, route: "/games/go" },
   {
     name: "Snake and Ladder",
     image: "/snakeladder.png",
     available: false,
     route: "/games/snake-and-ladder",
-  },
-  {
-    name: "Pong",
-    image: "/pong.png",
-    available: false,
-    route: "/games/pong",
   },
   {
     name: "Space Shooter",
