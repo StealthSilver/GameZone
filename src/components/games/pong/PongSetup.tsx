@@ -61,9 +61,6 @@ export const PongSetup: React.FC = () => {
                   <div className="text-sm font-bold">
                     {gameModes[mode].name}
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {gameModes[mode].description}
-                  </div>
                 </button>
               ))}
             </div>
