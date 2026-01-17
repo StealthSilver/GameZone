@@ -14,14 +14,25 @@ export const FlappyBirdGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>("waiting");
   const [isPaused, setIsPaused] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [hasDoneCountdown, setHasDoneCountdown] = useState(false);
 
   const startCountdown = useCallback(() => {
     const engine = gameEngineRef.current;
     if (!engine) return;
 
-    // Only start countdown from the countdown state and
-    // if a countdown is not already running
-    if (engine.getState() !== "countdown" || countdown !== null) return;
+    // Only start from countdown state
+    if (engine.getState() !== "countdown") return;
+
+    // After the first game, skip the visual countdown and
+    // jump straight into playing when the user starts again.
+    if (hasDoneCountdown) {
+      setCountdown(null);
+      engine.startPlaying();
+      return;
+    }
+
+    // If a countdown is already running, do nothing
+    if (countdown !== null) return;
 
     let count = 3;
     setCountdown(count);
@@ -35,10 +46,11 @@ export const FlappyBirdGame: React.FC = () => {
         clearInterval(countdownInterval);
         if (gameEngineRef.current) {
           gameEngineRef.current.startPlaying();
+          setHasDoneCountdown(true);
         }
       }
     }, 1000);
-  }, [countdown]);
+  }, [countdown, hasDoneCountdown]);
 
   const handleCanvasClick = useCallback(() => {
     const engine = gameEngineRef.current;
@@ -213,9 +225,9 @@ export const FlappyBirdGame: React.FC = () => {
 
       {/* Main Game Area */}
       <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
-        <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 w-full max-w-7xl">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8 w-full max-w-5xl mx-auto">
           {/* Score Panel */}
-          <div className="w-full lg:w-64 order-1">
+          <div className="w-full max-w-sm lg:w-64 order-1 mx-auto lg:mx-0">
             <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-xl p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
               <h3 className="text-sm text-gray-400 mb-4">Score</h3>
               <div className="flex items-center justify-between">
@@ -236,7 +248,7 @@ export const FlappyBirdGame: React.FC = () => {
           </div>
 
           {/* Canvas Container */}
-          <div className="relative order-2 flex flex-col items-center gap-4">
+          <div className="relative order-2 flex flex-col items-center gap-4 w-full max-w-sm sm:max-w-md md:max-w-lg">
             <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
               <div className="absolute top-10 left-0 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
               <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#8CECF7]/10 rounded-full blur-3xl" />
@@ -245,8 +257,8 @@ export const FlappyBirdGame: React.FC = () => {
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
-              className="border-2 border-gray-800/50 rounded-lg shadow-2xl cursor-pointer"
-              style={{ maxWidth: "100%", height: "auto" }}
+              className="border-2 border-gray-800/50 rounded-lg shadow-2xl cursor-pointer w-full h-auto"
+              style={{ maxWidth: "100%", height: "auto", maxHeight: "80vh" }}
             />
 
             {/* Countdown Overlay */}
@@ -314,7 +326,7 @@ export const FlappyBirdGame: React.FC = () => {
           </div>
 
           {/* Controls / Info Panel */}
-          <div className="w-full lg:w-64 order-3">
+          <div className="w-full max-w-sm lg:w-64 order-3 mx-auto lg:mx-0">
             <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-xl p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
               <h3 className="text-sm text-gray-400 mb-4">Controls</h3>
               <div className="space-y-3 text-sm">
@@ -350,13 +362,13 @@ export const FlappyBirdGame: React.FC = () => {
                 )}
                 <button
                   onClick={handleRestart}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-[#AAFDBB]/20 to-[#8CECF7]/20 text-[#8CECF7] rounded-lg hover:from-[#AAFDBB]/30 hover:to-[#8CECF7]/30 transition-all duration-300 border border-[#8CECF7]/30"
+                  className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg hover:bg-gray-700/80 transition-all duration-300 border border-gray-700"
                 >
                   Restart
                 </button>
                 <button
                   onClick={handleQuit}
-                  className="w-full px-4 py-2 bg-red-900/60 text-white rounded-lg border border-red-800 hover:bg-red-900/80 transition-all duration-300 text-sm"
+                  className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg border border-gray-700 hover:bg-gray-700/80 transition-all duration-300 text-sm"
                 >
                   Back to Games
                 </button>

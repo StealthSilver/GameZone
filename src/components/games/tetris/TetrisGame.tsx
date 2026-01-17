@@ -266,7 +266,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
 
   return (
     <div
-      className="min-h-screen bg-black text-white flex items-center justify-center py-4 lg:py-8"
+      className="min-h-screen bg-black text-white flex flex-col items-center justify-center py-4 lg:py-8"
       style={{ fontFamily: "var(--font-oxanium)" }}
     >
       {/* Background decoration */}
@@ -275,7 +275,7 @@ export const TetrisGame: React.FC<TetrisGameProps> = ({ mode }) => {
         <div className="absolute bottom-20 right-10 w-48 h-48 sm:w-96 sm:h-96 bg-[#8CECF7]/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl px-4">
+      <div className="relative z-10 w-full max-w-5xl px-4 mx-auto">
         {/* Main layout - desktop horizontal, mobile stacked */}
         <div className="flex flex-col lg:flex-row items-center justify-center gap-2 lg:gap-4 xl:gap-8">
           {/* Left Panel - Stats */}

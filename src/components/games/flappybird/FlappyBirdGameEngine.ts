@@ -100,10 +100,6 @@ export class FlappyBirdGameEngine {
   public onGameOver: (() => void) | null = null;
   public onStateChange: ((state: GameState) => void) | null = null;
 
-  // Bird image
-  private birdImage: HTMLImageElement | null = null;
-  private imageLoaded: boolean = false;
-
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     const context = canvas.getContext("2d");
@@ -120,15 +116,6 @@ export class FlappyBirdGameEngine {
       velocity: 0,
       radius: 20,
     };
-
-    // Load bird image
-    if (typeof window !== "undefined") {
-      this.birdImage = new Image();
-      this.birdImage.src = "/flappy.png";
-      this.birdImage.onload = () => {
-        this.imageLoaded = true;
-      };
-    }
   }
 
   public resize(width: number, height: number): void {
@@ -141,6 +128,17 @@ export class FlappyBirdGameEngine {
       this.bird.y = this.canvas.height / 2;
       this.bird.velocity = 0;
     }
+
+    // Adjust pipe layout based on canvas size so the game
+    // scales nicely on both mobile and desktop.
+    const baseGap = this.canvas.height * 0.26;
+    this.pipeGap = Math.max(140, Math.min(baseGap, 260));
+
+    const widthRatio = this.canvas.width / 360;
+    this.pipeWidth = Math.max(48, Math.min(80, Math.floor(56 * widthRatio)));
+
+    const speedRatio = this.canvas.width / 480;
+    this.pipeSpeed = Math.max(2.2, Math.min(5, 3 * speedRatio));
   }
 
   public start(): void {
@@ -329,9 +327,30 @@ export class FlappyBirdGameEngine {
   }
 
   private draw(): void {
-    // Clear canvas
-    this.ctx.fillStyle = "#87CEEB"; // Sky blue background
+    // Background: dark, subtle gradient to match the
+    // overall site and Tetris aesthetic.
+    const bgGradient = this.ctx.createLinearGradient(
+      0,
+      0,
+      this.canvas.width,
+      this.canvas.height
+    );
+    bgGradient.addColorStop(0, "#020617");
+    bgGradient.addColorStop(0.45, "#020617");
+    bgGradient.addColorStop(1, "#0b1120");
+
+    this.ctx.fillStyle = bgGradient;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Very subtle vertical scan lines for a retro grid feel
+    this.ctx.strokeStyle = "rgba(15,23,42,0.6)";
+    this.ctx.lineWidth = 1;
+    for (let x = 0; x < this.canvas.width; x += 24) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + 0.5, 0);
+      this.ctx.lineTo(x + 0.5, this.canvas.height);
+      this.ctx.stroke();
+    }
 
     // Draw pipes
     this.drawPipes();
@@ -351,45 +370,74 @@ export class FlappyBirdGameEngine {
     const rotation = Math.min(Math.max(this.bird.velocity * 0.05, -0.5), 0.5);
     this.ctx.rotate(rotation);
 
-    if (this.imageLoaded && this.birdImage) {
-      // Draw bird image
-      const size = this.bird.radius * 2;
-      this.ctx.drawImage(this.birdImage, -size / 2, -size / 2, size, size);
-    } else {
-      // Fallback: draw yellow circle
-      this.ctx.fillStyle = "#FFD700";
-      this.ctx.beginPath();
-      this.ctx.arc(0, 0, this.bird.radius, 0, Math.PI * 2);
-      this.ctx.fill();
+    // Custom bird made of blocky shapes and gradients so it
+    // visually fits with the neon/tetris-style UI.
+    const size = this.bird.radius * 2;
+    const half = size / 2;
+    const block = size / 3;
 
-      // Eye
-      this.ctx.fillStyle = "#000";
-      this.ctx.beginPath();
-      this.ctx.arc(5, -5, 3, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
+    const bodyGradient = this.ctx.createLinearGradient(-half, 0, half, 0);
+    bodyGradient.addColorStop(0, "#AAFDBB");
+    bodyGradient.addColorStop(0.5, "#8CECF7");
+    bodyGradient.addColorStop(1, "#6C85EA");
+
+    // Main body
+    this.ctx.fillStyle = bodyGradient;
+    this.ctx.fillRect(-half, -half, size, size);
+
+    // Body outline
+    this.ctx.strokeStyle = "rgba(15,23,42,0.9)";
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(-half + 1, -half + 1, size - 2, size - 2);
+
+    // Wing (a darker block on the side)
+    this.ctx.fillStyle = "#0f172a";
+    this.ctx.fillRect(-block * 0.8, 0, block, block * 0.9);
+
+    // Beak (small bright block at the front)
+    this.ctx.fillStyle = "#F97316";
+    this.ctx.fillRect(
+      half - block * 0.35,
+      -block * 0.25,
+      block * 0.6,
+      block * 0.5
+    );
+
+    // Eye
+    this.ctx.fillStyle = "#e5e7eb";
+    this.ctx.beginPath();
+    this.ctx.arc(block * 0.4, -block * 0.4, block * 0.2, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.fillStyle = "#020617";
+    this.ctx.beginPath();
+    this.ctx.arc(block * 0.45, -block * 0.4, block * 0.1, 0, Math.PI * 2);
+    this.ctx.fill();
 
     this.ctx.restore();
   }
 
   private drawPipes(): void {
     for (const pipe of this.pipes) {
-      // Top pipe
-      this.ctx.fillStyle = "#2ECC40";
+      const bottomY = pipe.topHeight + pipe.gap;
+
+      // Neon gradient for pipes to match the site palette.
+      const pipeGradient = this.ctx.createLinearGradient(
+        pipe.x,
+        0,
+        pipe.x + this.pipeWidth,
+        0
+      );
+      pipeGradient.addColorStop(0, "#AAFDBB");
+      pipeGradient.addColorStop(0.5, "#8CECF7");
+      pipeGradient.addColorStop(1, "#6C85EA");
+
+      this.ctx.fillStyle = pipeGradient;
+
+      // Top pipe column
       this.ctx.fillRect(pipe.x, 0, this.pipeWidth, pipe.topHeight);
 
-      // Top pipe cap
-      this.ctx.fillStyle = "#27A832";
-      this.ctx.fillRect(
-        pipe.x - 5,
-        pipe.topHeight - 20,
-        this.pipeWidth + 10,
-        20
-      );
-
-      // Bottom pipe
-      const bottomY = pipe.topHeight + pipe.gap;
-      this.ctx.fillStyle = "#2ECC40";
+      // Bottom pipe column
       this.ctx.fillRect(
         pipe.x,
         bottomY,
@@ -397,26 +445,53 @@ export class FlappyBirdGameEngine {
         this.canvas.height - bottomY
       );
 
-      // Bottom pipe cap
-      this.ctx.fillStyle = "#27A832";
-      this.ctx.fillRect(pipe.x - 5, bottomY, this.pipeWidth + 10, 20);
-
-      // Pipe border
-      this.ctx.strokeStyle = "#1E8C2F";
+      // Outer border to give a crisp, tetris-like block look
+      this.ctx.strokeStyle = "rgba(15,23,42,0.95)";
       this.ctx.lineWidth = 2;
-      this.ctx.strokeRect(pipe.x, 0, this.pipeWidth, pipe.topHeight);
       this.ctx.strokeRect(
-        pipe.x,
-        bottomY,
-        this.pipeWidth,
-        this.canvas.height - bottomY
+        pipe.x + 0.5,
+        0.5,
+        this.pipeWidth - 1,
+        pipe.topHeight - 1
       );
+      this.ctx.strokeRect(
+        pipe.x + 0.5,
+        bottomY + 0.5,
+        this.pipeWidth - 1,
+        this.canvas.height - bottomY - 1
+      );
+
+      // Subtle horizontal segments to make the pipes feel
+      // like stacked blocks instead of a single tube.
+      this.ctx.strokeStyle = "rgba(15,23,42,0.6)";
+      for (let y = 24; y < pipe.topHeight; y += 24) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(pipe.x + 3, y + 0.5);
+        this.ctx.lineTo(pipe.x + this.pipeWidth - 3, y + 0.5);
+        this.ctx.stroke();
+      }
+      for (let y = bottomY + 24; y < this.canvas.height; y += 24) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(pipe.x + 3, y + 0.5);
+        this.ctx.lineTo(pipe.x + this.pipeWidth - 3, y + 0.5);
+        this.ctx.stroke();
+      }
     }
   }
 
   private drawGround(): void {
-    const groundHeight = 20;
-    this.ctx.fillStyle = "#DEB887";
+    const groundHeight = Math.max(20, Math.floor(this.canvas.height * 0.06));
+
+    const groundGradient = this.ctx.createLinearGradient(
+      0,
+      this.canvas.height - groundHeight,
+      this.canvas.width,
+      this.canvas.height
+    );
+    groundGradient.addColorStop(0, "#020617");
+    groundGradient.addColorStop(1, "#111827");
+
+    this.ctx.fillStyle = groundGradient;
     this.ctx.fillRect(
       0,
       this.canvas.height - groundHeight,
