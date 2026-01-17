@@ -73,7 +73,8 @@ export const FlappyBirdGame: React.FC = () => {
   // Touch event handler for mobile
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      e.preventDefault();
+      // Don't use e.preventDefault() here - causes passive listener warning
+      // The touch-none class on canvas will prevent scrolling
       handleCanvasClick();
     },
     [handleCanvasClick],
@@ -135,6 +136,25 @@ export const FlappyBirdGame: React.FC = () => {
     },
     [handleQuit, handleRestart, startCountdown],
   );
+
+  // Prevent body scrolling on mobile during gameplay
+  useEffect(() => {
+    // Prevent pull-to-refresh and overscroll on mobile
+    const preventScroll = (e: TouchEvent) => {
+      if (e.target instanceof HTMLCanvasElement) {
+        e.preventDefault();
+      }
+    };
+
+    // Add with passive: false to allow preventDefault
+    document.addEventListener("touchstart", preventScroll, { passive: false });
+    document.addEventListener("touchmove", preventScroll, { passive: false });
+
+    return () => {
+      document.removeEventListener("touchstart", preventScroll);
+      document.removeEventListener("touchmove", preventScroll);
+    };
+  }, []);
 
   // Initialize engine, sizing, and global listeners
   useEffect(() => {
@@ -211,29 +231,29 @@ export const FlappyBirdGame: React.FC = () => {
   }, [gameState, score]);
 
   return (
-    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col">
+    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 py-3 px-4">
+      <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 py-2 sm:py-3 px-3 sm:px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
               Flappy Bird
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">
               Tap to fly between the pipes
             </p>
           </div>
           <button
             onClick={handleQuit}
-            className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300 transition-all duration-300 text-sm"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300 active:bg-gray-800 transition-all duration-300 text-xs sm:text-sm"
           >
-            Back to Menu
+            Menu
           </button>
         </div>
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 flex items-center justify-center p-2 sm:p-4 lg:p-8">
+      <div className="flex-1 flex items-center justify-center p-2 sm:p-3 md:p-4 lg:p-8 overflow-y-auto">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-3 sm:gap-4 lg:gap-8 w-full max-w-5xl mx-auto">
           {/* Score Panel */}
           <div className="w-full max-w-sm lg:w-64 order-1 mx-auto lg:mx-0">
