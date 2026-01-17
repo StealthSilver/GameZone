@@ -288,7 +288,7 @@ export const FlappyBirdGame: React.FC = () => {
             {gameState === "gameOver" && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
                 <div className="text-center px-6 py-4">
-                  <div className="text-3xl md:text-4xl font-bold text-red-500 mb-3">
+                  <div className="text-3xl md:text-4xl font-bold mb-3 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
                     Game Over!
                   </div>
                   <div className="text-lg md:text-2xl text-white mb-4">

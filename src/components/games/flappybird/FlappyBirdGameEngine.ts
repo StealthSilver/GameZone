@@ -81,8 +81,8 @@ export class FlappyBirdGameEngine {
 
   // Bird properties
   private bird: Bird;
-  private gravity: number = 0.6;
-  private flapStrength: number = -10;
+  private gravity: number = 0.45;
+  private flapStrength: number = -9;
 
   // Pipe properties
   private pipes: Pipe[] = [];
