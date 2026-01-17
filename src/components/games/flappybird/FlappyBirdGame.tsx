@@ -70,6 +70,15 @@ export const FlappyBirdGame: React.FC = () => {
     }
   }, [startCountdown]);
 
+  // Touch event handler for mobile
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+      handleCanvasClick();
+    },
+    [handleCanvasClick],
+  );
+
   const handlePause = useCallback(() => {
     if (gameEngineRef.current) {
       gameEngineRef.current.pause();
@@ -124,7 +133,7 @@ export const FlappyBirdGame: React.FC = () => {
         handleRestart();
       }
     },
-    [handleQuit, handleRestart, startCountdown]
+    [handleQuit, handleRestart, startCountdown],
   );
 
   // Initialize engine, sizing, and global listeners
@@ -147,9 +156,9 @@ export const FlappyBirdGame: React.FC = () => {
         const maxWidth = Math.min(viewportWidth - 600, 400);
         engine.resize(maxWidth, maxHeight);
       } else {
-        // Mobile sizing
-        const maxHeight = Math.min(viewportHeight - 420, 500);
-        const maxWidth = Math.min(viewportWidth - 48, 340);
+        // Mobile sizing - optimize for smaller screens
+        const maxHeight = Math.min(viewportHeight - 280, 550);
+        const maxWidth = Math.min(viewportWidth - 32, 400);
         engine.resize(maxWidth, maxHeight);
       }
     };
@@ -224,22 +233,24 @@ export const FlappyBirdGame: React.FC = () => {
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8 w-full max-w-5xl mx-auto">
+      <div className="flex-1 flex items-center justify-center p-2 sm:p-4 lg:p-8">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-3 sm:gap-4 lg:gap-8 w-full max-w-5xl mx-auto">
           {/* Score Panel */}
           <div className="w-full max-w-sm lg:w-64 order-1 mx-auto lg:mx-0">
-            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-xl p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
-              <h3 className="text-sm text-gray-400 mb-4">Score</h3>
+            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
+              <h3 className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-4">
+                Score
+              </h3>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xs text-gray-400 mb-1">Current</div>
-                  <div className="text-4xl lg:text-5xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                  <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
                     {score}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-gray-400 mb-1">Best</div>
-                  <div className="text-3xl lg:text-4xl font-bold text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
                     {bestScore}
                   </div>
                 </div>
@@ -248,7 +259,7 @@ export const FlappyBirdGame: React.FC = () => {
           </div>
 
           {/* Canvas Container */}
-          <div className="relative order-2 flex flex-col items-center gap-4 w-full max-w-sm sm:max-w-md md:max-w-lg">
+          <div className="relative order-2 flex flex-col items-center gap-4 w-full max-w-sm sm:max-w-md md:max-w-lg touch-none">
             <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
               <div className="absolute top-10 left-0 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
               <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#8CECF7]/10 rounded-full blur-3xl" />
@@ -257,14 +268,15 @@ export const FlappyBirdGame: React.FC = () => {
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
-              className="border-2 border-gray-800/50 rounded-lg shadow-2xl cursor-pointer w-full h-auto"
-              style={{ maxWidth: "100%", height: "auto", maxHeight: "80vh" }}
+              onTouchStart={handleTouchStart}
+              className="border-2 border-gray-800/50 rounded-lg shadow-2xl cursor-pointer w-full h-auto touch-none"
+              style={{ maxWidth: "100%", height: "auto", maxHeight: "75vh" }}
             />
 
             {/* Countdown Overlay */}
             {countdown !== null && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
-                <div className="text-7xl md:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text animate-pulse">
+                <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text animate-pulse">
                   {countdown}
                 </div>
               </div>
@@ -274,11 +286,11 @@ export const FlappyBirdGame: React.FC = () => {
             {gameState === "countdown" && countdown === null && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
                 <div className="text-center px-4">
-                  <div className="text-2xl font-bold text-white mb-2">
-                    Click or Press Space to Start
+                  <div className="text-xl sm:text-2xl font-bold text-white mb-2">
+                    Tap to Start
                   </div>
-                  <div className="text-gray-300 text-sm">
-                    Tap / Space / ↑ to flap and stay in the air
+                  <div className="text-gray-300 text-xs sm:text-sm">
+                    Tap screen to flap and stay in the air
                   </div>
                 </div>
               </div>
@@ -287,16 +299,16 @@ export const FlappyBirdGame: React.FC = () => {
             {/* Game Over Overlay */}
             {gameState === "gameOver" && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
-                <div className="text-center px-6 py-4">
-                  <div className="text-3xl md:text-4xl font-bold mb-3 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                <div className="text-center px-4 sm:px-6 py-4">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
                     Game Over!
                   </div>
-                  <div className="text-lg md:text-2xl text-white mb-4">
+                  <div className="text-base sm:text-lg md:text-2xl text-white mb-4">
                     Final Score: {score}
                   </div>
                   <button
                     onClick={handleRestart}
-                    className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
+                    className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300 active:scale-95"
                   >
                     Play Again
                   </button>
@@ -327,9 +339,11 @@ export const FlappyBirdGame: React.FC = () => {
 
           {/* Controls / Info Panel */}
           <div className="w-full max-w-sm lg:w-64 order-3 mx-auto lg:mx-0">
-            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-xl p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
-              <h3 className="text-sm text-gray-400 mb-4">Controls</h3>
-              <div className="space-y-3 text-sm">
+            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
+              <h3 className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
+                Controls
+              </h3>
+              <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400">Flap</span>
                   <span className="text-[#AAFDBB] font-mono">
@@ -351,34 +365,34 @@ export const FlappyBirdGame: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 space-y-2">
+              <div className="mt-4 sm:mt-6 space-y-2">
                 {gameState !== "gameOver" && (
                   <button
                     onClick={isPaused ? handleResume : handlePause}
-                    className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg hover:bg-gray-700/80 transition-all duration-300 border border-gray-700"
+                    className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg hover:bg-gray-700/80 active:bg-gray-600/80 transition-all duration-300 border border-gray-700 text-xs sm:text-sm"
                   >
                     {isPaused ? "Resume" : "Pause"}
                   </button>
                 )}
                 <button
                   onClick={handleRestart}
-                  className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg hover:bg-gray-700/80 transition-all duration-300 border border-gray-700"
+                  className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg hover:bg-gray-700/80 active:bg-gray-600/80 transition-all duration-300 border border-gray-700 text-xs sm:text-sm"
                 >
                   Restart
                 </button>
                 <button
                   onClick={handleQuit}
-                  className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg border border-gray-700 hover:bg-gray-700/80 transition-all duration-300 text-sm"
+                  className="w-full px-4 py-2 bg-gray-800/80 text-white rounded-lg border border-gray-700 hover:bg-gray-700/80 active:bg-gray-600/80 transition-all duration-300 text-xs sm:text-sm"
                 >
                   Back to Games
                 </button>
               </div>
 
               {/* Game Tips */}
-              <div className="mt-6 pt-4 border-t border-gray-800 text-xs text-gray-400 space-y-1.5">
-                <p>• Time your flaps to pass through the gaps.</p>
-                <p>• Small, quick taps usually work best.</p>
-                <p>• Hitting the ground or pipes ends the run.</p>
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-800 text-xs text-gray-400 space-y-1 sm:space-y-1.5">
+                <p>• Time your taps to pass through gaps</p>
+                <p>• Quick taps work best on mobile</p>
+                <p>• Avoid pipes and ground</p>
               </div>
             </div>
           </div>

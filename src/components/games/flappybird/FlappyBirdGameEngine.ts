@@ -47,7 +47,7 @@ class SoundEffects {
       gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(
         0.01,
-        this.audioContext.currentTime + 0.15
+        this.audioContext.currentTime + 0.15,
       );
 
       oscillator.start(this.audioContext.currentTime);
@@ -83,6 +83,7 @@ export class FlappyBirdGameEngine {
   private bird: Bird;
   private gravity: number = 0.45;
   private flapStrength: number = -9;
+  private isMobile: boolean = false;
 
   // Pipe properties
   private pipes: Pipe[] = [];
@@ -122,6 +123,9 @@ export class FlappyBirdGameEngine {
     this.canvas.width = width;
     this.canvas.height = height;
 
+    // Detect if we're on a mobile device based on canvas width
+    this.isMobile = width < 500;
+
     // Reset bird position relative to new canvas size
     this.bird.x = this.canvas.width * 0.25;
     if (this.state === "waiting" || this.state === "countdown") {
@@ -131,14 +135,23 @@ export class FlappyBirdGameEngine {
 
     // Adjust pipe layout based on canvas size so the game
     // scales nicely on both mobile and desktop.
-    const baseGap = this.canvas.height * 0.26;
-    this.pipeGap = Math.max(140, Math.min(baseGap, 260));
+    // Mobile gets slightly larger gaps for easier gameplay
+    const baseGap = this.isMobile
+      ? this.canvas.height * 0.32
+      : this.canvas.height * 0.26;
+    this.pipeGap = Math.max(160, Math.min(baseGap, 280));
 
     const widthRatio = this.canvas.width / 360;
-    this.pipeWidth = Math.max(48, Math.min(80, Math.floor(56 * widthRatio)));
+    this.pipeWidth = Math.max(45, Math.min(80, Math.floor(56 * widthRatio)));
 
+    // Adjust speed based on screen size
     const speedRatio = this.canvas.width / 480;
-    this.pipeSpeed = Math.max(2.2, Math.min(5, 3 * speedRatio));
+    this.pipeSpeed = this.isMobile
+      ? Math.max(2, Math.min(3.5, 2.5 * speedRatio))
+      : Math.max(2.5, Math.min(5, 3 * speedRatio));
+
+    // Adjust bird size for mobile
+    this.bird.radius = this.isMobile ? 18 : 20;
   }
 
   public start(): void {
@@ -333,7 +346,7 @@ export class FlappyBirdGameEngine {
       0,
       0,
       this.canvas.width,
-      this.canvas.height
+      this.canvas.height,
     );
     bgGradient.addColorStop(0, "#020617");
     bgGradient.addColorStop(0.45, "#020617");
@@ -372,7 +385,8 @@ export class FlappyBirdGameEngine {
 
     // Custom bird made of blocky shapes and gradients so it
     // visually fits with the neon/tetris-style UI.
-    const size = this.bird.radius * 2;
+    // Scale slightly larger on mobile for better visibility
+    const size = this.bird.radius * 2 * (this.isMobile ? 1.1 : 1);
     const half = size / 2;
     const block = size / 3;
 
@@ -400,7 +414,7 @@ export class FlappyBirdGameEngine {
       half - block * 0.35,
       -block * 0.25,
       block * 0.6,
-      block * 0.5
+      block * 0.5,
     );
 
     // Eye
@@ -426,7 +440,7 @@ export class FlappyBirdGameEngine {
         pipe.x,
         0,
         pipe.x + this.pipeWidth,
-        0
+        0,
       );
       pipeGradient.addColorStop(0, "#AAFDBB");
       pipeGradient.addColorStop(0.5, "#8CECF7");
@@ -442,7 +456,7 @@ export class FlappyBirdGameEngine {
         pipe.x,
         bottomY,
         this.pipeWidth,
-        this.canvas.height - bottomY
+        this.canvas.height - bottomY,
       );
 
       // Outer border to give a crisp, tetris-like block look
@@ -452,13 +466,13 @@ export class FlappyBirdGameEngine {
         pipe.x + 0.5,
         0.5,
         this.pipeWidth - 1,
-        pipe.topHeight - 1
+        pipe.topHeight - 1,
       );
       this.ctx.strokeRect(
         pipe.x + 0.5,
         bottomY + 0.5,
         this.pipeWidth - 1,
-        this.canvas.height - bottomY - 1
+        this.canvas.height - bottomY - 1,
       );
 
       // Subtle horizontal segments to make the pipes feel
@@ -486,7 +500,7 @@ export class FlappyBirdGameEngine {
       0,
       this.canvas.height - groundHeight,
       this.canvas.width,
-      this.canvas.height
+      this.canvas.height,
     );
     groundGradient.addColorStop(0, "#020617");
     groundGradient.addColorStop(1, "#111827");
@@ -496,7 +510,7 @@ export class FlappyBirdGameEngine {
       0,
       this.canvas.height - groundHeight,
       this.canvas.width,
-      groundHeight
+      groundHeight,
     );
   }
 
