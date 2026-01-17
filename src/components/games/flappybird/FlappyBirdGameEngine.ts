@@ -217,7 +217,7 @@ export class FlappyBirdGameEngine {
     this.update();
     this.draw();
 
-    if (this.state !== "gameOver") {
+    if (this.state === "playing" || this.state === "countdown") {
       this.animationId = requestAnimationFrame(this.gameLoop);
     }
   };
