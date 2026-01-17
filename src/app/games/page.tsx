@@ -61,6 +61,12 @@ const games = [
     available: false,
     route: "/games/space-shooter",
   },
+  {
+    name: "2048",
+    image: "/2048.png",
+    available: false,
+    route: "/games/2048",
+  },
 ];
 
 export default function GamesPage() {
