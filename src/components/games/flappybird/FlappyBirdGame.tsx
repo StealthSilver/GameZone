@@ -24,16 +24,11 @@ export const FlappyBirdGame: React.FC = () => {
     // Only start from countdown state
     if (state !== "countdown") return;
 
-    // Check if we're on mobile
-    const isMobile = window.innerWidth < 1024;
-
     // After the first game, skip the visual countdown and
-    // jump straight into playing when the user starts again.
-    // Also skip countdown on mobile for first game
-    if (hasDoneCountdown || isMobile) {
+    // jump straight into playing when the user starts again
+    if (hasDoneCountdown) {
       setCountdown(null);
       engine.startPlaying();
-      setHasDoneCountdown(true);
       return;
     }
 
@@ -63,9 +58,17 @@ export const FlappyBirdGame: React.FC = () => {
     if (!engine) return;
 
     const state = engine.getState();
+    const isMobile = window.innerWidth < 1024;
 
     if (state === "waiting" || state === "countdown") {
-      startCountdown();
+      // On mobile, directly start playing without countdown
+      if (isMobile && state === "countdown") {
+        setCountdown(null);
+        engine.startPlaying();
+        setHasDoneCountdown(true);
+      } else {
+        startCountdown();
+      }
     } else if (state === "playing") {
       engine.flap();
     } else if (state === "gameOver") {
