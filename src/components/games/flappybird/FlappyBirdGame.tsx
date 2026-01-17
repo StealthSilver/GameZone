@@ -14,7 +14,7 @@ export const FlappyBirdGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>("waiting");
   const [isPaused, setIsPaused] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [hasDoneCountdown, setHasDoneCountdown] = useState(false);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const startCountdown = useCallback(() => {
     const engine = gameEngineRef.current;
@@ -27,19 +27,26 @@ export const FlappyBirdGame: React.FC = () => {
     // If a countdown is already running, do nothing
     if (countdown !== null) return;
 
+    // Clear any existing interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
+
     let count = 3;
     setCountdown(count);
 
-    const countdownInterval = setInterval(() => {
+    countdownIntervalRef.current = setInterval(() => {
       count--;
       if (count > 0) {
         setCountdown(count);
       } else {
         setCountdown(null);
-        clearInterval(countdownInterval);
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
         if (gameEngineRef.current) {
           gameEngineRef.current.startPlaying();
-          setHasDoneCountdown(true);
         }
       }
     }, 1000);
@@ -206,6 +213,9 @@ export const FlappyBirdGame: React.FC = () => {
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("keydown", handleKeyDown);
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
       if (gameEngineRef.current) {
         gameEngineRef.current.destroy();
       }
