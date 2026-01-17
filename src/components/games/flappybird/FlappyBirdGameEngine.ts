@@ -193,6 +193,15 @@ export class FlappyBirdGameEngine {
     if (this.onScoreUpdate) {
       this.onScoreUpdate(this.score);
     }
+
+    // Restart the game loop after a reset so the
+    // countdown screen and subsequent gameplay render correctly
+    if (this.animationId === null) {
+      this.gameLoop();
+    } else {
+      // Ensure any previous loop is effectively replaced
+      this.gameLoop();
+    }
   }
 
   public destroy(): void {
