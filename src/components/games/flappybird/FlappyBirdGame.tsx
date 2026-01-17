@@ -23,11 +23,16 @@ export const FlappyBirdGame: React.FC = () => {
     // Only start from countdown state
     if (engine.getState() !== "countdown") return;
 
+    // Check if we're on mobile
+    const isMobile = window.innerWidth < 1024;
+
     // After the first game, skip the visual countdown and
     // jump straight into playing when the user starts again.
-    if (hasDoneCountdown) {
+    // Also skip countdown on mobile for first game
+    if (hasDoneCountdown || isMobile) {
       setCountdown(null);
       engine.startPlaying();
+      setHasDoneCountdown(true);
       return;
     }
 
@@ -231,7 +236,7 @@ export const FlappyBirdGame: React.FC = () => {
   }, [gameState, score]);
 
   return (
-    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col">
       {/* Header */}
       <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 py-2 sm:py-3 px-3 sm:px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -253,7 +258,7 @@ export const FlappyBirdGame: React.FC = () => {
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 flex items-center justify-center p-2 sm:p-3 md:p-4 lg:p-8 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-2 sm:p-3 md:p-4 lg:p-8">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-3 sm:gap-4 lg:gap-8 w-full max-w-5xl mx-auto">
           {/* Score Panel */}
           <div className="w-full max-w-sm lg:w-64 order-1 mx-auto lg:mx-0">
@@ -307,10 +312,16 @@ export const FlappyBirdGame: React.FC = () => {
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
                 <div className="text-center px-4">
                   <div className="text-xl sm:text-2xl font-bold text-white mb-2">
-                    Tap to Start
+                    <span className="lg:hidden">Tap to Start</span>
+                    <span className="hidden lg:inline">
+                      Click or Press Space to Start
+                    </span>
                   </div>
                   <div className="text-gray-300 text-xs sm:text-sm">
-                    Tap screen to flap and stay in the air
+                    <span className="lg:hidden">Tap to flap</span>
+                    <span className="hidden lg:inline">
+                      Tap screen to flap and stay in the air
+                    </span>
                   </div>
                 </div>
               </div>
@@ -357,8 +368,8 @@ export const FlappyBirdGame: React.FC = () => {
             )}
           </div>
 
-          {/* Controls / Info Panel */}
-          <div className="w-full max-w-sm lg:w-64 order-3 mx-auto lg:mx-0">
+          {/* Controls / Info Panel - Hidden on mobile */}
+          <div className="hidden lg:block w-full max-w-sm lg:w-64 order-3 mx-auto lg:mx-0">
             <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
               <h3 className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
                 Controls
