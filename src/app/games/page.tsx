@@ -42,6 +42,12 @@ const games = [
     available: true,
     route: "/games/pong",
   },
+  {
+    name: "Flappy Bird",
+    image: "/flappy.png",
+    available: true,
+    route: "/games/flappybird",
+  },
   { name: "Go", image: "/go.png", available: false, route: "/games/go" },
   {
     name: "Snake and Ladder",
