@@ -152,6 +152,15 @@ export class FlappyBirdGameEngine {
 
     // Adjust bird size for mobile
     this.bird.radius = this.isMobile ? 18 : 20;
+
+    // Adjust gravity and flap strength for mobile (easier gameplay)
+    if (this.isMobile) {
+      this.gravity = 0.35; // Reduced from 0.45 for slower falling
+      this.flapStrength = -8; // Slightly reduced from -9 to match gravity
+    } else {
+      this.gravity = 0.45;
+      this.flapStrength = -9;
+    }
   }
 
   public start(): void {
