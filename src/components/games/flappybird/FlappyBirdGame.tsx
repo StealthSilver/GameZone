@@ -24,12 +24,10 @@ export const FlappyBirdGame: React.FC = () => {
     // Only start from countdown state
     if (state !== "countdown") return;
 
-    // If a countdown is already running, do nothing
-    if (countdown !== null) return;
-
     // Clear any existing interval
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
     }
 
     let count = 3;
@@ -50,7 +48,7 @@ export const FlappyBirdGame: React.FC = () => {
         }
       }
     }, 1000);
-  }, [countdown]);
+  }, []);
 
   const handleCanvasClick = useCallback(() => {
     const engine = gameEngineRef.current;
@@ -92,6 +90,11 @@ export const FlappyBirdGame: React.FC = () => {
 
   const handleRestart = useCallback(() => {
     if (gameEngineRef.current) {
+      // Clear any existing countdown
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
       setScore(0);
       setCountdown(null);
       gameEngineRef.current.reset();
@@ -130,7 +133,7 @@ export const FlappyBirdGame: React.FC = () => {
         handleRestart();
       }
     },
-    [handleQuit, handleRestart, startCountdown],
+    [handleQuit, handleRestart],
   );
 
   // Prevent body scrolling on mobile during gameplay
