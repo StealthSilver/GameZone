@@ -235,7 +235,7 @@ export const FlappyBirdGame: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col">
       {/* Header */}
-      <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 py-2 px-3 sm:px-4">
+      <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 py-1.5 px-3 sm:py-2 sm:px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
@@ -255,24 +255,22 @@ export const FlappyBirdGame: React.FC = () => {
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 flex items-center justify-center px-2 sm:px-3 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-2 sm:gap-3 lg:gap-8 w-full max-w-5xl mx-auto">
-          {/* Score Panel */}
-          <div className="w-full max-w-sm lg:w-64 order-1 mx-auto lg:mx-0">
-            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
-              <h3 className="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2">
-                Score
-              </h3>
+      <div className="flex-1 flex items-center justify-center px-2 py-2 sm:px-3 sm:py-4 lg:px-8 lg:py-6">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-3 lg:gap-8 w-full max-w-5xl mx-auto">
+          {/* Score Panel - Desktop Only */}
+          <div className="hidden lg:block w-64">
+            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-xl p-6 border border-gray-800/50 backdrop-blur-sm">
+              <h3 className="text-sm text-gray-400 mb-2">Score</h3>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-xs text-gray-400 mb-1">Current</div>
-                  <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                  <div className="text-5xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
                     {score}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-gray-400 mb-1">Best</div>
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                  <div className="text-4xl font-bold text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
                     {bestScore}
                   </div>
                 </div>
@@ -280,93 +278,112 @@ export const FlappyBirdGame: React.FC = () => {
             </div>
           </div>
 
-          {/* Canvas Container */}
-          <div className="relative order-2 flex flex-col items-center gap-2 w-full max-w-sm sm:max-w-md md:max-w-lg touch-none">
-            <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-              <div className="absolute top-1/4 left-0 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-[#8CECF7]/10 rounded-full blur-3xl" />
+          {/* Canvas Container with Mobile Score */}
+          <div className="flex flex-col items-center w-full max-w-sm sm:max-w-md md:max-w-lg">
+            {/* Mobile Score Cards - Row Layout */}
+            <div className="flex gap-2 mb-2 w-full lg:hidden">
+              <div className="flex-1 bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg p-2.5 border border-gray-800/50 backdrop-blur-sm">
+                <div className="text-[10px] text-gray-400 mb-0.5">Score</div>
+                <div className="text-2xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                  {score}
+                </div>
+              </div>
+              <div className="flex-1 bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg p-2.5 border border-gray-800/50 backdrop-blur-sm">
+                <div className="text-[10px] text-gray-400 mb-0.5">Best</div>
+                <div className="text-2xl font-bold text-transparent bg-gradient-to-r from-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                  {bestScore}
+                </div>
+              </div>
             </div>
 
-            <canvas
-              ref={canvasRef}
-              onClick={handleCanvasClick}
-              onTouchStart={handleTouchStart}
-              className="border-2 border-gray-800/50 rounded-lg shadow-2xl cursor-pointer w-full h-auto touch-none"
-              style={{ maxWidth: "100%", height: "auto", maxHeight: "75vh" }}
-            />
-
-            {/* Countdown Overlay */}
-            {countdown !== null && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
-                <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text animate-pulse">
-                  {countdown}
-                </div>
+            {/* Canvas */}
+            <div className="relative w-full touch-none">
+              <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+                <div className="absolute top-1/4 left-0 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-[#8CECF7]/10 rounded-full blur-3xl" />
               </div>
-            )}
 
-            {/* Start Game Button */}
-            {gameState === "countdown" && countdown === null && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg">
-                <div className="text-center px-4">
-                  <button
-                    onClick={handleStartGame}
-                    className="px-8 py-4 text-lg sm:text-xl font-bold bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl hover:shadow-2xl hover:shadow-[#8CECF7]/50 transition-all duration-300 active:scale-95 mb-4"
-                  >
-                    Start Game
-                  </button>
-                  <div className="text-gray-300 text-xs sm:text-sm">
-                    <span className="lg:hidden">Tap screen to flap</span>
-                    <span className="hidden lg:inline">
-                      Click or press Space/↑ to flap
-                    </span>
+              <canvas
+                ref={canvasRef}
+                onClick={handleCanvasClick}
+                onTouchStart={handleTouchStart}
+                className="border-2 border-gray-800/50 rounded-lg shadow-2xl cursor-pointer w-full h-auto touch-none"
+                style={{ maxWidth: "100%", height: "auto", maxHeight: "70vh" }}
+              />
+
+              {/* Countdown Overlay */}
+              {countdown !== null && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                  <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text animate-pulse">
+                    {countdown}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Game Over Overlay */}
-            {gameState === "gameOver" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
-                <div className="text-center px-4 sm:px-6 py-4">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
-                    Game Over!
+              {/* Start Game Button */}
+              {gameState === "countdown" && countdown === null && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg">
+                  <div className="text-center px-4">
+                    <button
+                      onClick={handleStartGame}
+                      className="px-8 py-4 text-lg sm:text-xl font-bold bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl hover:shadow-2xl hover:shadow-[#8CECF7]/50 transition-all duration-300 active:scale-95 mb-4"
+                    >
+                      Start Game
+                    </button>
+                    <div className="text-gray-300 text-xs sm:text-sm">
+                      <span className="lg:hidden">Tap screen to flap</span>
+                      <span className="hidden lg:inline">
+                        Click or press Space/↑ to flap
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-base sm:text-lg md:text-2xl text-white mb-4">
-                    Final Score: {score}
-                  </div>
-                  <button
-                    onClick={handleRestart}
-                    className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300 active:scale-95"
-                  >
-                    Play Again
-                  </button>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Pause Overlay */}
-            {isPaused && gameState !== "gameOver" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
-                <div className="text-center px-6 py-4">
-                  <div className="text-3xl font-bold text-white mb-4">
-                    Paused
+              {/* Game Over Overlay */}
+              {gameState === "gameOver" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
+                  <div className="text-center px-4 sm:px-6 py-4">
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
+                      Game Over!
+                    </div>
+                    <div className="text-base sm:text-lg md:text-2xl text-white mb-4">
+                      Final Score: {score}
+                    </div>
+                    <button
+                      onClick={handleRestart}
+                      className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300 active:scale-95"
+                    >
+                      Play Again
+                    </button>
                   </div>
-                  <p className="text-gray-400 text-sm mb-4">
-                    Press P or use the button to resume
-                  </p>
-                  <button
-                    onClick={handleResume}
-                    className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
-                  >
-                    Resume
-                  </button>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Pause Overlay */}
+              {isPaused && gameState !== "gameOver" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80 rounded-lg">
+                  <div className="text-center px-6 py-4">
+                    <div className="text-3xl font-bold text-white mb-4">
+                      Paused
+                    </div>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Press P or use the button to resume
+                    </p>
+                    <button
+                      onClick={handleResume}
+                      className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
+                    >
+                      Resume
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Controls / Info Panel - Hidden on mobile */}
-          <div className="hidden lg:block w-full max-w-sm lg:w-64 order-3 mx-auto lg:mx-0">
+          <div className="hidden lg:block w-64">
             <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
               <h3 className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
                 Controls
