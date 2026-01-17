@@ -192,8 +192,12 @@ export const FlappyBirdGame: React.FC = () => {
           {gameState === "countdown" && countdown === null && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
               <div className="text-center">
-                <div className="text-2xl font-bold text-white mb-2">Click to Start</div>
-                <div className="text-gray-300 text-sm">Tap or press Space to flap</div>
+                <div className="text-2xl font-bold text-white mb-2">
+                  Click to Start
+                </div>
+                <div className="text-gray-300 text-sm">
+                  Tap or press Space to flap
+                </div>
               </div>
             </div>
           )}
@@ -202,8 +206,12 @@ export const FlappyBirdGame: React.FC = () => {
           {gameState === "gameOver" && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-lg">
               <div className="text-center">
-                <div className="text-4xl font-bold text-red-500 mb-4">Game Over!</div>
-                <div className="text-2xl text-white mb-6">Final Score: {score}</div>
+                <div className="text-4xl font-bold text-red-500 mb-4">
+                  Game Over!
+                </div>
+                <div className="text-2xl text-white mb-6">
+                  Final Score: {score}
+                </div>
                 <button
                   onClick={handleRestart}
                   className="px-6 py-3 bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#8CECF7]/50 transition-all duration-300"
@@ -262,9 +270,7 @@ export const FlappyBirdGame: React.FC = () => {
             <span className="text-[#8CECF7]">Click</span> or press{" "}
             <span className="text-[#8CECF7]">Space/↑</span> to flap
           </p>
-          <p>
-            Navigate through the pipes without hitting them!
-          </p>
+          <p>Navigate through the pipes without hitting them!</p>
         </div>
       </div>
     </div>
