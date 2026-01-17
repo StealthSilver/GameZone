@@ -20,8 +20,9 @@ export const FlappyBirdGame: React.FC = () => {
     const engine = gameEngineRef.current;
     if (!engine) return;
 
+    const state = engine.getState();
     // Only start from countdown state
-    if (engine.getState() !== "countdown") return;
+    if (state !== "countdown") return;
 
     // Check if we're on mobile
     const isMobile = window.innerWidth < 1024;
@@ -63,7 +64,7 @@ export const FlappyBirdGame: React.FC = () => {
 
     const state = engine.getState();
 
-    if (state === "countdown") {
+    if (state === "waiting" || state === "countdown") {
       startCountdown();
     } else if (state === "playing") {
       engine.flap();
@@ -238,7 +239,7 @@ export const FlappyBirdGame: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white font-[family-name:var(--font-oxanium)] flex flex-col">
       {/* Header */}
-      <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 py-2 sm:py-3 px-3 sm:px-4">
+      <div className="bg-black/80 backdrop-blur-sm border-b border-gray-800 py-2 px-3 sm:px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] bg-clip-text">
@@ -258,12 +259,12 @@ export const FlappyBirdGame: React.FC = () => {
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 flex items-center justify-center p-2 sm:p-3 md:p-4 lg:p-8">
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-3 sm:gap-4 lg:gap-8 w-full max-w-5xl mx-auto">
+      <div className="flex-1 flex items-center justify-center py-2 px-2 sm:py-3 sm:px-3 lg:py-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-2 sm:gap-3 lg:gap-8 w-full max-w-5xl mx-auto">
           {/* Score Panel */}
           <div className="w-full max-w-sm lg:w-64 order-1 mx-auto lg:mx-0">
-            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
-              <h3 className="text-xs sm:text-sm text-gray-400 mb-2 sm:mb-4">
+            <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-6 border border-gray-800/50 backdrop-blur-sm">
+              <h3 className="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2">
                 Score
               </h3>
               <div className="flex items-center justify-between">
@@ -284,10 +285,10 @@ export const FlappyBirdGame: React.FC = () => {
           </div>
 
           {/* Canvas Container */}
-          <div className="relative order-2 flex flex-col items-center gap-4 w-full max-w-sm sm:max-w-md md:max-w-lg touch-none">
+          <div className="relative order-2 flex flex-col items-center gap-2 w-full max-w-sm sm:max-w-md md:max-w-lg touch-none">
             <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-              <div className="absolute top-10 left-0 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#8CECF7]/10 rounded-full blur-3xl" />
+              <div className="absolute top-1/4 left-0 w-64 h-64 bg-[#AAFDBB]/10 rounded-full blur-3xl" />
+              <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-[#8CECF7]/10 rounded-full blur-3xl" />
             </div>
 
             <canvas
