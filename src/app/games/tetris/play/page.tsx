@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { TetrisGame } from "@/components/games/tetris/TetrisGame";
+import { TetrisGame } from "../../../../components/games/tetris/TetrisGame";
 import { GameMode } from "@/components/games/tetris/TetrisGameEngine";
 
 function TetrisPlayContent() {
