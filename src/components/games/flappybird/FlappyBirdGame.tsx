@@ -24,14 +24,6 @@ export const FlappyBirdGame: React.FC = () => {
     // Only start from countdown state
     if (state !== "countdown") return;
 
-    // After the first game, skip the visual countdown and
-    // jump straight into playing when the user starts again
-    if (hasDoneCountdown) {
-      setCountdown(null);
-      engine.startPlaying();
-      return;
-    }
-
     // If a countdown is already running, do nothing
     if (countdown !== null) return;
 
@@ -51,33 +43,19 @@ export const FlappyBirdGame: React.FC = () => {
         }
       }
     }, 1000);
-  }, [countdown, hasDoneCountdown]);
+  }, [countdown]);
 
   const handleCanvasClick = useCallback(() => {
     const engine = gameEngineRef.current;
     if (!engine) return;
 
     const state = engine.getState();
-    const isMobile = window.innerWidth < 1024;
 
-    if (state === "waiting" || state === "countdown") {
-      // On mobile, directly start playing without countdown
-      if (isMobile && state === "countdown") {
-        setCountdown(null);
-        engine.startPlaying();
-        setHasDoneCountdown(true);
-      } else {
-        startCountdown();
-      }
-    } else if (state === "playing") {
+    // Only allow flapping during gameplay
+    if (state === "playing") {
       engine.flap();
-    } else if (state === "gameOver") {
-      // Quick restart on tap after game over
-      setScore(0);
-      setCountdown(null);
-      engine.reset();
     }
-  }, [startCountdown]);
+  }, []);
 
   // Touch event handler for mobile
   const handleTouchStart = useCallback(
@@ -101,6 +79,10 @@ export const FlappyBirdGame: React.FC = () => {
     }
   }, []);
 
+  const handleStartGame = useCallback(() => {
+    startCountdown();
+  }, [startCountdown]);
+
   const handleRestart = useCallback(() => {
     if (gameEngineRef.current) {
       setScore(0);
@@ -123,9 +105,7 @@ export const FlappyBirdGame: React.FC = () => {
 
       if (e.code === "Space" || e.code === "ArrowUp") {
         e.preventDefault();
-        if (state === "countdown") {
-          startCountdown();
-        } else if (state === "playing") {
+        if (state === "playing") {
           engine.flap();
         }
       } else if (e.code === "KeyP") {
@@ -262,7 +242,7 @@ export const FlappyBirdGame: React.FC = () => {
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 flex items-center justify-center py-2 px-2 sm:py-3 sm:px-3 lg:py-6 lg:px-8">
+      <div className="flex-1 flex items-center justify-center px-2 sm:px-3 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-2 sm:gap-3 lg:gap-8 w-full max-w-5xl mx-auto">
           {/* Score Panel */}
           <div className="w-full max-w-sm lg:w-64 order-1 mx-auto lg:mx-0">
@@ -311,20 +291,20 @@ export const FlappyBirdGame: React.FC = () => {
               </div>
             )}
 
-            {/* Click to Start Overlay */}
+            {/* Start Game Button */}
             {gameState === "countdown" && countdown === null && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg">
                 <div className="text-center px-4">
-                  <div className="text-xl sm:text-2xl font-bold text-white mb-2">
-                    <span className="lg:hidden">Tap to Start</span>
-                    <span className="hidden lg:inline">
-                      Click or Press Space to Start
-                    </span>
-                  </div>
+                  <button
+                    onClick={handleStartGame}
+                    className="px-8 py-4 text-lg sm:text-xl font-bold bg-gradient-to-r from-[#AAFDBB] via-[#8CECF7] to-[#6C85EA] text-black rounded-xl hover:shadow-2xl hover:shadow-[#8CECF7]/50 transition-all duration-300 active:scale-95 mb-4"
+                  >
+                    Start Game
+                  </button>
                   <div className="text-gray-300 text-xs sm:text-sm">
-                    <span className="lg:hidden">Tap to flap</span>
+                    <span className="lg:hidden">Tap screen to flap</span>
                     <span className="hidden lg:inline">
-                      Tap screen to flap and stay in the air
+                      Click or press Space/↑ to flap
                     </span>
                   </div>
                 </div>
