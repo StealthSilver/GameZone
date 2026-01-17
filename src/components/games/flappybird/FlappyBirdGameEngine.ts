@@ -171,6 +171,10 @@ export class FlappyBirdGameEngine {
       if (this.onScoreUpdate) {
         this.onScoreUpdate(this.score);
       }
+      // Ensure game loop continues after state change
+      if (this.animationId === null) {
+        this.gameLoop();
+      }
     }
   }
 
